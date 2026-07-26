@@ -1,0 +1,12 @@
+# secrets
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.env.backup*
+
+# os
+.DS_Store
+node_modules/
+dist/
+build/

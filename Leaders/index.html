@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LEGENDS OF THE CONTINENT — Pan-African Arcade</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%;
+    background: #0a0a0f;
+    overflow: hidden;
+    font-family: 'Press Start 2P', monospace;
+    color: #f5e6c4;
+  }
+  #game-container {
+    position: relative;
+    width: 100vw; height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+  }
+  canvas {
+    display: block;
+    image-rendering: pixelated;
+    box-shadow: 0 0 60px rgba(252, 209, 22, 0.15);
+  }
+  /* CRT scanline overlay */
+  #scanlines {
+    pointer-events: none;
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,0) 0px,
+      rgba(0,0,0,0) 2px,
+      rgba(0,0,0,0.12) 3px,
+      rgba(0,0,0,0.12) 4px
+    );
+    z-index: 10;
+  }
+</style>
+</head>
+<body>
+<div id="game-container">
+  <canvas id="game"></canvas>
+  <div id="scanlines"></div>
+</div>
+<script>
+'use strict';
+
+// ============================================================
+// LEGENDS OF THE CONTINENT — a Pan-African arcade tribute
+// Pick a leader. Face the waves of Crisis. Make history.
+// ============================================================
+
+// Surface any runtime error on screen instead of a silent blank canvas
+window.onerror = function (msg, src, line) {
+  const d = document.createElement('div');
+  d.style.cssText = 'position:fixed;top:8px;left:8px;z-index:99;color:#ff4d4d;font:10px monospace;background:#000c;padding:8px;max-width:90vw;';
+  d.textContent = 'ERROR: ' + msg + ' (line ' + line + ')';
+  document.body.appendChild(d);
+};
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+// roundRect fallback for engines that lack it
+if (!ctx.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+    this.moveTo(x + r, y);
+    this.arcTo(x + w, y, x + w, y + h, r);
+    this.arcTo(x + w, y + h, x, y + h, r);
+    this.arcTo(x, y + h, x, y, r);
+    this.arcTo(x, y, x + w, y, r);
+    return this;
+  };
+}
+
+// localStorage throws in sandboxed iframes — never let it kill the game
+function storageGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function storageSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+
+const W = 960, H = 640;
+canvas.width = W; canvas.height = H;
+
+function fitCanvas() {
+  const scale = Math.min(window.innerWidth / W, window.innerHeight / H);
+  canvas.style.width = (W * scale) + 'px';
+  canvas.style.height = (H * scale) + 'px';
+}
+window.addEventListener('resize', fitCanvas);
+fitCanvas();
+
+// ---------- Audio (tiny WebAudio chiptune SFX) ----------
+let audioCtx = null;
+function sfx(type) {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const t = audioCtx.currentTime;
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.connect(g); g.connect(audioCtx.destination);
+    const presets = {
+      shoot:   { wave: 'square',   f0: 880,  f1: 220,  dur: 0.08, vol: 0.05 },
+      hit:     { wave: 'sawtooth', f0: 200,  f1: 60,   dur: 0.12, vol: 0.08 },
+      hurt:    { wave: 'sawtooth', f0: 120,  f1: 40,   dur: 0.25, vol: 0.12 },
+      special: { wave: 'triangle', f0: 220,  f1: 880,  dur: 0.45, vol: 0.12 },
+      pickup:  { wave: 'sine',     f0: 660,  f1: 1320, dur: 0.15, vol: 0.10 },
+      wave:    { wave: 'square',   f0: 330,  f1: 660,  dur: 0.3,  vol: 0.08 },
+      select:  { wave: 'square',   f0: 440,  f1: 660,  dur: 0.1,  vol: 0.08 },
+      convert: { wave: 'sine',     f0: 440,  f1: 880,  dur: 0.3,  vol: 0.10 },
+      gameover:{ wave: 'sawtooth', f0: 440,  f1: 55,   dur: 1.2,  vol: 0.12 },
+    };
+    const p = presets[type] || presets.shoot;
+    o.type = p.wave;
+    o.frequency.setValueAtTime(p.f0, t);
+    o.frequency.exponentialRampToValueAtTime(Math.max(p.f1, 1), t + p.dur);
+    g.gain.setValueAtTime(p.vol, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + p.dur);
+    o.start(t); o.stop(t + p.dur + 0.05);
+  } catch (e) { /* audio unavailable */ }
+}
+
+// ---------- Leaders roster ----------
+// Abilities are tributes to what each leader is most remembered for.
+const LEADERS = [
+  {
+    id: 'nkrumah', name: 'KWAME NKRUMAH', country: 'GHANA', era: '1957-1966',
+    title: 'The Pan-Africanist',
+    known: 'Led Ghana to independence, father of Pan-Africanism',
+    ability: 'UNITY PULSE', cooldown: 9,
+    abilityDesc: 'Pan-African unity draws every crisis together and shatters them as one.',
+    color: '#fcd116', accent: '#ce1126',
+    stats: { speed: 3.2, fireRate: 0.28, damage: 14, hp: 100, shotSpeed: 8 },
+  },
+  {
+    id: 'lumumba', name: 'PATRICE LUMUMBA', country: 'DR CONGO', era: '1960-1961',
+    title: 'Voice of Independence',
+    known: 'First PM of independent Congo, legendary independence speech',
+    ability: 'INDEPENDENCE SPEECH', cooldown: 11,
+    abilityDesc: 'A speech that shakes the whole arena — stuns and damages every enemy on screen.',
+    color: '#3aa0ff', accent: '#fcd116',
+    stats: { speed: 3.4, fireRate: 0.26, damage: 13, hp: 90, shotSpeed: 8.5 },
+  },
+  {
+    id: 'mandela', name: 'NELSON MANDELA', country: 'SOUTH AFRICA', era: '1994-1999',
+    title: 'The Reconciler',
+    known: '27 years imprisoned, chose reconciliation over revenge',
+    ability: 'RECONCILIATION', cooldown: 12,
+    abilityDesc: 'Turns nearby enemies into allies who fight at your side.',
+    color: '#34c759', accent: '#fcd116',
+    stats: { speed: 2.9, fireRate: 0.32, damage: 12, hp: 130, shotSpeed: 7.5 },
+  },
+  {
+    id: 'annan', name: 'KOFI ANNAN', country: 'GHANA / UN', era: '1997-2006',
+    title: 'The Peacekeeper',
+    known: 'UN Secretary-General, Nobel Peace Prize 2001',
+    ability: 'BLUE HELMET SHIELD', cooldown: 10,
+    abilityDesc: 'UN peacekeeping shield — brief invulnerability and steady healing.',
+    color: '#5fa8ff', accent: '#ffffff',
+    stats: { speed: 3.0, fireRate: 0.30, damage: 12, hp: 110, shotSpeed: 8 },
+  },
+  {
+    id: 'ghali', name: 'BOUTROS BOUTROS-GHALI', country: 'EGYPT / UN', era: '1992-1996',
+    title: 'Agenda for Peace',
+    known: 'UN Secretary-General, wrote "An Agenda for Peace"',
+    ability: 'PEACE ZONES', cooldown: 10,
+    abilityDesc: 'Deploys three peacekeeping zones that slow and wear down crises inside them.',
+    color: '#c9b037', accent: '#1d3557',
+    stats: { speed: 2.8, fireRate: 0.30, damage: 13, hp: 105, shotSpeed: 7.5 },
+  },
+  {
+    id: 'sankara', name: 'THOMAS SANKARA', country: 'BURKINA FASO', era: '1983-1987',
+    title: 'The Upright Man',
+    known: 'Revolutionary of self-reliance, renamed his country "Land of Upright People"',
+    ability: 'REVOLUTIONARY SPIRIT', cooldown: 12,
+    abilityDesc: 'Self-reliance overdrive — blazing speed and triple fire for six seconds.',
+    color: '#ef3340', accent: '#fcd116',
+    stats: { speed: 3.8, fireRate: 0.22, damage: 10, hp: 85, shotSpeed: 9 },
+  },
+  {
+    id: 'nyerere', name: 'JULIUS NYERERE', country: 'TANZANIA', era: '1964-1985',
+    title: 'Mwalimu (The Teacher)',
+    known: 'Father of Tanzania, philosophy of Ujamaa — community as family',
+    ability: 'UJAMAA CIRCLE', cooldown: 11,
+    abilityDesc: 'The community gathers — orbiting guardians shield you and strike whatever comes close.',
+    color: '#00a3dd', accent: '#1eb53a',
+    stats: { speed: 3.0, fireRate: 0.30, damage: 12, hp: 115, shotSpeed: 7.5 },
+  },
+  {
+    id: 'sirleaf', name: 'ELLEN JOHNSON SIRLEAF', country: 'LIBERIA', era: '2006-2018',
+    title: 'The Iron Lady',
+    known: "Africa's first elected female head of state, Nobel Peace Prize 2011",
+    ability: 'IRON RESOLVE', cooldown: 11,
+    abilityDesc: 'A sweeping iron beam cuts across the arena while her resolve halves all damage taken.',
+    color: '#d0d6dd', accent: '#bf0a30',
+    stats: { speed: 3.1, fireRate: 0.27, damage: 13, hp: 105, shotSpeed: 8.5 },
+  },
+  {
+    id: 'selassie', name: 'HAILE SELASSIE', country: 'ETHIOPIA', era: '1930-1974',
+    title: 'Lion of Judah',
+    known: 'Founding father of the OAU, famous 1936 appeal to the League of Nations',
+    ability: 'RALLYING ROAR', cooldown: 10,
+    abilityDesc: 'A roar heard around the world — hurls every crisis backward and rattles them.',
+    color: '#078930', accent: '#fcdd09',
+    stats: { speed: 2.9, fireRate: 0.30, damage: 13, hp: 120, shotSpeed: 7.5 },
+  },
+  {
+    id: 'kenyatta', name: 'JOMO KENYATTA', country: 'KENYA', era: '1964-1978',
+    title: 'Father of the Nation',
+    known: 'Led Kenya to independence, rallied the nation with "Harambee" — all pull together',
+    ability: 'HARAMBEE', cooldown: 10,
+    abilityDesc: 'All pull together — restores health and doubles your damage for six seconds.',
+    color: '#bb0a1e', accent: '#006600',
+    stats: { speed: 3.0, fireRate: 0.29, damage: 13, hp: 110, shotSpeed: 8 },
+  },
+  {
+    id: 'senghor', name: 'LEOPOLD SENGHOR', country: 'SENEGAL', era: '1960-1980',
+    title: 'The Poet President',
+    known: 'Poet and philosopher of Negritude, first president of Senegal',
+    ability: 'VERSES OF FIRE', cooldown: 10,
+    abilityDesc: 'Words with weight — your shots become piercing verses for six seconds.',
+    color: '#00853f', accent: '#fdef42',
+    stats: { speed: 3.1, fireRate: 0.27, damage: 12, hp: 95, shotSpeed: 8.5 },
+  },
+  {
+    id: 'kaunda', name: 'KENNETH KAUNDA', country: 'ZAMBIA', era: '1964-1991',
+    title: 'KK',
+    known: 'Founding president of Zambia, tireless peace broker of southern Africa',
+    ability: 'ONE NATION', cooldown: 10,
+    abilityDesc: 'A call for calm — every crisis on screen slows to a crawl for five seconds.',
+    color: '#ef7d00', accent: '#198a00',
+    stats: { speed: 3.0, fireRate: 0.30, damage: 12, hp: 110, shotSpeed: 7.5 },
+  },
+  {
+    id: 'cabral', name: 'AMILCAR CABRAL', country: 'GUINEA-BISSAU', era: '1956-1973',
+    title: 'The Agronomist',
+    known: 'Agronomist turned liberation leader of Guinea-Bissau and Cape Verde',
+    ability: 'SEEDS OF FREEDOM', cooldown: 9,
+    abilityDesc: 'Plants seeds across the field that ripen and burst when crises draw near.',
+    color: '#7ed957', accent: '#ce1126',
+    stats: { speed: 3.3, fireRate: 0.27, damage: 12, hp: 95, shotSpeed: 8 },
+  },
+  {
+    id: 'machel', name: 'SAMORA MACHEL', country: 'MOZAMBIQUE', era: '1975-1986',
+    title: 'A Luta Continua',
+    known: 'First president of Mozambique, voice of the cry "the struggle continues"',
+    ability: 'A LUTA CONTINUA', cooldown: 12,
+    abilityDesc: 'The rallying cry summons three comrades who fight at your side.',
+    color: '#fce100', accent: '#007168',
+    stats: { speed: 3.2, fireRate: 0.28, damage: 12, hp: 100, shotSpeed: 8 },
+  },
+  {
+    id: 'khama', name: 'SERETSE KHAMA', country: 'BOTSWANA', era: '1966-1980',
+    title: 'The Steady Hand',
+    known: "Built Botswana into one of Africa's most stable and prosperous democracies",
+    ability: 'DIAMOND STANDARD', cooldown: 11,
+    abilityDesc: 'Diamond armor — damage taken drops sharply and crises that touch you crack.',
+    color: '#75aadb', accent: '#ffffff',
+    stats: { speed: 2.9, fireRate: 0.30, damage: 13, hp: 120, shotSpeed: 7.5 },
+  },
+  {
+    id: 'maathai', name: 'WANGARI MAATHAI', country: 'KENYA', era: '1977-2011',
+    title: 'The Tree Mother',
+    known: 'Nobel laureate who planted a movement — 50 million trees across Kenya',
+    ability: 'GREEN BELT', cooldown: 11,
+    abilityDesc: 'A ring of trees takes root around you, grinding down whatever pushes through.',
+    color: '#2e8b57', accent: '#8b5a2b',
+    stats: { speed: 3.1, fireRate: 0.29, damage: 12, hp: 100, shotSpeed: 8 },
+  },
+];
+
+// ---------- Crisis enemy types (abstract, not people) ----------
+const ENEMY_TYPES = {
+  conflict:   { name: 'CONFLICT',    color: '#ff4d4d', hp: 30,  speed: 1.5, r: 16, score: 100, shape: 'triangle' },
+  corruption: { name: 'CORRUPTION',  color: '#b14dff', hp: 55,  speed: 0.9, r: 20, score: 150, shape: 'square'   },
+  division:   { name: 'DIVISION',    color: '#ff9f1c', hp: 22,  speed: 1.8, r: 14, score: 80,  shape: 'splitter' },
+  instability:{ name: 'INSTABILITY', color: '#19d3da', hp: 40,  speed: 1.2, r: 17, score: 120, shape: 'zigzag'   },
+  boss:       { name: 'GRAND CRISIS',color: '#ff2e63', hp: 600, speed: 0.7, r: 42, score: 1500,shape: 'boss'     },
+};
+
+// ---------- Pixel-art portraits ----------
+// Parametric 12x14-cell caricatures keyed to each leader's signature look.
+const LOOKS = {
+  nkrumah:  { skin: '#8a5536', hair: 'short', suit: '#3b2f23', suitStyle: 'smock' },
+  lumumba:  { skin: '#6e4326', hair: 'short', glasses: true, facial: 'goatee', suit: '#23272f', suitStyle: 'suit', tie: '#33415c' },
+  mandela:  { skin: '#9c6b43', hair: 'grey', suit: '#7c5cbf', suitStyle: 'madiba' },
+  annan:    { skin: '#8a5536', hair: 'grey', facial: 'goatee', facialColor: '#dcdcdc', suit: '#23272f', suitStyle: 'suit', tie: '#3f7fbf' },
+  ghali:    { skin: '#c8996c', hair: 'sides', hairColor: '#bdbdbd', glasses: true, suit: '#2f3340', suitStyle: 'suit', tie: '#7c1f2e' },
+  sankara:  { skin: '#6e4326', hat: 'beret', hatColor: '#c1121f', hatAccent: '#fcd116', facial: 'mustache', suit: '#4a5d3a', suitStyle: 'military' },
+  nyerere:  { skin: '#7a4a2b', hair: 'grey', facial: 'mustache', facialColor: '#cfcfcf', suit: '#5d6d63', suitStyle: 'mao' },
+  sirleaf:  { skin: '#8a5536', hat: 'wrap', hatColor: '#caa54a', hatAccent: '#7c1f2e', glasses: true, earrings: true, suit: '#4b3f72', suitStyle: 'mao' },
+  selassie: { skin: '#9c6b43', hat: 'military', hatColor: '#3a4a3a', hatAccent: '#c9a227', facial: 'beard', suit: '#3a4a3a', suitStyle: 'military' },
+  kenyatta: { skin: '#6e4326', hat: 'beaded', hatColor: '#7c1f2e', facial: 'goatee', facialColor: '#9c9c9c', suit: '#3b2f23', suitStyle: 'suit', tie: '#1eb53a' },
+  senghor:  { skin: '#7a4a2b', hair: 'sides', hairColor: '#3d3d3d', glasses: true, suit: '#2f3340', suitStyle: 'suit', tie: '#00853f' },
+  kaunda:   { skin: '#6e4326', hair: 'grey', suit: '#8c8468', suitStyle: 'safari' },
+  cabral:   { skin: '#8a5536', hat: 'knit', hatColor: '#3d3d3d', hatAccent: '#d9d9d9', glasses: true, facial: 'beard', suit: '#4a5d3a', suitStyle: 'military' },
+  machel:   { skin: '#5d3a20', hat: 'military', hatColor: '#4a5d3a', hatAccent: '#ce1126', facial: 'beard', suit: '#4a5d3a', suitStyle: 'military' },
+  khama:    { skin: '#8a5536', hair: 'short', hairColor: '#1b1b1b', suit: '#23272f', suitStyle: 'suit', tie: '#75aadb' },
+  maathai:  { skin: '#7a4a2b', hat: 'wrap', hatColor: '#d96c2c', hatAccent: '#1eb53a', earrings: true, suit: '#1e6b4f', suitStyle: 'mao' },
+};
+
+function drawPortrait(id, cx, cy, cell) {
+  const lk = LOOKS[id];
+  if (!lk) return;
+  const x0 = cx - 6 * cell, y0 = cy - 7 * cell;
+  const px = (c, gx, gy, w = 1, h = 1) => {
+    ctx.fillStyle = c;
+    ctx.fillRect(x0 + gx * cell, y0 + gy * cell, w * cell, h * cell);
+  };
+  ctx.save();
+  ctx.shadowBlur = 0;
+  // shoulders / outfit
+  px(lk.suit, 1, 11, 10, 3);
+  px(lk.suit, 2, 10.5, 8, 1);
+  if (lk.suitStyle === 'suit') { px('#f5f0e6', 5, 11, 2, 1.4); px(lk.tie || '#7c1f2e', 5.5, 11.6, 1, 1.8); }
+  if (lk.suitStyle === 'military') { px('#c9a227', 1, 11, 2, 0.7); px('#c9a227', 9, 11, 2, 0.7); }
+  if (lk.suitStyle === 'madiba') {
+    for (let i = 0; i < 5; i++) px(i % 2 ? '#caa54a' : '#5a3f8f', 2.2 + i * 1.5, 11.5 + (i % 2) * 0.8, 0.8, 0.8);
+  }
+  if (lk.suitStyle === 'mao') px(lk.suit, 4, 10.4, 4, 1);
+  if (lk.suitStyle === 'safari') px('#ffffff', 8.4, 11.6, 1, 0.9); // KK's white handkerchief
+  if (lk.suitStyle === 'smock') {
+    for (let i = 0; i < 5; i++) px(i % 2 ? '#3b2f23' : '#d9cdb4', 1.5 + i * 1.8, 11, 1.8, 3);
+  }
+  // neck + head
+  px(lk.skin, 5, 10, 2, 1.2);
+  px(lk.skin, 3, 3, 6, 7);
+  px(lk.skin, 2.4, 4.5, 0.8, 3); px(lk.skin, 8.8, 4.5, 0.8, 3); // ears
+  // hair
+  const hc = lk.hairColor || '#1b1b1b';
+  if (lk.hair === 'short') { px(hc, 3, 2.2, 6, 1.4); px(hc, 2.6, 3.2, 0.9, 1.4); px(hc, 8.5, 3.2, 0.9, 1.4); }
+  if (lk.hair === 'grey')  { px('#cfcfcf', 3, 2.2, 6, 1.4); px('#cfcfcf', 2.6, 3.2, 0.9, 1.4); px('#cfcfcf', 8.5, 3.2, 0.9, 1.4); }
+  if (lk.hair === 'sides') { px(hc, 2.5, 3.6, 1, 2); px(hc, 8.5, 3.6, 1, 2); }
+  // hats
+  if (lk.hat === 'beret') { px(lk.hatColor, 2.4, 1.8, 7.2, 1.6); px(lk.hatColor, 6.4, 1, 2.8, 1); px(lk.hatAccent || '#fcd116', 3.6, 2.2, 0.9, 0.9); }
+  if (lk.hat === 'wrap') { px(lk.hatColor, 2.6, 0.8, 6.8, 2.8); px(lk.hatAccent || lk.hatColor, 2.6, 2.6, 6.8, 0.6); px(lk.hatColor, 1.8, 1.6, 0.9, 1.5); }
+  if (lk.hat === 'military') { px(lk.hatColor, 2.6, 1.4, 6.8, 1.7); px('#1b1b1b', 2.6, 2.9, 6.8, 0.5); px(lk.hatAccent || '#c9a227', 5.4, 1.7, 1.2, 0.9); }
+  if (lk.hat === 'knit') { px(lk.hatColor, 3, 1.2, 6, 2.2); px(lk.hatAccent || '#fff', 5.4, 0.4, 1.2, 0.9); }
+  if (lk.hat === 'beaded') {
+    px(lk.hatColor, 3, 1.4, 6, 1.9);
+    ['#ce1126', '#fcd116', '#1eb53a', '#ffffff'].forEach((c, i) => px(c, 3.5 + i * 1.3, 2.1, 0.7, 0.7));
+  }
+  // eyes
+  px('#1b1b1b', 4, 5.8, 1, 0.9);
+  px('#1b1b1b', 7, 5.8, 1, 0.9);
+  if (lk.glasses) {
+    const gc = '#15151a';
+    px(gc, 3.4, 5.3, 2.1, 0.35); px(gc, 6.5, 5.3, 2.1, 0.35);
+    px(gc, 3.4, 6.9, 2.1, 0.35); px(gc, 6.5, 6.9, 2.1, 0.35);
+    px(gc, 3.4, 5.3, 0.35, 1.9); px(gc, 5.15, 5.3, 0.35, 1.9);
+    px(gc, 6.5, 5.3, 0.35, 1.9); px(gc, 8.25, 5.3, 0.35, 1.9);
+    px(gc, 5.4, 5.8, 1.2, 0.3);
+  }
+  // nose
+  px('rgba(0,0,0,0.22)', 5.6, 7.2, 0.9, 1);
+  // facial hair / mouth
+  const fc = lk.facialColor || '#1b1b1b';
+  if (lk.facial === 'mustache') { px(fc, 4.4, 8.3, 3.2, 0.7); px('#7a3b2e', 4.9, 9.2, 2.2, 0.5); }
+  else if (lk.facial === 'goatee') { px(fc, 4.4, 8.3, 3.2, 0.6); px(fc, 4.9, 9.3, 2.2, 0.9); }
+  else if (lk.facial === 'beard') { px(fc, 3, 8, 6, 2.2); px(fc, 2.6, 6.8, 0.8, 1.8); px(fc, 8.6, 6.8, 0.8, 1.8); }
+  else px('#7a3b2e', 4.8, 8.8, 2.4, 0.6);
+  if (lk.earrings) { px('#fcd116', 2.2, 7.7, 0.7, 0.7); px('#fcd116', 9, 7.7, 0.7, 0.7); }
+  ctx.restore();
+}
+
+// ---------- Game state ----------
+const S = {
+  screen: 'title',        // title | mode | select | play | gameover
+  selectIndex: 0,
+  modeIndex: 0,
+  numPlayers: 1,
+  picks: [],
+  players: [],
+  bullets: [],
+  enemies: [],
+  allies: [],
+  particles: [],
+  zones: [],
+  orbiters: [],
+  pickups: [],
+  beams: [],
+  mines: [],
+  trees: [],
+  floats: [],             // floating text
+  wave: 0,
+  score: 0,
+  hiScore: Number(storageGet('lotc_hiscore') || 0),
+  waveTimer: 0,
+  spawnQueue: [],
+  spawnTimer: 0,
+  shake: 0,
+  time: 0,
+  buffs: {},              // active timed effects
+  stunUntil: 0,
+  flash: 0,
+};
+
+const keys = {};
+let mouse = { x: W / 2, y: H / 2, down: false };
+
+window.addEventListener('keydown', e => {
+  keys[e.code] = true;
+  if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
+  handleMenuKeys(e.code);
+});
+window.addEventListener('keyup', e => { keys[e.code] = false; });
+canvas.addEventListener('mousemove', e => {
+  const r = canvas.getBoundingClientRect();
+  mouse.x = (e.clientX - r.left) / r.width * W;
+  mouse.y = (e.clientY - r.top) / r.height * H;
+});
+canvas.addEventListener('mousedown', () => { mouse.down = true; menuClick(); });
+canvas.addEventListener('mouseup', () => { mouse.down = false; });
+
+function enterSelect(numPlayers) {
+  S.numPlayers = numPlayers;
+  S.picks = [];
+  S.selectIndex = 0;
+  S.screen = 'select';
+  sfx('select');
+}
+
+function confirmPick() {
+  S.picks.push(LEADERS[S.selectIndex]);
+  if (S.picks.length < S.numPlayers) sfx('select');
+  else startGame(S.picks);
+}
+
+function handleMenuKeys(code) {
+  if (S.screen === 'title' && (code === 'Enter' || code === 'Space')) {
+    S.screen = 'mode'; sfx('select');
+  } else if (S.screen === 'mode') {
+    if (['ArrowLeft', 'ArrowRight', 'KeyA', 'KeyD'].includes(code)) { S.modeIndex = 1 - S.modeIndex; sfx('select'); }
+    if (code === 'Enter' || code === 'Space') enterSelect(S.modeIndex + 1);
+  } else if (S.screen === 'select') {
+    const cols = 4;
+    if (code === 'ArrowRight') { S.selectIndex = (S.selectIndex + 1) % LEADERS.length; sfx('select'); }
+    if (code === 'ArrowLeft')  { S.selectIndex = (S.selectIndex + LEADERS.length - 1) % LEADERS.length; sfx('select'); }
+    if (code === 'ArrowDown')  { S.selectIndex = (S.selectIndex + cols) % LEADERS.length; sfx('select'); }
+    if (code === 'ArrowUp')    { S.selectIndex = (S.selectIndex + LEADERS.length - cols) % LEADERS.length; sfx('select'); }
+    if (code === 'Enter' || code === 'Space') confirmPick();
+  } else if (S.screen === 'gameover' && (code === 'Enter' || code === 'Space')) {
+    S.picks = [];
+    S.screen = 'select'; sfx('select');
+  }
+}
+
+function menuClick() {
+  if (S.screen === 'title') { S.screen = 'mode'; sfx('select'); return; }
+  if (S.screen === 'mode') {
+    const m = modeCellAt(mouse.x, mouse.y);
+    if (m >= 0) {
+      if (m === S.modeIndex) enterSelect(m + 1);
+      else { S.modeIndex = m; sfx('select'); }
+    }
+    return;
+  }
+  if (S.screen === 'gameover') { S.picks = []; S.screen = 'select'; sfx('select'); return; }
+  if (S.screen === 'select') {
+    const cell = selectCellAt(mouse.x, mouse.y);
+    if (cell >= 0) {
+      if (cell === S.selectIndex) confirmPick();
+      else { S.selectIndex = cell; sfx('select'); }
+    }
+  }
+}
+
+// ---------- Helpers ----------
+const rand = (a, b) => a + Math.random() * (b - a);
+const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+function spawnParticles(x, y, color, n, speed = 3) {
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const s = rand(0.5, speed);
+    S.particles.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: rand(0.3, 0.8), maxLife: 0.8, color, r: rand(1.5, 3.5) });
+  }
+}
+
+function floatText(x, y, text, color = '#fff') {
+  S.floats.push({ x, y, text, color, life: 1 });
+}
+
+// ---------- Game setup ----------
+function startGame(leaders) {
+  S.players = leaders.map((L, i) => ({
+    idx: i, leader: L,
+    x: W / 2 + (leaders.length > 1 ? (i === 0 ? -70 : 70) : 0), y: H / 2,
+    hp: L.stats.hp, maxHp: L.stats.hp,
+    fireCooldown: 0,
+    specialReady: 0,       // time when special is ready again
+    invulnUntil: 0,
+    angle: 0,
+    buffs: {},
+    dead: false,
+  }));
+  S.bullets = []; S.enemies = []; S.allies = []; S.particles = [];
+  S.zones = []; S.orbiters = []; S.pickups = []; S.beams = []; S.floats = [];
+  S.mines = []; S.trees = [];
+  S.wave = 0; S.score = 0; S.spawnQueue = []; S.buffs = {}; S.stunUntil = 0;
+  S.screen = 'play';
+  sfx('select');
+  nextWave();
+}
+
+function nextWave() {
+  S.wave++;
+  sfx('wave');
+  floatText(W / 2, H / 2 - 60, 'WAVE ' + S.wave, '#fcd116');
+  const n = Math.round((4 + S.wave * 2) * (S.players.length > 1 ? 1.5 : 1));
+  const types = ['conflict', 'division'];
+  if (S.wave >= 2) types.push('instability');
+  if (S.wave >= 3) types.push('corruption');
+  for (let i = 0; i < n; i++) {
+    S.spawnQueue.push(types[Math.floor(Math.random() * types.length)]);
+  }
+  if (S.wave % 5 === 0) S.spawnQueue.push('boss');
+  S.spawnTimer = 0.5;
+}
+
+function spawnEnemy(typeKey) {
+  const t = ENEMY_TYPES[typeKey];
+  // spawn just outside an edge
+  const edge = Math.floor(Math.random() * 4);
+  let x, y;
+  if (edge === 0) { x = rand(0, W); y = -30; }
+  else if (edge === 1) { x = W + 30; y = rand(0, H); }
+  else if (edge === 2) { x = rand(0, W); y = H + 30; }
+  else { x = -30; y = rand(0, H); }
+  const hpScale = 1 + (S.wave - 1) * 0.12;
+  S.enemies.push({
+    type: typeKey, name: t.name, color: t.color, shape: t.shape,
+    x, y, r: t.r,
+    hp: t.hp * hpScale, maxHp: t.hp * hpScale,
+    speed: t.speed * (1 + S.wave * 0.02),
+    score: t.score,
+    wobble: Math.random() * Math.PI * 2,
+    slowUntil: 0, converted: false,
+  });
+}
+
+// ---------- Special abilities ----------
+function useSpecial(p) {
+  const L = p.leader;
+  if (S.time < p.specialReady) return;
+  p.specialReady = S.time + L.cooldown;
+  sfx('special');
+  S.shake = 12;
+  S.flash = 0.35;
+
+  switch (L.id) {
+    case 'nkrumah': { // UNITY PULSE: pull all enemies to center point, then burst
+      const cx = p.x, cy = p.y;
+      for (const e of S.enemies) {
+        const a = Math.atan2(cy - e.y, cx - e.x);
+        const d = dist(e, p);
+        const pull = Math.min(d - 80, d * 0.7);
+        e.x += Math.cos(a) * pull;
+        e.y += Math.sin(a) * pull;
+        e.hp -= 35;
+        spawnParticles(e.x, e.y, L.color, 8);
+      }
+      floatText(p.x, p.y - 50, 'UNITY!', L.color);
+      break;
+    }
+    case 'lumumba': { // INDEPENDENCE SPEECH: stun + damage everything
+      S.stunUntil = S.time + 3;
+      for (const e of S.enemies) {
+        e.hp -= 30;
+        spawnParticles(e.x, e.y, L.color, 10);
+      }
+      floatText(p.x, p.y - 50, 'THE SPEECH ECHOES!', L.color);
+      break;
+    }
+    case 'mandela': { // RECONCILIATION: convert up to 4 nearest enemies to allies
+      const sorted = [...S.enemies].filter(e => e.type !== 'boss').sort((a, b) => dist(a, p) - dist(b, p));
+      let converted = 0;
+      for (const e of sorted) {
+        if (converted >= 4) break;
+        e.converted = true;
+        converted++;
+        sfx('convert');
+        spawnParticles(e.x, e.y, '#34c759', 16);
+        S.allies.push({ x: e.x, y: e.y, r: 12, hp: 60, life: 14, fireCooldown: 0, color: '#34c759' });
+      }
+      S.enemies = S.enemies.filter(e => !e.converted);
+      floatText(p.x, p.y - 50, converted > 0 ? 'RECONCILIATION!' : 'NO ONE NEAR...', L.color);
+      break;
+    }
+    case 'annan': { // BLUE HELMET SHIELD: invuln + heal over time
+      p.invulnUntil = S.time + 5;
+      p.buffs.heal = S.time + 5;
+      floatText(p.x, p.y - 50, 'PEACEKEEPERS DEPLOYED!', L.color);
+      break;
+    }
+    case 'ghali': { // PEACE ZONES: 3 zones that slow + damage enemies
+      for (let i = 0; i < 3; i++) {
+        const a = (i / 3) * Math.PI * 2 + Math.random();
+        S.zones.push({
+          x: clamp(p.x + Math.cos(a) * 160, 60, W - 60),
+          y: clamp(p.y + Math.sin(a) * 160, 60, H - 60),
+          r: 85, until: S.time + 8, color: L.color,
+        });
+      }
+      floatText(p.x, p.y - 50, 'AGENDA FOR PEACE!', L.color);
+      break;
+    }
+    case 'sankara': { // REVOLUTIONARY SPIRIT: speed + triple shot
+      p.buffs.overdrive = S.time + 6;
+      floatText(p.x, p.y - 50, 'LA PATRIE OU LA MORT!', L.color);
+      break;
+    }
+    case 'nyerere': { // UJAMAA CIRCLE: orbiting guardians
+      S.orbiters = S.orbiters.filter(o => o.owner !== p);
+      for (let i = 0; i < 6; i++) {
+        S.orbiters.push({ angle: (i / 6) * Math.PI * 2, until: S.time + 10, owner: p });
+      }
+      floatText(p.x, p.y - 50, 'UJAMAA!', L.color);
+      break;
+    }
+    case 'sirleaf': { // IRON RESOLVE: sweeping beam + damage resist
+      p.buffs.ironwill = S.time + 6;
+      S.beams.push({ angle: p.angle - Math.PI * 0.75, sweep: Math.PI * 1.5, dur: 1.6, t: 0, owner: p });
+      floatText(p.x, p.y - 50, 'IRON RESOLVE!', L.color);
+      break;
+    }
+    case 'selassie': { // RALLYING ROAR: knockback + damage all
+      for (const e of S.enemies) {
+        const a = Math.atan2(e.y - p.y, e.x - p.x);
+        e.x = clamp(e.x + Math.cos(a) * 150, -40, W + 40);
+        e.y = clamp(e.y + Math.sin(a) * 150, -40, H + 40);
+        e.hp -= 25;
+        spawnParticles(e.x, e.y, L.color, 6);
+      }
+      floatText(p.x, p.y - 50, 'THE LION ROARS!', L.color);
+      break;
+    }
+    case 'kenyatta': { // HARAMBEE: heal + damage boost
+      p.hp = Math.min(p.maxHp, p.hp + 35);
+      p.buffs.dmgboost = S.time + 6;
+      floatText(p.x, p.y - 50, 'HARAMBEE!', L.color);
+      break;
+    }
+    case 'senghor': { // VERSES OF FIRE: piercing shots
+      p.buffs.pierce = S.time + 6;
+      floatText(p.x, p.y - 50, 'POETRY IN MOTION!', L.color);
+      break;
+    }
+    case 'kaunda': { // ONE NATION: global slow
+      S.buffs.slowall = S.time + 5;
+      floatText(p.x, p.y - 50, 'ONE ZAMBIA, ONE NATION!', L.color);
+      break;
+    }
+    case 'cabral': { // SEEDS OF FREEDOM: proximity seed mines
+      for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * Math.PI * 2 + Math.random() * 0.5;
+        S.mines.push({
+          x: clamp(p.x + Math.cos(a) * rand(90, 200), 30, W - 30),
+          y: clamp(p.y + Math.sin(a) * rand(90, 200), 30, H - 30),
+          armAt: S.time + 0.8, until: S.time + 12,
+        });
+      }
+      floatText(p.x, p.y - 50, 'SEEDS OF FREEDOM!', L.color);
+      break;
+    }
+    case 'machel': { // A LUTA CONTINUA: summon comrades
+      for (let i = 0; i < 3; i++) {
+        const a = (i / 3) * Math.PI * 2;
+        S.allies.push({ x: p.x + Math.cos(a) * 40, y: p.y + Math.sin(a) * 40, r: 12, hp: 80, life: 15, fireCooldown: 0, color: '#fce100' });
+      }
+      floatText(p.x, p.y - 50, 'A LUTA CONTINUA!', L.color);
+      break;
+    }
+    case 'khama': { // DIAMOND STANDARD: heavy damage resist + contact thorns
+      p.buffs.reflect = S.time + 7;
+      floatText(p.x, p.y - 50, 'DIAMOND STANDARD!', L.color);
+      break;
+    }
+    case 'maathai': { // GREEN BELT: ring of trees
+      for (let i = 0; i < 10; i++) {
+        const a = (i / 10) * Math.PI * 2;
+        S.trees.push({
+          x: clamp(p.x + Math.cos(a) * 90, 20, W - 20),
+          y: clamp(p.y + Math.sin(a) * 90, 20, H - 20),
+          r: 13, until: S.time + 10,
+        });
+      }
+      floatText(p.x, p.y - 50, 'GREEN BELT!', L.color);
+      break;
+    }
+  }
+}
+
+// ---------- Update ----------
+let lastT = performance.now();
+function update(dt) {
+  S.time += dt;
+  if (S.shake > 0) S.shake = Math.max(0, S.shake - dt * 40);
+  if (S.flash > 0) S.flash = Math.max(0, S.flash - dt);
+
+  // particles & floats always update
+  for (const pt of S.particles) { pt.x += pt.vx; pt.y += pt.vy; pt.vx *= 0.96; pt.vy *= 0.96; pt.life -= dt; }
+  S.particles = S.particles.filter(pt => pt.life > 0);
+  for (const f of S.floats) { f.y -= 30 * dt; f.life -= dt * 0.7; }
+  S.floats = S.floats.filter(f => f.life > 0);
+
+  if (S.screen !== 'play') return;
+
+  for (const p of S.players) {
+    if (p.dead) continue;
+    const L = p.leader;
+    const overdrive = p.buffs.overdrive > S.time;
+
+    // movement — P1: WASD (plus arrows in solo), P2: arrows
+    let dx = 0, dy = 0;
+    if (p.idx === 0) {
+      if (keys['KeyW']) dy -= 1;
+      if (keys['KeyS']) dy += 1;
+      if (keys['KeyA']) dx -= 1;
+      if (keys['KeyD']) dx += 1;
+    }
+    if (p.idx === 1 || S.players.length === 1) {
+      if (keys['ArrowUp']) dy -= 1;
+      if (keys['ArrowDown']) dy += 1;
+      if (keys['ArrowLeft']) dx -= 1;
+      if (keys['ArrowRight']) dx += 1;
+    }
+    if (dx || dy) {
+      const m = Math.hypot(dx, dy);
+      const spd = L.stats.speed * (overdrive ? 1.7 : 1) * 60 * dt;
+      p.x = clamp(p.x + dx / m * spd, 16, W - 16);
+      p.y = clamp(p.y + dy / m * spd, 16, H - 16);
+    }
+
+    // aim — P1 follows the mouse, P2 auto-aims at the nearest crisis
+    if (p.idx === 0) {
+      p.angle = Math.atan2(mouse.y - p.y, mouse.x - p.x);
+    } else {
+      let nearest = null, nd = 1e9;
+      for (const e of S.enemies) { const d = dist(p, e); if (d < nd) { nd = d; nearest = e; } }
+      if (nearest) p.angle = Math.atan2(nearest.y - p.y, nearest.x - p.x);
+    }
+
+    // healing buff (Annan)
+    if (p.buffs.heal > S.time) p.hp = Math.min(p.maxHp, p.hp + 12 * dt);
+
+    // shooting
+    p.fireCooldown -= dt;
+    const firing = p.idx === 0 ? mouse.down : (keys['ShiftRight'] || keys['Slash']);
+    if (firing && p.fireCooldown <= 0) {
+      const rate = L.stats.fireRate * (overdrive ? 0.45 : 1);
+      p.fireCooldown = rate;
+      sfx('shoot');
+      const spread = overdrive ? [-0.18, 0, 0.18] : [0];
+      const dmgMul = p.buffs.dmgboost > S.time ? 2 : 1;
+      const pierce = p.buffs.pierce > S.time;
+      for (const s of spread) {
+        S.bullets.push({
+          x: p.x + Math.cos(p.angle) * 18, y: p.y + Math.sin(p.angle) * 18,
+          vx: Math.cos(p.angle + s) * L.stats.shotSpeed,
+          vy: Math.sin(p.angle + s) * L.stats.shotSpeed,
+          dmg: L.stats.damage * dmgMul, color: L.color, friendly: true,
+          r: pierce ? 6 : 4, pierce, hits: pierce ? [] : null,
+        });
+      }
+    }
+
+    // special
+    if (p.idx === 0 ? keys['Space'] : keys['Enter']) useSpecial(p);
+  }
+
+  // bullets
+  for (const b of S.bullets) { b.x += b.vx * 60 * dt; b.y += b.vy * 60 * dt; }
+  S.bullets = S.bullets.filter(b => b.x > -20 && b.x < W + 20 && b.y > -20 && b.y < H + 20);
+
+  // spawn queue
+  if (S.spawnQueue.length > 0) {
+    S.spawnTimer -= dt;
+    if (S.spawnTimer <= 0) {
+      spawnEnemy(S.spawnQueue.shift());
+      S.spawnTimer = Math.max(0.15, 0.8 - S.wave * 0.04);
+    }
+  } else if (S.enemies.length === 0) {
+    S.waveTimer += dt;
+    if (S.waveTimer > 1.6) { S.waveTimer = 0; nextWave(); }
+  }
+
+  const stunned = S.time < S.stunUntil;
+
+  // enemies
+  for (const e of S.enemies) {
+    e.wobble += dt * 4;
+    if (!stunned) {
+      let spd = e.speed;
+      if (S.buffs.slowall > S.time) spd *= 0.3;
+      // peace zones slow
+      for (const z of S.zones) {
+        if (dist(e, z) < z.r) { spd *= 0.35; e.hp -= 18 * dt; }
+      }
+      // pick target: nearest living player or ally
+      let target = null, td = 1e9;
+      for (const pl of S.players) if (!pl.dead) { const d = dist(e, pl); if (d < td) { td = d; target = pl; } }
+      for (const al of S.allies) { const d = dist(e, al); if (d < td) { td = d; target = al; } }
+      if (target) {
+        const a = Math.atan2(target.y - e.y, target.x - e.x);
+        let wob = e.shape === 'zigzag' ? Math.sin(e.wobble * 2) * 1.2 : 0;
+        e.x += (Math.cos(a) * spd + Math.cos(a + Math.PI / 2) * wob) * 60 * dt * 0.5;
+        e.y += (Math.sin(a) * spd + Math.sin(a + Math.PI / 2) * wob) * 60 * dt * 0.5;
+      }
+    }
+
+    // touch damage to players
+    for (const pl of S.players) {
+      if (pl.dead || dist(e, pl) >= e.r + 12 || S.time <= pl.invulnUntil) continue;
+      let dmg = (e.type === 'boss' ? 22 : 10) * dt * 4;
+      if (pl.buffs.ironwill > S.time) dmg *= 0.5;
+      if (pl.buffs.reflect > S.time) { dmg *= 0.3; e.hp -= 45 * dt; spawnParticles(e.x, e.y, '#75aadb', 1, 2); }
+      pl.hp -= dmg;
+      if (Math.random() < dt * 6) { sfx('hurt'); S.shake = 6; }
+    }
+    // touch damage to allies
+    for (const al of S.allies) {
+      if (dist(e, al) < e.r + al.r) al.hp -= 15 * dt;
+    }
+  }
+
+  // bullets vs enemies
+  for (const b of S.bullets) {
+    if (!b.friendly) continue;
+    for (const e of S.enemies) {
+      if (dist(b, e) < e.r + b.r) {
+        if (b.pierce) {
+          if (b.hits.includes(e)) continue; // already pierced this one
+          b.hits.push(e);
+        } else {
+          b.dead = true;
+        }
+        e.hp -= b.dmg;
+        sfx('hit');
+        spawnParticles(b.x, b.y, e.color, 4, 2);
+        if (!b.pierce) break;
+      }
+    }
+  }
+  S.bullets = S.bullets.filter(b => !b.dead);
+
+  // seed mines (Cabral)
+  for (const mn of S.mines) {
+    if (S.time > mn.until) { mn.dead = true; continue; }
+    if (S.time < mn.armAt) continue;
+    for (const e of S.enemies) {
+      if (dist(mn, e) < e.r + 14) {
+        mn.dead = true;
+        sfx('hit');
+        S.shake = Math.max(S.shake, 6);
+        spawnParticles(mn.x, mn.y, '#7ed957', 20, 5);
+        for (const e2 of S.enemies) if (dist(mn, e2) < 85) e2.hp -= 55;
+        break;
+      }
+    }
+  }
+  S.mines = S.mines.filter(mn => !mn.dead);
+
+  // green belt trees (Maathai)
+  S.trees = S.trees.filter(tr => tr.until > S.time);
+  for (const tr of S.trees) {
+    for (const e of S.enemies) {
+      if (dist(tr, e) < e.r + tr.r) {
+        e.hp -= 50 * dt;
+        const a = Math.atan2(e.y - tr.y, e.x - tr.x);
+        e.x += Math.cos(a) * 30 * dt;
+        e.y += Math.sin(a) * 30 * dt;
+      }
+    }
+  }
+
+  // orbiters (Nyerere)
+  S.orbiters = S.orbiters.filter(o => o.until > S.time && !o.owner.dead);
+  for (const o of S.orbiters) {
+    o.angle += dt * 2.4;
+    const ox = o.owner.x + Math.cos(o.angle) * 55;
+    const oy = o.owner.y + Math.sin(o.angle) * 55;
+    o.x = ox; o.y = oy;
+    for (const e of S.enemies) {
+      if (dist({ x: ox, y: oy }, e) < e.r + 9) {
+        e.hp -= 60 * dt;
+        spawnParticles(ox, oy, '#00a3dd', 2, 2);
+      }
+    }
+  }
+
+  // beams (Sirleaf)
+  for (const bm of S.beams) {
+    bm.t += dt;
+    const ang = bm.angle + (bm.t / bm.dur) * bm.sweep;
+    bm.cur = ang;
+    for (const e of S.enemies) {
+      const ea = Math.atan2(e.y - bm.owner.y, e.x - bm.owner.x);
+      let diff = Math.abs(((ea - ang + Math.PI * 3) % (Math.PI * 2)) - Math.PI);
+      if (diff < 0.22) {
+        e.hp -= 160 * dt;
+        spawnParticles(e.x, e.y, '#d0d6dd', 3, 3);
+      }
+    }
+  }
+  S.beams = S.beams.filter(bm => bm.t < bm.dur);
+
+  // zones expiry
+  S.zones = S.zones.filter(z => z.until > S.time);
+
+  // allies (Mandela converts)
+  for (const al of S.allies) {
+    al.life -= dt;
+    // drift toward nearest enemy, shoot it
+    let nearest = null, nd = 1e9;
+    for (const e of S.enemies) { const d = dist(al, e); if (d < nd) { nd = d; nearest = e; } }
+    if (nearest) {
+      const a = Math.atan2(nearest.y - al.y, nearest.x - al.x);
+      if (nd > 120) { al.x += Math.cos(a) * 1.4 * 60 * dt; al.y += Math.sin(a) * 1.4 * 60 * dt; }
+      al.fireCooldown -= dt;
+      if (al.fireCooldown <= 0 && nd < 320) {
+        al.fireCooldown = 0.5;
+        S.bullets.push({ x: al.x, y: al.y, vx: Math.cos(a) * 7, vy: Math.sin(a) * 7, dmg: 8, color: '#34c759', friendly: true, r: 3 });
+      }
+    }
+  }
+  S.allies = S.allies.filter(al => al.life > 0 && al.hp > 0);
+
+  // enemy deaths
+  for (const e of S.enemies) {
+    if (e.hp <= 0) {
+      S.score += e.score;
+      spawnParticles(e.x, e.y, e.color, e.type === 'boss' ? 50 : 16, e.type === 'boss' ? 6 : 4);
+      floatText(e.x, e.y, '+' + e.score, e.color);
+      if (e.type === 'boss') { S.shake = 20; }
+      // division splits into two smaller fragments
+      if (e.shape === 'splitter' && e.r > 9) {
+        for (let i = 0; i < 2; i++) {
+          S.enemies.push({ ...e, hp: e.maxHp * 0.4, maxHp: e.maxHp * 0.4, r: e.r * 0.65, x: e.x + rand(-10, 10), y: e.y + rand(-10, 10), score: 40 });
+        }
+      }
+      // chance of health pickup
+      if (Math.random() < 0.12) {
+        S.pickups.push({ x: e.x, y: e.y, r: 9, life: 8 });
+      }
+    }
+  }
+  S.enemies = S.enemies.filter(e => e.hp > 0);
+
+  // pickups
+  for (const pk of S.pickups) {
+    pk.life -= dt;
+    for (const pl of S.players) {
+      if (!pl.dead && dist(pk, pl) < pk.r + 14) {
+        pk.dead = true;
+        pl.hp = Math.min(pl.maxHp, pl.hp + 25);
+        sfx('pickup');
+        floatText(pl.x, pl.y - 30, '+25 HP', '#34c759');
+        break;
+      }
+    }
+  }
+  S.pickups = S.pickups.filter(pk => !pk.dead && pk.life > 0);
+
+  // downed players & game over
+  for (const pl of S.players) {
+    if (!pl.dead && pl.hp <= 0) {
+      pl.dead = true; pl.hp = 0;
+      spawnParticles(pl.x, pl.y, pl.leader.color, 30, 5);
+      floatText(pl.x, pl.y, (S.players.length > 1 ? 'P' + (pl.idx + 1) + ' ' : '') + 'DOWN!', '#ff4d4d');
+    }
+  }
+  if (S.players.length && S.players.every(pl => pl.dead)) {
+    sfx('gameover');
+    S.screen = 'gameover';
+    if (S.score > S.hiScore) {
+      S.hiScore = S.score;
+      storageSet('lotc_hiscore', String(S.hiScore));
+    }
+  }
+}
+
+// ---------- Drawing ----------
+function drawBackground() {
+  ctx.fillStyle = '#0d1117';
+  ctx.fillRect(0, 0, W, H);
+  // subtle grid
+  ctx.strokeStyle = 'rgba(252, 209, 22, 0.05)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < W; x += 48) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+  for (let y = 0; y < H; y += 48) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+  // pan-african corner stripes
+  const stripes = ['#ce1126', '#fcd116', '#006b3f'];
+  stripes.forEach((c, i) => {
+    ctx.fillStyle = c + '22';
+    ctx.fillRect(0, H - 12 + i * 4, W, 4);
+    ctx.fillRect(0, i * 4, W, 4);
+  });
+}
+
+function drawShape(x, y, r, shape, color, wobble = 0) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = color;
+  ctx.strokeStyle = color;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 12;
+  ctx.beginPath();
+  if (shape === 'triangle') {
+    ctx.rotate(wobble * 0.3);
+    ctx.moveTo(0, -r); ctx.lineTo(r * 0.87, r * 0.5); ctx.lineTo(-r * 0.87, r * 0.5); ctx.closePath();
+  } else if (shape === 'square') {
+    ctx.rotate(wobble * 0.2);
+    ctx.rect(-r * 0.8, -r * 0.8, r * 1.6, r * 1.6);
+  } else if (shape === 'splitter') {
+    for (let i = 0; i < 6; i++) {
+      const a = (i / 6) * Math.PI * 2 + wobble * 0.4;
+      const rr = i % 2 === 0 ? r : r * 0.55;
+      ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
+    }
+    ctx.closePath();
+  } else if (shape === 'zigzag') {
+    ctx.rotate(wobble);
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      const rr = i % 2 === 0 ? r : r * 0.6;
+      ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
+    }
+    ctx.closePath();
+  } else if (shape === 'boss') {
+    for (let i = 0; i < 12; i++) {
+      const a = (i / 12) * Math.PI * 2 + wobble * 0.15;
+      const rr = i % 2 === 0 ? r : r * 0.75;
+      ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
+    }
+    ctx.closePath();
+  } else {
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+  }
+  ctx.globalAlpha = 0.25; ctx.fill();
+  ctx.globalAlpha = 1; ctx.lineWidth = 2.5; ctx.stroke();
+  ctx.restore();
+}
+
+function drawPlayer(p) {
+  const L = p.leader;
+  ctx.save();
+  ctx.translate(p.x, p.y);
+
+  // shield ring (Annan / invuln)
+  if (S.time < p.invulnUntil) {
+    ctx.strokeStyle = '#5fa8ff';
+    ctx.shadowColor = '#5fa8ff'; ctx.shadowBlur = 16;
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(0, 0, 24 + Math.sin(S.time * 8) * 2, 0, Math.PI * 2); ctx.stroke();
+  }
+  // iron will / diamond ring
+  if (p.buffs.ironwill > S.time || p.buffs.reflect > S.time) {
+    ctx.strokeStyle = '#d0d6dd'; ctx.shadowColor = '#d0d6dd'; ctx.shadowBlur = 10;
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(0, 0, 21, 0, Math.PI * 2); ctx.stroke();
+  }
+  // overdrive trail
+  if (p.buffs.overdrive > S.time) {
+    spawnParticles(p.x, p.y, L.accent, 1, 1.5);
+  }
+
+  ctx.rotate(p.angle);
+  // body — stylized arcade avatar: kente-band ring + star
+  ctx.shadowColor = L.color; ctx.shadowBlur = 14;
+  ctx.fillStyle = '#1a1f2b';
+  ctx.strokeStyle = L.color;
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.arc(0, 0, 14, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  // accent band
+  ctx.strokeStyle = L.accent;
+  ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.arc(0, 0, 9, 0, Math.PI * 2); ctx.stroke();
+  // direction nose
+  ctx.fillStyle = L.color;
+  ctx.beginPath(); ctx.moveTo(16, 0); ctx.lineTo(8, -5); ctx.lineTo(8, 5); ctx.closePath(); ctx.fill();
+  // black star center (Ghana's black star, adopted as the arcade emblem)
+  ctx.fillStyle = '#0a0a0f';
+  drawStar(0, 0, 5, 5.5, 2.5);
+  ctx.restore();
+  // player tag in co-op
+  if (S.players.length > 1) {
+    ctx.save();
+    ctx.font = '7px "Press Start 2P"';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = L.color;
+    ctx.fillText('P' + (p.idx + 1), p.x, p.y - 26);
+    ctx.restore();
+  }
+}
+
+function drawStar(cx, cy, spikes, outerR, innerR) {
+  ctx.beginPath();
+  for (let i = 0; i < spikes * 2; i++) {
+    const a = (i / (spikes * 2)) * Math.PI * 2 - Math.PI / 2;
+    const r = i % 2 === 0 ? outerR : innerR;
+    ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+  }
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawHUD() {
+  ctx.save();
+  ctx.shadowBlur = 0;
+  S.players.forEach((p, i) => {
+    const L = p.leader;
+    const x = i === 0 ? 12 : W - 12 - 252;
+    ctx.globalAlpha = p.dead ? 0.55 : 1;
+    ctx.fillStyle = '#000a'; ctx.fillRect(x, 12, 252, 86);
+    drawPortrait(L.id, x + 28, 52, 2);
+    // HP bar
+    ctx.fillStyle = '#333'; ctx.fillRect(x + 56, 20, 184, 12);
+    const hpFrac = clamp(p.hp / p.maxHp, 0, 1);
+    ctx.fillStyle = hpFrac > 0.5 ? '#34c759' : hpFrac > 0.25 ? '#fcd116' : '#ff4d4d';
+    ctx.fillRect(x + 56, 20, 184 * hpFrac, 12);
+    // name
+    ctx.font = '7px "Press Start 2P"';
+    ctx.fillStyle = p.dead ? '#ff4d4d' : '#f5e6c4';
+    ctx.fillText((S.players.length > 1 ? 'P' + (i + 1) + ' ' : '') + (p.dead ? 'DOWN' : L.name), x + 56, 46);
+    // special cooldown bar
+    const cd = clamp(1 - (p.specialReady - S.time) / L.cooldown, 0, 1);
+    ctx.fillStyle = '#333'; ctx.fillRect(x + 56, 56, 184, 7);
+    ctx.fillStyle = cd >= 1 ? L.color : '#888';
+    ctx.fillRect(x + 56, 56, 184 * cd, 7);
+    ctx.font = '6px "Press Start 2P"';
+    ctx.fillStyle = cd >= 1 ? L.color : '#777';
+    const keyName = i === 0 ? '[SPACE]' : '[ENTER]';
+    let label = cd >= 1 ? keyName + ' ' + L.ability + ' READY!' : L.ability;
+    if (ctx.measureText(label).width > 184) label = cd >= 1 ? keyName + ' READY!' : L.ability;
+    ctx.fillText(label, x + 56, 78);
+    ctx.globalAlpha = 1;
+  });
+
+  // score / wave
+  ctx.textAlign = 'center';
+  ctx.font = '10px "Press Start 2P"';
+  ctx.fillStyle = '#fcd116';
+  ctx.fillText('SCORE ' + S.score, W / 2, 28);
+  ctx.fillStyle = '#f5e6c4';
+  ctx.fillText('WAVE ' + S.wave, W / 2, 48);
+  ctx.fillStyle = '#888';
+  ctx.font = '7px "Press Start 2P"';
+  ctx.fillText('HI ' + Math.max(S.hiScore, S.score), W / 2, 66);
+  ctx.textAlign = 'left';
+  ctx.restore();
+}
+
+function drawPlay() {
+  // zones
+  for (const z of S.zones) {
+    ctx.save();
+    ctx.strokeStyle = z.color; ctx.fillStyle = z.color + '18';
+    ctx.shadowColor = z.color; ctx.shadowBlur = 10;
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(z.x, z.y, z.r + Math.sin(S.time * 4) * 3, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+    ctx.font = '7px "Press Start 2P"'; ctx.textAlign = 'center';
+    ctx.fillStyle = z.color;
+    ctx.fillText('PEACE ZONE', z.x, z.y);
+    ctx.textAlign = 'left';
+    ctx.restore();
+  }
+
+  // beams
+  for (const bm of S.beams) {
+    const p = bm.owner;
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(bm.cur || bm.angle);
+    const grad = ctx.createLinearGradient(0, 0, W, 0);
+    grad.addColorStop(0, '#ffffffdd');
+    grad.addColorStop(1, '#d0d6dd00');
+    ctx.fillStyle = grad;
+    ctx.shadowColor = '#fff'; ctx.shadowBlur = 20;
+    ctx.fillRect(0, -7, W, 14);
+    ctx.restore();
+  }
+
+  // pickups
+  for (const pk of S.pickups) {
+    ctx.save();
+    ctx.translate(pk.x, pk.y + Math.sin(S.time * 5) * 3);
+    ctx.fillStyle = '#34c759';
+    ctx.shadowColor = '#34c759'; ctx.shadowBlur = 12;
+    ctx.fillRect(-3, -8, 6, 16);
+    ctx.fillRect(-8, -3, 16, 6);
+    ctx.restore();
+  }
+
+  // seed mines
+  for (const mn of S.mines) {
+    const armed = S.time >= mn.armAt;
+    ctx.save();
+    ctx.translate(mn.x, mn.y);
+    ctx.fillStyle = '#7ed957';
+    ctx.shadowColor = '#7ed957';
+    ctx.shadowBlur = armed ? 12 : 4;
+    const r = armed ? 6 + Math.sin(S.time * 8) * 2 : 4;
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  // green belt trees
+  for (const tr of S.trees) {
+    ctx.save();
+    ctx.translate(tr.x, tr.y);
+    ctx.fillStyle = '#8b5a2b';
+    ctx.fillRect(-2.5, 2, 5, 10);
+    ctx.fillStyle = '#2e8b57';
+    ctx.shadowColor = '#2e8b57'; ctx.shadowBlur = 10;
+    ctx.beginPath(); ctx.arc(0, -2, tr.r * (0.85 + Math.sin(S.time * 3 + tr.x) * 0.08), 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  // enemies
+  const stunned = S.time < S.stunUntil;
+  for (const e of S.enemies) {
+    drawShape(e.x, e.y, e.r, e.shape, stunned ? '#7a7a8c' : e.color, e.wobble);
+    // hp bar for damaged
+    if (e.hp < e.maxHp) {
+      ctx.fillStyle = '#0008'; ctx.fillRect(e.x - e.r, e.y - e.r - 9, e.r * 2, 4);
+      ctx.fillStyle = e.color; ctx.fillRect(e.x - e.r, e.y - e.r - 9, e.r * 2 * (e.hp / e.maxHp), 4);
+    }
+    if (stunned) {
+      ctx.font = '8px "Press Start 2P"'; ctx.fillStyle = '#fcd116';
+      ctx.fillText('!', e.x - 3, e.y - e.r - 14);
+    }
+  }
+
+  // allies
+  for (const al of S.allies) {
+    ctx.save();
+    ctx.translate(al.x, al.y);
+    ctx.strokeStyle = al.color; ctx.fillStyle = al.color + '33';
+    ctx.shadowColor = al.color; ctx.shadowBlur = 10;
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(0, 0, al.r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = al.color;
+    drawStar(0, 0, 5, 5, 2.2);
+    ctx.restore();
+  }
+
+  // orbiters
+  for (const o of S.orbiters) {
+    if (o.x == null) continue;
+    ctx.save();
+    ctx.translate(o.x, o.y);
+    ctx.fillStyle = '#00a3dd'; ctx.shadowColor = '#00a3dd'; ctx.shadowBlur = 12;
+    ctx.beginPath(); ctx.arc(0, 0, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  // bullets
+  for (const b of S.bullets) {
+    ctx.save();
+    ctx.fillStyle = b.color;
+    ctx.shadowColor = b.color; ctx.shadowBlur = 8;
+    ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  for (const pl of S.players) if (!pl.dead) drawPlayer(pl);
+
+  // particles
+  for (const pt of S.particles) {
+    ctx.globalAlpha = clamp(pt.life / pt.maxLife, 0, 1);
+    ctx.fillStyle = pt.color;
+    ctx.fillRect(pt.x - pt.r / 2, pt.y - pt.r / 2, pt.r, pt.r);
+  }
+  ctx.globalAlpha = 1;
+
+  // floating text
+  for (const f of S.floats) {
+    ctx.save();
+    ctx.globalAlpha = clamp(f.life, 0, 1);
+    ctx.font = '10px "Press Start 2P"';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = f.color;
+    ctx.shadowColor = f.color; ctx.shadowBlur = 8;
+    ctx.fillText(f.text, f.x, f.y);
+    ctx.restore();
+  }
+  ctx.textAlign = 'left';
+
+  drawHUD();
+
+  // ability flash
+  if (S.flash > 0) {
+    ctx.fillStyle = `rgba(255,255,255,${S.flash * 0.3})`;
+    ctx.fillRect(0, 0, W, H);
+  }
+}
+
+// ---------- Title screen ----------
+function drawTitle() {
+  drawBackground();
+  ctx.save();
+  ctx.textAlign = 'center';
+
+  // big star emblem
+  ctx.fillStyle = '#fcd116';
+  ctx.shadowColor = '#fcd116'; ctx.shadowBlur = 30;
+  drawStar(W / 2, 150, 5, 56 + Math.sin(S.time * 2) * 4, 24);
+  ctx.shadowBlur = 0;
+
+  ctx.font = '26px "Press Start 2P"';
+  ctx.fillStyle = '#fcd116';
+  ctx.shadowColor = '#ce1126'; ctx.shadowBlur = 0;
+  ctx.fillText('LEGENDS OF', W / 2, 270);
+  ctx.fillText('THE CONTINENT', W / 2, 310);
+
+  ctx.font = '10px "Press Start 2P"';
+  ctx.fillStyle = '#34c759';
+  ctx.fillText('A PAN-AFRICAN ARCADE TRIBUTE', W / 2, 350);
+
+  ctx.font = '9px "Press Start 2P"';
+  ctx.fillStyle = '#f5e6c4';
+  ctx.fillText('SIXTEEN LEGENDS. ENDLESS WAVES OF CRISIS.', W / 2, 410);
+  ctx.fillText('CHOOSE YOUR LEGEND.', W / 2, 432);
+
+  if (Math.floor(S.time * 2) % 2 === 0) {
+    ctx.font = '12px "Press Start 2P"';
+    ctx.fillStyle = '#ce1126';
+    ctx.fillText('PRESS ENTER / CLICK TO START', W / 2, 510);
+  }
+
+  ctx.font = '7px "Press Start 2P"';
+  ctx.fillStyle = '#666';
+  ctx.fillText('SOLO OR TWO-PLAYER CO-OP', W / 2, 580);
+  ctx.restore();
+}
+
+// ---------- Mode select (1P / 2P) ----------
+const MODE_BOXES = [
+  { x: W / 2 - 310, y: 240, w: 280, h: 150 },
+  { x: W / 2 + 30,  y: 240, w: 280, h: 150 },
+];
+function modeCellAt(mx, my) {
+  for (let i = 0; i < 2; i++) {
+    const b = MODE_BOXES[i];
+    if (mx >= b.x && mx <= b.x + b.w && my >= b.y && my <= b.y + b.h) return i;
+  }
+  return -1;
+}
+
+function drawMode() {
+  drawBackground();
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.font = '16px "Press Start 2P"';
+  ctx.fillStyle = '#fcd116';
+  ctx.fillText('HOW MANY LEGENDS?', W / 2, 160);
+
+  const labels = ['1 PLAYER', '2 PLAYERS'];
+  const subs = [
+    ['WASD/ARROWS MOVE', 'MOUSE AIM · CLICK FIRE', 'SPACE SPECIAL'],
+    ['P1: WASD + MOUSE + SPACE', 'P2: ARROWS MOVE · AUTO-AIM', 'R-SHIFT FIRE · ENTER SPECIAL'],
+  ];
+  const hover = modeCellAt(mouse.x, mouse.y);
+  for (let i = 0; i < 2; i++) {
+    const b = MODE_BOXES[i];
+    const sel = i === S.modeIndex;
+    ctx.fillStyle = sel ? '#fcd11622' : '#11151f';
+    ctx.strokeStyle = sel ? '#fcd116' : (i === hover ? '#888' : '#2a2f3d');
+    ctx.lineWidth = sel ? 3 : 2;
+    if (sel) { ctx.shadowColor = '#fcd116'; ctx.shadowBlur = 14; }
+    ctx.beginPath(); ctx.roundRect(b.x, b.y, b.w, b.h, 8); ctx.fill(); ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.font = '12px "Press Start 2P"';
+    ctx.fillStyle = sel ? '#fcd116' : '#f5e6c4';
+    ctx.fillText(labels[i], b.x + b.w / 2, b.y + 40);
+    ctx.font = '6px "Press Start 2P"';
+    ctx.fillStyle = '#999';
+    subs[i].forEach((s, j) => ctx.fillText(s, b.x + b.w / 2, b.y + 76 + j * 18));
+  }
+
+  if (Math.floor(S.time * 2) % 2 === 0) {
+    ctx.font = '9px "Press Start 2P"';
+    ctx.fillStyle = '#ce1126';
+    ctx.fillText('PRESS ENTER TO CONFIRM', W / 2, 480);
+  }
+  ctx.restore();
+  ctx.textAlign = 'left';
+}
+
+// ---------- Select screen ----------
+const GRID = { cols: 4, rows: 4, cw: 210, ch: 96, x0: 60, y0: 70, gap: 8 };
+function selectCellAt(mx, my) {
+  for (let i = 0; i < LEADERS.length; i++) {
+    const c = i % GRID.cols, r = Math.floor(i / GRID.cols);
+    const x = GRID.x0 + c * (GRID.cw + GRID.gap);
+    const y = GRID.y0 + r * (GRID.ch + GRID.gap);
+    if (mx >= x && mx <= x + GRID.cw && my >= y && my <= y + GRID.ch) return i;
+  }
+  return -1;
+}
+
+function drawSelect() {
+  drawBackground();
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.font = '16px "Press Start 2P"';
+  ctx.fillStyle = S.picks.length === 1 ? '#3aa0ff' : '#fcd116';
+  const who = S.numPlayers > 1 ? 'PLAYER ' + (S.picks.length + 1) + ' — ' : '';
+  ctx.fillText(who + 'CHOOSE YOUR LEGEND', W / 2, 44);
+
+  const hover = selectCellAt(mouse.x, mouse.y);
+  if (hover >= 0 && hover !== S.selectIndex) { /* hover highlight handled below */ }
+
+  for (let i = 0; i < LEADERS.length; i++) {
+    const L = LEADERS[i];
+    const c = i % GRID.cols, r = Math.floor(i / GRID.cols);
+    const x = GRID.x0 + c * (GRID.cw + GRID.gap);
+    const y = GRID.y0 + r * (GRID.ch + GRID.gap);
+    const sel = i === S.selectIndex;
+    const hov = i === hover;
+
+    ctx.save();
+    ctx.fillStyle = sel ? L.color + '22' : '#11151f';
+    ctx.strokeStyle = sel ? L.color : hov ? '#888' : '#2a2f3d';
+    ctx.lineWidth = sel ? 3 : 2;
+    if (sel) { ctx.shadowColor = L.color; ctx.shadowBlur = 14; }
+    ctx.beginPath();
+    ctx.roundRect(x, y, GRID.cw, GRID.ch, 8);
+    ctx.fill(); ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    ctx.restore();
+
+    // pixel portrait
+    drawPortrait(L.id, x + GRID.cw / 2, y + 26, 1.7);
+    // badge on the leader P1 already locked in
+    if (S.picks[0] === L) {
+      ctx.font = '6px "Press Start 2P"';
+      ctx.fillStyle = '#fcd116';
+      ctx.fillText('P1', x + GRID.cw - 18, y + 14);
+    }
+
+    ctx.font = '7px "Press Start 2P"';
+    ctx.fillStyle = sel ? L.color : '#f5e6c4';
+    wrapText(L.name, x + GRID.cw / 2, y + 52, GRID.cw - 14, 10);
+    ctx.font = '6px "Press Start 2P"';
+    ctx.fillStyle = '#999';
+    ctx.fillText(L.country + ' · ' + L.era, x + GRID.cw / 2, y + 74);
+    ctx.fillStyle = L.color;
+    ctx.fillText('★ ' + L.ability, x + GRID.cw / 2, y + 87);
+  }
+
+  // detail panel for selected
+  const L = LEADERS[S.selectIndex];
+  const py = GRID.y0 + GRID.rows * (GRID.ch + GRID.gap) + 4;
+  ctx.fillStyle = '#11151f';
+  ctx.strokeStyle = L.color; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.roundRect(60, py, W - 120, 116, 8); ctx.fill(); ctx.stroke();
+
+  drawPortrait(L.id, 108, py + 58, 3.2);
+  drawPortrait(L.id, W - 108, py + 58, 3.2);
+
+  ctx.font = '9px "Press Start 2P"';
+  ctx.fillStyle = L.color;
+  ctx.fillText(L.name + ' — ' + L.title, W / 2, py + 22);
+  ctx.font = '7px "Press Start 2P"';
+  ctx.fillStyle = '#f5e6c4';
+  wrapText(L.known, W / 2, py + 42, W - 330, 11);
+  ctx.fillStyle = '#fcd116';
+  wrapText('★ ' + L.ability + ': ' + L.abilityDesc, W / 2, py + 68, W - 330, 11);
+
+  if (Math.floor(S.time * 2) % 2 === 0) {
+    ctx.font = '8px "Press Start 2P"';
+    ctx.fillStyle = '#ce1126';
+    ctx.fillText('PRESS ENTER TO BEGIN', W / 2, py + 106);
+  }
+  ctx.restore();
+  ctx.textAlign = 'left';
+}
+
+function wrapText(text, cx, y, maxW, lineH) {
+  const words = text.split(' ');
+  let line = '', lines = [];
+  for (const w of words) {
+    const test = line ? line + ' ' + w : w;
+    if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; }
+    else line = test;
+  }
+  if (line) lines.push(line);
+  lines.forEach((l, i) => ctx.fillText(l, cx, y + i * lineH));
+}
+
+// ---------- Game over ----------
+function drawGameOver() {
+  drawBackground();
+  drawPlay(); // freeze frame of arena behind overlay would be stale; draw fresh bg & overlay
+  ctx.fillStyle = 'rgba(10,10,15,0.85)';
+  ctx.fillRect(0, 0, W, H);
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.font = '24px "Press Start 2P"';
+  ctx.fillStyle = '#ce1126';
+  ctx.fillText('THE STRUGGLE CONTINUES', W / 2, 200);
+
+  const names = S.players.map(pl => pl.leader.name).join(' & ');
+  ctx.font = (names.length > 28 ? '8px' : '10px') + ' "Press Start 2P"';
+  ctx.fillStyle = '#f5e6c4';
+  ctx.fillText(names + ' REACHED WAVE ' + S.wave, W / 2, 260);
+
+  ctx.font = '14px "Press Start 2P"';
+  ctx.fillStyle = '#fcd116';
+  ctx.fillText('SCORE: ' + S.score, W / 2, 320);
+  if (S.score >= S.hiScore && S.score > 0) {
+    ctx.fillStyle = '#34c759';
+    ctx.font = '10px "Press Start 2P"';
+    ctx.fillText('★ NEW HIGH SCORE ★', W / 2, 350);
+  } else {
+    ctx.fillStyle = '#888';
+    ctx.font = '9px "Press Start 2P"';
+    ctx.fillText('HIGH SCORE: ' + S.hiScore, W / 2, 350);
+  }
+
+  ctx.font = '8px "Press Start 2P"';
+  ctx.fillStyle = '#aaa';
+  ctx.fillText('"A LUTA CONTINUA" — THE LEGACY LIVES ON', W / 2, 420);
+
+  if (Math.floor(S.time * 2) % 2 === 0) {
+    ctx.font = '11px "Press Start 2P"';
+    ctx.fillStyle = '#fcd116';
+    ctx.fillText('PRESS ENTER TO CHOOSE A NEW LEGEND', W / 2, 480);
+  }
+  ctx.restore();
+  ctx.textAlign = 'left';
+}
+
+// ---------- Main loop ----------
+function frame(now) {
+  const dt = Math.min((now - lastT) / 1000, 0.05);
+  lastT = now;
+  update(dt);
+
+  ctx.save();
+  if (S.shake > 0) ctx.translate(rand(-S.shake, S.shake) * 0.5, rand(-S.shake, S.shake) * 0.5);
+
+  if (S.screen === 'title') drawTitle();
+  else if (S.screen === 'mode') drawMode();
+  else if (S.screen === 'select') drawSelect();
+  else if (S.screen === 'play') { drawBackground(); drawPlay(); }
+  else if (S.screen === 'gameover') drawGameOver();
+
+  ctx.restore();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
