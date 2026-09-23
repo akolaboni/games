@@ -12,12 +12,15 @@
 _What is half-done, and in which files._
 
 ## Next
-- Needle & Sign: verify the limit values in `LIMITS` against the gazetted L.I. 2519 schedule (current values: light 30/50/80/90/100, heavy 30/50/70/70/80 from secondary sources). Then share the artifact link.
+- Needle & Sign v2 is live (artifact v2). Road categories 30/50/90/100 are confirmed from the Ghana Police Traffitech-GH FAQ 5.2. The per-vehicle table in L.I. 2519 isn't online; heavy highway/motorway (60/80) are MTTD 2021 figures and flagged unverified in the UI. Next: get the gazetted L.I. 2519 PDF (Assembly Press / Parliament) and replace `LIMITS.heavy`, then share before 1 Oct 2026.
 
 ## Decisions
+- Needle & Sign: practice notices are labelled 'Practice notice' and never mimic the GPS-MTTD sender, because fake ENV SMS scams are real. Structure borrowed from inspiration-library items: bound-to-focus (ticket setup), vacation (notice card), taste-labs (drill hero), unseen (sound doorway), nair.cx (opt-outs).
 - Needle & Sign: no steering on purpose; the game is only about speed. Camera fines use the reported L.I. 2519 automated ladder (GH¢120 x3, 180, 240, 6th = suspension). Route distances are compressed.
 
 ## Do not
 - The preview pane throttles rAF to ~2 fps, so live play there looks frozen. Use `#test` + `__ns.tick()` to exercise the logic instead.
 
 <!-- agent-session-log: managed automatically, do not edit below -->
+Last session: claude-code · 548a0abd-1aca-404a-ad8b-624937cc7f32 · 2026-09-23 07:43 GMT
+Transcript backup: ~/ClaudeBackup/latest/projects/
