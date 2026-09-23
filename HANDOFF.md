@@ -12,7 +12,8 @@
 _What is half-done, and in which files._
 
 ## Next
-- Needle & Sign v3 is live (artifact v3): full-screen night world after inspiration-library `ui-the-bridge-illustrated-night-world`; the game starts on first gas press; setup and rules live in two drawers; steering and overtaking are an option, off by default (`ns-steer`). v2 notes follow.
+- Needle & Sign v4 is live (artifact v4): street-racing look (amber harmattan grade, bloom, grain, speed streaks, race HUD with tach/radar/heat) and a real score loop: pace combo for holding 85-100% of the limit, perfect camera passes, red lights with an amber dilemma, seatbelt check, heat bars, MTTD patrol pull-overs (don't stop = BUSTED), medals and a rap sheet. World runs 1.4x over stretches shortened to 65%. Tune medals in `finish()` (maxScore ratio .7/.45/.25).
+- (v3) Needle & Sign v3: full-screen night world after inspiration-library `ui-the-bridge-illustrated-night-world`; the game starts on first gas press; setup and rules live in two drawers; steering and overtaking are an option, off by default (`ns-steer`). v2 notes follow.
 - (v2) Road categories 30/50/90/100 are confirmed from the Ghana Police Traffitech-GH FAQ 5.2. The per-vehicle table in L.I. 2519 isn't online; heavy highway/motorway (60/80) are MTTD 2021 figures and flagged unverified in the UI. Next: get the gazetted L.I. 2519 PDF (Assembly Press / Parliament) and replace `LIMITS.heavy`, then share before 1 Oct 2026.
 
 ## Decisions
@@ -23,5 +24,5 @@ _What is half-done, and in which files._
 - The preview pane throttles rAF to ~2 fps, so live play there looks frozen. Use `#test` + `__ns.tick()` to exercise the logic instead.
 
 <!-- agent-session-log: managed automatically, do not edit below -->
-Last session: claude-code · 548a0abd-1aca-404a-ad8b-624937cc7f32 · 2026-09-23 08:12 GMT
+Last session: claude-code · 548a0abd-1aca-404a-ad8b-624937cc7f32 · 2026-09-23 08:40 GMT
 Transcript backup: ~/ClaudeBackup/latest/projects/
