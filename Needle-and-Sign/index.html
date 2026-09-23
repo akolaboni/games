@@ -1,6 +1,6 @@
 <title>Needle &amp; Sign</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="A harmattan street run on real Ghanaian roads: score for holding your needle just under the L.I. 2519 km/h limits, dodge cameras, stop for MTTD.">
+<meta name="description" content="Drive real Ghanaian roads and feel what the L.I. 2519 km/h limits mean: on your own speedometer, in stopping distance, and in fines.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@1,600;1,800;1,900&family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap">
@@ -9,8 +9,7 @@
 :root{
   color-scheme:dark;
   --bg:#0d0d0e; --panel:#141416; --panel-2:#1c1c1f; --line:#2c2c30; --ink:#f2efe8; --muted:#a19c90;
-  --amber:#ffb400; --amber-d:#c98a00; --red:#e8321f; --ok:#5ad27a; --warn:#ffb400; --bad:#ff5a47; --blue:#2f7bff;
-  --z-sensitive:#e8321f; --z-urban:#ffb400; --z-highway:#47b477; --z-motorway:#3f7ee0;
+  --amber:#ffb400; --red:#e8321f; --ok:#5ad27a; --warn:#ffb400; --bad:#ff5a47;
   --race:"Exo 2","Arial Black",system-ui,sans-serif;
   --display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
   --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -18,72 +17,98 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{height:100%;margin:0;background:var(--bg)}
-body{color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;overflow:hidden}
+body{color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;overflow:hidden;-webkit-tap-highlight-color:transparent}
 button{font:inherit;color:inherit;cursor:pointer}
 :focus-visible{outline:2px solid var(--amber);outline-offset:3px}
 a{color:inherit}
 .app{position:relative;height:100%;width:100%;overflow:hidden}
 #c{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;user-select:none;-webkit-user-select:none}
 
-/* slanted race UI primitives */
-.skew{transform:skewX(-12deg)}
-.skew > *{display:inline-block;transform:skewX(12deg)}
-.rbtn{font-family:var(--race);font-style:italic;font-weight:800;font-size:15px;letter-spacing:.04em;text-transform:uppercase;border:0;background:var(--amber);color:#111;padding:10px 20px;transform:skewX(-12deg);box-shadow:4px 4px 0 rgba(0,0,0,.45)}
+.rbtn{font-family:var(--race);font-style:italic;font-weight:800;font-size:15px;letter-spacing:.04em;text-transform:uppercase;border:0;background:var(--amber);color:#111;padding:11px 20px;transform:skewX(-12deg);box-shadow:4px 4px 0 rgba(0,0,0,.45)}
 .rbtn > span{display:inline-block;transform:skewX(12deg)}
 .rbtn:hover{filter:brightness(1.08)}
 .rbtn.ghost{background:rgba(20,20,22,.85);color:var(--ink);box-shadow:inset 0 0 0 1.5px rgba(255,180,0,.55),4px 4px 0 rgba(0,0,0,.45)}
 .rbtn.wide{width:100%}
 
 /* top bar */
-.bar{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top,0px));z-index:3;pointer-events:none}
+.bar{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top,0px));z-index:3;pointer-events:none}
 .bar > *{pointer-events:auto}
-.word{font-family:var(--race);font-style:italic;font-weight:900;font-size:20px;letter-spacing:.02em;text-transform:uppercase;line-height:1;white-space:nowrap;text-shadow:0 2px 0 rgba(0,0,0,.5)}
+.word{font-family:var(--race);font-style:italic;font-weight:900;font-size:19px;letter-spacing:.02em;text-transform:uppercase;line-height:1;white-space:nowrap;text-shadow:0 2px 0 rgba(0,0,0,.5)}
 .word b{color:var(--amber)}
-.nav{display:flex;gap:8px;align-items:center}
-.nav button{font-family:var(--race);font-style:italic;font-weight:800;font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;border:0;padding:8px 13px;background:rgba(14,14,16,.78);color:var(--ink);transform:skewX(-12deg);box-shadow:inset 0 -2px 0 var(--amber)}
+.nav{display:flex;gap:7px;align-items:center}
+.nav button{font-family:var(--race);font-style:italic;font-weight:800;font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;border:0;padding:8px 12px;min-height:34px;background:rgba(14,14,16,.8);color:var(--ink);transform:skewX(-12deg);box-shadow:inset 0 -2px 0 var(--amber)}
 .nav button > span{display:inline-block;transform:skewX(12deg)}
-.nav button:hover{background:rgba(40,36,28,.9)}
 .nav button[aria-pressed="true"]{background:var(--amber);color:#111}
-@media (max-width:520px){ .word{font-size:16px} .nav{gap:5px} .nav button{padding:7px 9px;font-size:11px} }
+@media (max-width:520px){ .word{font-size:15px} .nav{gap:5px} .nav button{padding:7px 9px;font-size:11px} }
 
-/* attract / intro */
-.intro{position:absolute;left:0;right:0;top:0;text-align:center;padding:calc(58px + 4vh) 16px 70px;z-index:2;pointer-events:none;transition:opacity .35s,transform .35s;background:linear-gradient(180deg,rgba(14,8,0,.7) 0%,rgba(14,8,0,.42) 62%,rgba(14,8,0,0) 100%)}
+/* attract */
+.intro{position:absolute;left:0;right:0;top:0;text-align:center;padding:calc(62px + 5vh) 18px 80px;z-index:2;pointer-events:none;transition:opacity .35s,transform .35s;background:linear-gradient(180deg,rgba(14,8,0,.78) 0%,rgba(14,8,0,.5) 66%,rgba(14,8,0,0) 100%)}
 .intro.gone{opacity:0;transform:translateY(-12px)}
-.intro .tag{font-family:var(--race);font-style:italic;font-weight:800;font-size:13px;letter-spacing:.3em;color:var(--amber);text-transform:uppercase;text-shadow:0 2px 6px rgba(0,0,0,.6)}
-.intro h1{font-family:var(--race);font-style:italic;font-weight:900;font-size:clamp(40px,6.6vw,92px);line-height:.95;margin:6px 0 0;text-transform:uppercase;letter-spacing:-.01em;color:#fff;text-shadow:0 4px 0 rgba(0,0,0,.35),0 0 40px rgba(255,160,0,.35)}
+.intro .tag{font-family:var(--race);font-style:italic;font-weight:800;font-size:12px;letter-spacing:.3em;color:var(--amber);text-transform:uppercase}
+.intro h1{font-family:var(--race);font-style:italic;font-weight:900;font-size:clamp(38px,6.6vw,88px);line-height:.95;margin:6px 0 0;text-transform:uppercase;color:#fff;text-shadow:0 4px 0 rgba(0,0,0,.35),0 0 40px rgba(255,160,0,.35)}
 .intro h1 b{color:var(--amber)}
-.plate{display:inline-flex;flex-wrap:wrap;justify-content:center;gap:0;margin-top:18px;pointer-events:auto;transform:skewX(-12deg);background:rgba(10,10,12,.82);box-shadow:inset 3px 0 0 var(--amber)}
-.plate > button, .plate > div{transform:skewX(12deg);background:none;border:0;padding:9px 16px;text-align:left}
-.plate .k{display:block;font-family:var(--race);font-style:italic;font-weight:800;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber)}
-.plate .v{display:block;font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:.02em}
-.plate button:hover .v{color:var(--amber)}
-.goal{margin:14px auto 0;max-width:54ch;font-size:15px;color:#f5e9cf;text-shadow:0 1px 4px rgba(0,0,0,.8)}
-.press{margin-top:16px;font-family:var(--race);font-style:italic;font-weight:800;font-size:15px;letter-spacing:.18em;text-transform:uppercase;color:#fff;text-shadow:0 0 16px rgba(255,180,0,.8);animation:blink 1.1s steps(2,start) infinite}
-@keyframes blink{50%{opacity:.25}}
+.rule{margin:14px auto 0;max-width:34ch;font-size:clamp(17px,2.2vw,21px);line-height:1.35;font-weight:600;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.8)}
+.rule em{font-style:normal;color:var(--ok)}
+.rule .red{color:var(--bad)}
+.rule-sub{margin:8px auto 0;max-width:44ch;font-size:14.5px;color:#f1e3c4;text-shadow:0 1px 4px rgba(0,0,0,.9)}
+.plate{display:inline-flex;flex-wrap:wrap;justify-content:center;margin-top:16px;pointer-events:auto;transform:skewX(-12deg);background:rgba(10,10,12,.85);box-shadow:inset 3px 0 0 var(--amber)}
+.plate > button{transform:skewX(12deg);background:none;border:0;padding:8px 15px;text-align:left;min-height:44px}
+.plate .k{display:block;font-family:var(--race);font-style:italic;font-weight:800;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber)}
+.plate .v{display:block;font-family:var(--display);font-weight:700;font-size:16px}
+.plate .v::after{content:" \25BE";color:var(--amber);font-size:12px}
+.press{display:inline-block;margin-top:14px;padding:8px 18px;background:rgba(10,10,12,.78);transform:skewX(-12deg);font-family:var(--race);font-style:italic;font-weight:800;font-size:15px;letter-spacing:.16em;text-transform:uppercase;color:#fff;text-shadow:0 0 16px rgba(255,180,0,.8);animation:blink 1.1s steps(2,start) infinite}
+@keyframes blink{50%{opacity:.3}}
 kbd{font-family:var(--race);font-style:normal;font-weight:800;border:1.5px solid currentColor;border-radius:3px;padding:0 5px;font-size:.9em}
 @media (prefers-reduced-motion: reduce){ .press{animation:none} }
 
-.belt{position:absolute;left:50%;bottom:calc(128px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) skewX(-12deg);z-index:3;border:0;background:var(--red);color:#fff;font-family:var(--race);font-style:italic;font-weight:900;font-size:15px;letter-spacing:.06em;text-transform:uppercase;padding:11px 20px;box-shadow:0 0 0 3px rgba(0,0,0,.35),0 0 30px rgba(232,50,31,.5)}
+.belt{position:absolute;left:50%;top:40%;transform:translateX(-50%) skewX(-12deg);z-index:3;border:0;background:var(--red);color:#fff;font-family:var(--race);font-style:italic;font-weight:900;font-size:15px;letter-spacing:.06em;text-transform:uppercase;padding:12px 20px;min-height:46px;box-shadow:0 0 0 3px rgba(0,0,0,.35),0 0 30px rgba(232,50,31,.5)}
 .belt > span{display:inline-block;transform:skewX(12deg)}
-@media (orientation:portrait){ .belt{bottom:auto;top:46%} }
 
-/* touch */
-.touch{position:absolute;inset:auto 0 0 0;display:none;justify-content:space-between;padding:0 16px calc(10px + env(safe-area-inset-bottom,0px));pointer-events:none;z-index:2}
-@media (pointer:coarse){ .touch{display:flex} }
-.touch span{font-family:var(--race);font-style:italic;font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:11px;color:rgba(255,255,255,.45)}
-.steer{position:absolute;left:50%;bottom:calc(30px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);display:flex;gap:12px;z-index:3}
-.steer button{width:62px;height:54px;border:0;background:rgba(10,10,12,.7);box-shadow:inset 0 -3px 0 var(--amber);font-size:20px;transform:skewX(-12deg);touch-action:none;user-select:none;-webkit-user-select:none}
+/* touch pedals: only on touch screens */
+.pedals{display:none;position:absolute;left:0;right:0;bottom:0;z-index:3;gap:10px;padding:0 12px calc(12px + env(safe-area-inset-bottom,0px));pointer-events:none}
+.pedal{pointer-events:auto;flex:1;height:70px;border:0;font-family:var(--race);font-style:italic;font-weight:900;font-size:20px;letter-spacing:.08em;text-transform:uppercase;transform:skewX(-10deg);touch-action:none;user-select:none;-webkit-user-select:none;color:#fff}
+.pedal > span{display:inline-block;transform:skewX(10deg)}
+.pedal.brake{background:rgba(190,40,25,.82)}
+.pedal.gas{background:rgba(40,150,70,.85)}
+.pedal.on{filter:brightness(1.35)}
+@media (pointer:coarse){ .pedals{display:flex} }
+@media (pointer:coarse) and (orientation:landscape){ .pedals{justify-content:space-between} .pedal{flex:0 0 150px;height:64px} }
+.steer{position:absolute;left:0;right:0;bottom:calc(94px + env(safe-area-inset-bottom,0px));display:flex;justify-content:space-between;padding:0 14px;z-index:3;pointer-events:none}
+.steer button{pointer-events:auto;width:64px;height:56px;border:0;background:rgba(10,10,12,.72);box-shadow:inset 0 -3px 0 var(--amber);font-size:20px;transform:skewX(-12deg);touch-action:none;user-select:none;-webkit-user-select:none}
 .steer button.on{background:rgba(255,180,0,.35)}
 
 /* practice notice */
-.notice{visibility:hidden;position:absolute;bottom:18px;left:50%;transform:translate(-50%,calc(100% + 60px));width:min(350px,calc(100% - 28px));background:#f4f1e8;color:#16181c;padding:11px 13px 12px;box-shadow:0 18px 40px -14px rgba(0,0,0,.8),inset 0 4px 0 var(--red);transition:transform .3s cubic-bezier(.2,.9,.3,1.2);font-size:13px;line-height:1.35;z-index:4}
+.notice{visibility:hidden;position:absolute;bottom:18px;left:50%;transform:translate(-50%,calc(100% + 60px));width:min(350px,calc(100% - 24px));background:#f4f1e8;color:#16181c;padding:10px 13px 12px;box-shadow:0 18px 40px -14px rgba(0,0,0,.8),inset 0 4px 0 var(--red);transition:transform .3s cubic-bezier(.2,.9,.3,1.2);font-size:13px;line-height:1.35;z-index:4}
 .notice.in{visibility:visible;transform:translate(-50%,0)}
 .notice .n-top{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:#5b5f64;font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin-top:2px}
-.notice .n-title{font-family:var(--race);font-style:italic;font-weight:900;font-size:17px;margin:3px 0 4px;text-transform:uppercase}
+.notice .n-title{font-family:var(--race);font-style:italic;font-weight:900;font-size:17px;margin:2px 0 4px;text-transform:uppercase}
 .notice .n-grid{display:grid;grid-template-columns:auto 1fr;gap:1px 10px}
 .notice .n-grid span:nth-child(odd){color:#5b5f64}
 .notice .n-amt{color:#c0271d;font-weight:700}
-@media (pointer:coarse){ .notice{bottom:auto;top:calc(60px + env(safe-area-inset-top,0px));transform:translate(-50%,calc(-100% - 90px))} .notice.in{transform:translate(-50%,0)} }
+@media (pointer:coarse){ .notice{bottom:auto;top:calc(var(--hudb,120px) + env(safe-area-inset-top,0px));transform:translate(-50%,-30px);opacity:0;transition:transform .3s,opacity .3s} .notice.in{transform:translate(-50%,0);opacity:1} }
+
+/* the "why" moment */
+.moment{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.55)}
+.mcard{width:min(460px,100%);background:var(--panel);border-top:4px solid var(--bad);padding:18px 18px 16px;box-shadow:0 30px 80px -20px rgba(0,0,0,.9);display:flex;flex-direction:column;gap:12px}
+.mcard.ok{border-top-color:var(--ok)}
+.mcard .k{font-family:var(--race);font-style:italic;font-weight:800;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--amber)}
+.mcard h2{font-family:var(--race);font-style:italic;font-weight:900;font-size:clamp(26px,6vw,34px);line-height:1;margin:2px 0 0;text-transform:uppercase;color:var(--bad)}
+.mcard.ok h2{color:var(--ok)}
+.mcard p{margin:0;font-size:15.5px}
+.mcard p b{color:var(--amber);font-weight:600}
+.bars{position:relative;display:flex;flex-direction:column;gap:10px;padding:6px 0 22px}
+.brow{display:grid;grid-template-columns:88px 1fr;gap:10px;align-items:center;font-size:13px}
+.brow .lab{color:var(--muted);line-height:1.2}
+.brow .lab b{display:block;color:var(--ink);font-family:var(--race);font-style:italic;font-size:14px}
+.track{position:relative;height:18px;background:rgba(255,255,255,.06)}
+.fill{position:absolute;left:0;top:0;bottom:0;transform-origin:left;animation:grow .7s ease-out both}
+.fill.you{background:linear-gradient(90deg,#ffb400,#ff5a47)}
+.fill.lim{background:#5ad27a}
+.fill span{position:absolute;right:4px;top:50%;transform:translateY(-50%);font-family:var(--race);font-style:italic;font-weight:900;font-size:12px;color:#111}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.mark{position:absolute;top:0;bottom:4px;border-left:2px dashed #fff;pointer-events:none}
+.mark span{position:absolute;bottom:-4px;left:4px;transform:translateY(100%);font-size:12px;white-space:nowrap;color:#fff}
+@media (prefers-reduced-motion: reduce){ .fill{animation:none} }
 
 /* sheets */
 .scrim{position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:5;opacity:0;transition:opacity .2s;pointer-events:none}
@@ -92,35 +117,33 @@ kbd{font-family:var(--race);font-style:normal;font-weight:800;border:1.5px solid
   background:repeating-linear-gradient(135deg,rgba(255,255,255,.018) 0 2px,transparent 2px 9px),var(--panel);border-left:3px solid var(--amber);
   transform:translateX(104%);visibility:hidden;transition:transform .28s cubic-bezier(.2,.8,.2,1),visibility 0s linear .28s}
 .sheet.on{transform:none;visibility:visible;transition:transform .28s cubic-bezier(.2,.8,.2,1)}
-.sheet-head{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;padding-top:calc(14px + env(safe-area-inset-top,0px));border-bottom:1px solid var(--line)}
-.sheet-head h2{font-family:var(--race);font-style:italic;font-weight:900;font-size:26px;text-transform:uppercase;margin:0;line-height:1}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top,0px));border-bottom:1px solid var(--line)}
+.sheet-head h2{font-family:var(--race);font-style:italic;font-weight:900;font-size:24px;text-transform:uppercase;margin:0;line-height:1}
 .sheet-head h2 b{color:var(--amber)}
-.x{background:var(--panel-2);border:1px solid var(--line);width:36px;height:36px;font-size:18px;line-height:1;transform:skewX(-12deg)}
-.sheet-body{overflow-y:auto;padding:16px 18px calc(24px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:22px}
-.sheet-foot{padding:12px 18px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}
+.x{background:var(--panel-2);border:1px solid var(--line);width:44px;height:40px;font-size:20px;line-height:1;transform:skewX(-12deg)}
+.sheet-body{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px calc(24px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:22px}
+.sheet-foot{padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}
 .lbl{font-family:var(--race);font-style:italic;font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:11.5px;color:var(--amber);margin-bottom:8px}
 .grid-v{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .opt{position:relative;display:block;cursor:pointer}
 .opt input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
-.opt .card{height:100%;background:var(--panel-2);border:1px solid var(--line);padding:9px 11px 9px 13px;display:flex;flex-direction:column;gap:3px;position:relative}
-.opt:hover .card{border-color:#48443a}
+.opt .card{height:100%;background:var(--panel-2);border:1px solid var(--line);padding:9px 11px 9px 13px;display:flex;flex-direction:column;gap:3px;min-height:64px}
 .opt input:checked + .card{border-color:var(--amber);background:linear-gradient(90deg,rgba(255,180,0,.16),rgba(255,180,0,.02));box-shadow:inset 4px 0 0 var(--amber)}
 .opt input:focus-visible + .card{outline:2px solid var(--amber);outline-offset:2px}
-.card .nm{font-family:var(--race);font-style:italic;font-weight:800;font-size:15px;line-height:1.1;text-transform:uppercase}
+.card .nm{font-family:var(--race);font-style:italic;font-weight:800;font-size:14.5px;line-height:1.1;text-transform:uppercase}
 .card .sub{font-size:12.5px;color:var(--muted);line-height:1.3}
 .chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:auto;padding-top:3px}
 .chip{font-family:var(--display);font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:1px 6px;border:1px solid var(--line);color:var(--muted)}
 .chip.mph{background:var(--amber);border-color:transparent;color:#111}
 .chip.heavy{background:var(--ink);border-color:transparent;color:#111}
-.medal{font-family:var(--race);font-style:italic;font-weight:800;font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:1px 7px;color:#111}
-.medal.gold{background:#ffcc3a}.medal.silver{background:#cfd3d8}.medal.bronze{background:#d08a4e}
+.chip.clean{background:var(--ok);border-color:transparent;color:#111}
 .routes{display:flex;flex-direction:column;gap:7px}
 .zbar{display:flex;height:5px;overflow:hidden;gap:1px;margin-top:5px}
 .zbar i{display:block;height:100%}
-.sw{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line);cursor:pointer}
+.sw{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-top:1px solid var(--line);cursor:pointer}
 .sw:first-of-type{border-top:0}
-.sw input{appearance:none;-webkit-appearance:none;flex:none;width:42px;height:22px;background:#2c2c30;position:relative;cursor:pointer;margin:1px 0 0;transform:skewX(-12deg)}
-.sw input::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;background:#bdb7aa;transition:transform .15s}
+.sw input{appearance:none;-webkit-appearance:none;flex:none;width:44px;height:24px;background:#2c2c30;position:relative;cursor:pointer;margin:1px 0 0;transform:skewX(-12deg)}
+.sw input::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;background:#bdb7aa;transition:transform .15s}
 .sw input:checked{background:var(--amber)}
 .sw input:checked::after{transform:translateX(20px);background:#111}
 .sw b{display:block;font-weight:600}
@@ -132,61 +155,69 @@ th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);white-
 tr:last-child td{border-bottom:0}
 th{font-family:var(--race);font-style:italic;font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:10.5px;color:var(--muted)}
 .num{text-align:right}
-.tbl{overflow-x:auto;border:1px solid var(--line);background:var(--panel-2)}
+.tbl{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);background:var(--panel-2)}
 .dot{display:inline-block;width:8px;height:8px;margin-right:7px;vertical-align:1px;transform:skewX(-12deg)}
 .unv{font-family:var(--display);font-weight:700;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--warn);border:1px solid currentColor;padding:0 3px;margin-left:4px;vertical-align:1px}
 .note{font-size:13.5px;color:var(--muted);border-left:3px solid var(--amber);padding-left:10px}
-.sec h3{font-family:var(--race);font-style:italic;font-weight:900;font-size:19px;text-transform:uppercase;margin:0 0 9px;line-height:1.05}
+.sec h3{font-family:var(--race);font-style:italic;font-weight:900;font-size:18px;text-transform:uppercase;margin:0 0 9px;line-height:1.05}
 .sec ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px}
 .four{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .four div{background:var(--panel-2);border:1px solid var(--line);padding:8px 4px;text-align:center}
 .four .rd{width:38px;height:38px;margin:0 auto 4px;border-radius:50%;background:#fff;border:5px solid var(--red);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:15px;color:#111}
-.four small{font-size:11.5px;color:var(--muted);line-height:1.2;display:block}
-.four b{font-family:var(--race);font-style:italic;font-size:14px;color:var(--amber);display:block}
+.four small{font-size:11px;color:var(--muted);line-height:1.2;display:block}
+.four b{font-family:var(--race);font-style:italic;font-size:13px;color:var(--amber);display:block}
+.four i{font-style:normal;font-size:11px;color:var(--ink);display:block;margin-top:2px}
 .ladder{display:flex;flex-direction:column;gap:4px;font-size:14px}
 .ladder div{display:flex;justify-content:space-between;gap:10px;padding:6px 10px;border:1px solid var(--line);background:var(--panel-2)}
 .ladder div:last-child{color:var(--bad);border-color:rgba(255,90,71,.5)}
 .sources{font-size:13px;color:var(--muted)}
-.drill{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:center}
-.drill .rd{width:88px;height:88px;border-radius:50%;background:#fff;border:11px solid var(--red);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:36px;color:#111}
-.drill canvas{width:100%;max-width:230px;aspect-ratio:1;touch-action:none;cursor:grab;border-radius:50%;justify-self:center}
+.drill{display:grid;grid-template-columns:90px 1fr;gap:12px;align-items:center}
+.drill .rd{width:84px;height:84px;border-radius:50%;background:#fff;border:10px solid var(--red);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:34px;color:#111}
+.drill canvas{width:100%;max-width:220px;aspect-ratio:1;touch-action:none;cursor:grab;border-radius:50%;justify-self:center}
 .drill-fb{min-height:40px;font-size:14px;margin-top:8px}
 .drill-fb b{color:var(--amber)}
 .drill-row{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:8px}
 .dots{display:flex;gap:5px}.dots i{width:18px;height:5px;background:#2c2c30;transform:skewX(-12deg)}.dots i.ok{background:var(--ok)}.dots i.no{background:var(--bad)}.dots i.now{background:var(--amber)}
 
-/* results: race results card */
-.result{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;padding:64px 14px 18px;background:rgba(0,0,0,.5);overflow-y:auto}
-.rcard{width:min(800px,100%);background:repeating-linear-gradient(135deg,rgba(255,255,255,.018) 0 2px,transparent 2px 9px),var(--panel);border-top:4px solid var(--amber);padding:0 0 18px;display:flex;flex-direction:column;gap:14px;max-height:100%;overflow-y:auto;box-shadow:0 30px 80px -20px rgba(0,0,0,.9)}
-.rbanner{padding:14px 20px 12px;background:linear-gradient(90deg,rgba(255,180,0,.2),transparent 70%);display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
-.rbanner .k{font-family:var(--race);font-style:italic;font-weight:800;font-size:12px;letter-spacing:.2em;color:var(--amber);text-transform:uppercase}
-.rbanner h2{font-family:var(--race);font-style:italic;font-weight:900;font-size:clamp(34px,6vw,58px);line-height:.95;margin:2px 0 0;text-transform:uppercase}
-.rbanner h2.bad{color:var(--bad);text-shadow:0 0 30px rgba(255,90,71,.45)}
-.rbanner h2.ok{color:#fff}
-.rscore{text-align:right}
-.rscore .v{font-family:var(--race);font-style:italic;font-weight:900;font-size:40px;line-height:1}
-.rscore .medal{font-size:14px;padding:3px 10px;display:inline-block;margin-top:6px}
-.rbody{padding:0 20px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
+/* results */
+.result{position:absolute;inset:0;z-index:5;display:flex;align-items:flex-start;justify-content:center;padding:calc(58px + env(safe-area-inset-top,0px)) 10px calc(14px + env(safe-area-inset-bottom,0px));background:rgba(0,0,0,.55);overflow-y:auto;-webkit-overflow-scrolling:touch}
+@media (min-height:700px){ .result{align-items:center} }
+.rcard{width:min(820px,100%);background:repeating-linear-gradient(135deg,rgba(255,255,255,.018) 0 2px,transparent 2px 9px),var(--panel);border-top:4px solid var(--amber);padding:0 0 16px;display:flex;flex-direction:column;gap:14px;box-shadow:0 30px 80px -20px rgba(0,0,0,.9)}
+.rbanner{padding:14px 18px 12px;background:linear-gradient(90deg,rgba(255,180,0,.2),transparent 70%)}
+.rbanner .k{font-family:var(--race);font-style:italic;font-weight:800;font-size:11px;letter-spacing:.18em;color:var(--amber);text-transform:uppercase}
+.rbanner h2{font-family:var(--race);font-style:italic;font-weight:900;font-size:clamp(30px,7vw,54px);line-height:.95;margin:4px 0 0;text-transform:uppercase}
+.rbanner h2.ok{color:var(--ok)} .rbanner h2.warn{color:var(--amber)} .rbanner h2.bad{color:var(--bad)}
+.rbanner p{margin:8px 0 0;font-size:16px;max-width:60ch}
+.rbanner p b{color:var(--amber);font-weight:600}
+.rstats{padding:0 18px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media (max-width:560px){ .rstats{grid-template-columns:repeat(2,1fr)} }
+.rstat{background:var(--panel-2);border:1px solid var(--line);padding:8px 10px}
+.rstat .k{font-size:12px;color:var(--muted)}
+.rstat .v{font-family:var(--race);font-style:italic;font-weight:900;font-size:24px;font-variant-numeric:tabular-nums;line-height:1.1}
+.rstat .v.ok{color:var(--ok)} .rstat .v.bad{color:var(--bad)}
+.rbody{padding:0 18px;display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media (max-width:640px){ .rbody{grid-template-columns:1fr} }
-.rline{font-size:15.5px;grid-column:1/-1}
-.rline b{color:var(--amber);font-weight:600}
-.breakdown{display:flex;flex-direction:column}
-.breakdown div{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
-.breakdown div span:last-child{font-family:var(--race);font-style:italic;font-weight:800}
-.breakdown .neg span:last-child{color:var(--bad)}
-.rap h3{font-family:var(--race);font-style:italic;font-weight:900;font-size:15px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 6px;color:var(--bad)}
-.rap .cost{display:flex;justify-content:space-between;padding:8px 0 0;font-family:var(--race);font-style:italic;font-weight:900;font-size:18px}
-.rap .none{color:var(--muted);font-size:14px;padding:6px 0}
-.ractions{padding:0 20px;display:flex;flex-wrap:wrap;gap:12px}
-details{margin:0 20px;border-top:1px solid var(--line);padding-top:10px}
-summary{cursor:pointer;font-family:var(--race);font-style:italic;font-weight:800;letter-spacing:.12em;text-transform:uppercase;font-size:12px;color:var(--muted)}
+.rsec h3{font-family:var(--race);font-style:italic;font-weight:900;font-size:14px;letter-spacing:.08em;text-transform:uppercase;margin:0 0 6px}
+.rlist{display:flex;flex-direction:column}
+.rlist div{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}
+.rlist div span:last-child{font-family:var(--race);font-style:italic;font-weight:800;white-space:nowrap}
+.rlist .bad span:last-child{color:var(--bad)} .rlist .ok span:last-child{color:var(--ok)}
+.rlist .none{color:var(--muted);border:0}
+.timeline{display:flex;flex-direction:column;gap:0;border-left:2px solid var(--line);margin-left:6px}
+.timeline div{position:relative;padding:0 0 10px 14px;font-size:14px}
+.timeline div::before{content:"";position:absolute;left:-6px;top:4px;width:10px;height:10px;background:var(--amber);transform:skewX(-12deg)}
+.timeline div.bad::before{background:var(--bad)}
+.timeline b{font-family:var(--race);font-style:italic}
+.ractions{padding:0 18px;display:flex;flex-wrap:wrap;gap:12px}
+details{margin:0 18px;border-top:1px solid var(--line);padding-top:10px}
+summary{cursor:pointer;font-family:var(--race);font-style:italic;font-weight:800;letter-spacing:.12em;text-transform:uppercase;font-size:12px;color:var(--muted);min-height:28px}
 details[open] summary{margin-bottom:10px}
 .over{color:var(--bad);font-weight:600}
 @media (prefers-reduced-motion: reduce){ *{transition:none!important} }
 </style>
 
 <div class="app" id="app">
-  <canvas id="c" aria-label="Street run. Hold the up arrow or the right side of the screen to accelerate."></canvas>
+  <canvas id="c" aria-label="Driving view. Hold the up arrow, or the Gas pedal, to drive."></canvas>
 
   <header class="bar">
     <div class="word">Needle <b>&amp;</b> Sign</div>
@@ -198,25 +229,29 @@ details[open] summary{margin-bottom:10px}
   </header>
 
   <div class="intro" id="intro">
-    <div class="tag">Harmattan runs &middot; Ghana</div>
+    <div class="tag">Harmattan run &middot; Ghana</div>
     <h1>Needle <b>&amp;</b> Sign</h1>
+    <p class="rule">Every sign is in km/h. Keep your needle in the <em>green</em>. Go into the <span class="red">red</span> and a camera can fine you.</p>
+    <p class="rule-sub" id="introSub"></p>
     <div class="plate">
-      <button id="introSetup"><span class="k">Event</span><span class="v" id="introRoute"></span></button>
-      <button id="introSetup2"><span class="k">Car</span><span class="v" id="introVeh"></span></button>
-      <div><span class="k">Best</span><span class="v" id="introBest">&ndash;</span></div>
+      <button id="introRoute"><span class="k">Road</span><span class="v" id="introRouteV"></span></button>
+      <button id="introVeh"><span class="k">Car</span><span class="v" id="introVehV"></span></button>
     </div>
-    <p class="goal" id="introGoal">Every sign is in km/h. Hold your needle just under the limit to build a combo. No flashes, no heat.</p>
-    <div class="press" id="introHint">Hold <kbd>&uarr;</kbd> to start</div>
+    <div class="press" id="introHint">Hold <kbd>&uarr;</kbd> to drive</div>
   </div>
 
   <button class="belt" id="belt"><span>Buckle up &middot; B</span></button>
-  <div class="touch" aria-hidden="true"><span>Hold &middot; brake</span><span>Hold &middot; gas</span></div>
   <div class="steer" id="steerPad" hidden>
     <button id="sLeft" aria-label="Steer left">&#9664;</button>
     <button id="sRight" aria-label="Steer right">&#9654;</button>
   </div>
+  <div class="pedals" id="pedals">
+    <button class="pedal brake" id="pBrake" aria-label="Brake"><span>Brake</span></button>
+    <button class="pedal gas" id="pGas" aria-label="Gas"><span>Gas</span></button>
+  </div>
 
   <div class="notice" id="notice" role="status" aria-live="assertive"></div>
+  <div class="moment" id="moment" hidden></div>
   <div class="result" id="result" hidden></div>
   <div class="scrim" id="scrim"></div>
 
@@ -224,57 +259,43 @@ details[open] summary{margin-bottom:10px}
     <div class="sheet-head"><h2 id="setupH">Car <b>&amp;</b> road</h2><button class="x" data-close aria-label="Close">&times;</button></div>
     <div class="sheet-body">
       <div><div class="lbl" id="vehLbl">Car</div><div class="grid-v" id="vehicles" role="radiogroup" aria-labelledby="vehLbl"></div></div>
-      <div><div class="lbl" id="routeLbl">Event</div><div class="routes" id="routes" role="radiogroup" aria-labelledby="routeLbl"></div></div>
+      <div><div class="lbl" id="routeLbl">Road</div><div class="routes" id="routes" role="radiogroup" aria-labelledby="routeLbl"></div></div>
       <div>
         <div class="lbl">Options</div>
-        <label class="sw" for="optSteer"><input type="checkbox" id="optSteer"><span><b>Steering &amp; overtaking</b><span>Steer with &larr; &rarr; or the on-screen arrows. Pass slow trotros for points. Oncoming traffic and solid lines bite.</span></span></label>
-        <label class="sw" for="optCoach"><input type="checkbox" id="optCoach" checked><span><b>Dial coach</b><span>Shows the green pace band on your gauge. Turn it off for hard mode: score &times;1.5.</span></span></label>
+        <label class="sw" for="optCoach"><input type="checkbox" id="optCoach" checked><span><b>Dial coach</b><span>Green band on your gauge, the next sign ahead, and your stopping distance on the road. Turn it off to test yourself.</span></span></label>
+        <label class="sw" for="optSteer"><input type="checkbox" id="optSteer"><span><b>Steering &amp; overtaking</b><span>Steer with &larr; &rarr; or the on-screen arrows. Oncoming traffic and solid lines are real.</span></span></label>
       </div>
-      <div class="field"><div class="lbl"><label for="driverName">Driver name</label></div><input type="text" id="driverName" maxlength="18" placeholder="Optional" autocomplete="off"></div>
+      <div class="field"><div class="lbl"><label for="driverName">Your name</label></div><input type="text" id="driverName" maxlength="18" placeholder="Optional" autocomplete="off"></div>
     </div>
-    <div class="sheet-foot"><button class="rbtn wide" id="goDrive"><span>Race</span></button></div>
+    <div class="sheet-foot"><button class="rbtn wide" id="goDrive"><span>Drive</span></button></div>
   </aside>
 
   <aside class="sheet" id="sheetRules" aria-labelledby="rulesH" aria-hidden="true">
     <div class="sheet-head"><h2 id="rulesH">The <b>rules</b></h2><button class="x" data-close aria-label="Close">&times;</button></div>
     <div class="sheet-body">
       <div class="sec">
-        <h3>How you score</h3>
-        <ul>
-          <li><b>Pace:</b> hold the needle between 85% and 100% of the limit. The longer you hold it, the higher the multiplier, up to &times;5.</li>
-          <li><b>Perfect pass:</b> go past a camera inside the band for a bonus.</li>
-          <li><b>Clean stop:</b> stop before the line at a red light.</li>
-          <li><b>Heat:</b> every notice adds a bar. At 3 bars, or if a laser gun catches you, an MTTD patrol pulls in front. Stop, or you're busted. Six notices and your licence is suspended.</li>
-        </ul>
-      </div>
-      <div class="sec">
         <h3>Four limits, in km/h</h3>
         <div class="four">
-          <div><span class="rd">30</span><small>Schools, markets, hospitals, worship, processions</small><b>19 mph</b></div>
-          <div><span class="rd">50</span><small>Built-up areas</small><b>31 mph</b></div>
-          <div><span class="rd">90</span><small>Highways</small><b>56 mph</b></div>
-          <div><span class="rd">100</span><small>Motorways</small><b>62 mph</b></div>
+          <div><span class="rd">30</span><small>Schools, markets, hospitals, worship, processions</small><b>19 mph</b><i>Stop in 11 m</i></div>
+          <div><span class="rd">50</span><small>Built-up areas</small><b>31 mph</b><i>Stop in 24 m</i></div>
+          <div><span class="rd">90</span><small>Highways</small><b>56 mph</b><i>Stop in 66 m</i></div>
+          <div><span class="rd">100</span><small>Motorways</small><b>62 mph</b><i>Stop in 79 m</i></div>
         </div>
-        <p class="note" style="margin-top:10px">From the Ghana Police Traffitech-GH FAQ on L.I. 2519. They apply whether or not a sign is posted. Trucks and buses: 60 on highways, 80 on motorways <span class="unv">unverified</span> (MTTD figures; the L.I. 2519 vehicle table isn't published online yet).</p>
+        <p class="note" style="margin-top:10px">Limits from the Ghana Police Traffitech-GH FAQ on L.I. 2519. They apply whether or not a sign is posted. Stopping distances are typical for a car on a dry road (thinking plus braking). Trucks and buses: 60 on highways, 80 on motorways <span class="unv">unverified</span>; the L.I. 2519 vehicle table isn't published online yet.</p>
+      </div>
+      <div class="sec">
+        <h3>Why 30 near schools</h3>
+        <p>At 30 km/h a car stops in about 11 m. At 50 it needs about 24 m, more than double. A child stepping out 14 m ahead is safe at 30, and not at 40.</p>
       </div>
       <div class="sec">
         <h3>What gets you a notice</h3>
         <ul>
-          <li>Speeding, caught by a fixed camera, a mobile unit or a laser gun.</li>
+          <li>Speeding, caught by a fixed camera, a mobile unit or a laser gun. Cameras don't have to be signposted.</li>
           <li>Red light: if your tyres cross the stop line after it turns red. Amber is not a red-light offence.</li>
           <li>Driving without your seatbelt.</li>
           <li>Wrongful overtaking, such as crossing a solid line.</li>
-          <li>Each offence is a separate notice, even at the same junction.</li>
+          <li>Each offence is its own notice, even at the same junction.</li>
         </ul>
-      </div>
-      <div class="sec">
-        <h3>Read your dial</h3>
-        <div class="drill">
-          <span class="rd" id="drillSign">50</span>
-          <canvas id="drillCanvas" width="460" height="460" tabindex="0" aria-label="Speedometer. Drag, or use the arrow keys, to set the needle."></canvas>
-        </div>
-        <p class="drill-fb" id="drillFb" aria-live="polite">Drag the needle to where this sign puts it on your <span id="drillVeh"></span>.</p>
-        <div class="drill-row"><span class="dots" id="drillDots"><i></i><i></i><i></i></span><button class="rbtn" id="drillLock"><span>Lock it in</span></button></div>
       </div>
       <div class="sec">
         <h3>What a notice costs</h3>
@@ -286,15 +307,24 @@ details[open] summary{margin-bottom:10px}
         </div>
       </div>
       <div class="sec">
-        <h3>When a real one arrives</h3>
+        <h3>Read your dial</h3>
+        <div class="drill">
+          <span class="rd" id="drillSign">50</span>
+          <canvas id="drillCanvas" width="460" height="460" tabindex="0" aria-label="Speedometer. Drag, or use the arrow keys, to set the needle."></canvas>
+        </div>
+        <p class="drill-fb" id="drillFb" aria-live="polite">Drag the needle to where this sign puts it on your <span id="drillVeh"></span>.</p>
+        <div class="drill-row"><span class="dots" id="drillDots"><i></i><i></i><i></i></span><button class="rbtn" id="drillLock"><span>Lock it in</span></button></div>
+      </div>
+      <div class="sec">
+        <h3>When a real notice arrives</h3>
         <ul>
           <li>It comes by SMS to the <b>registered owner</b>, whoever was driving. Pay or contest within 14 days, then 1% more every day.</li>
+          <li>Unpaid fines block DVLA renewals, transfers and roadworthy checks.</li>
           <li>Real notices come from sender <b>GPS-MTTD</b> and never contain links. Pay only at ghana.gov.gh or *222# option 6. Check any car with *220#.</li>
-          <li>At a roadside stop, officers use a handheld PDA. You don't have to carry your licence, but know its number.</li>
         </ul>
         <p class="note" style="margin-top:8px">The notices in this game are practice cards, not real ones.</p>
       </div>
-      <div class="sources">Sources (checked 23 Sep 2026): <a href="https://police.gov.gh/en/index.php/traffitech-gh/" target="_blank" rel="noopener">Ghana Police Traffitech-GH FAQ</a>, <a href="https://www.pulse.com.gh/story/new-road-traffic-regulations-li-2519-list-of-offences-penalties-and-jail-terms-you-need-to-know-2026091807093555414" target="_blank" rel="noopener">Pulse Ghana on L.I. 2519</a>, <a href="https://www.pulse.com.gh/story/ghana-police-traffitech-gh-implementation-october-1-2026091614422722962" target="_blank" rel="noopener">Pulse on the 1 Oct rollout</a>, <a href="https://www.myjoyonline.com/stick-to-speed-limit-not-vehicles-capacity-mttd/" target="_blank" rel="noopener">MTTD truck limits</a>. Places are real; distances are shortened and the road runs faster than real time.</div>
+      <div class="sources">Sources (checked 23 Sep 2026): <a href="https://police.gov.gh/en/index.php/traffitech-gh/" target="_blank" rel="noopener">Ghana Police Traffitech-GH FAQ</a>, <a href="https://www.pulse.com.gh/story/new-road-traffic-regulations-li-2519-list-of-offences-penalties-and-jail-terms-you-need-to-know-2026091807093555414" target="_blank" rel="noopener">Pulse Ghana on L.I. 2519</a>, <a href="https://www.pulse.com.gh/story/ghana-police-traffitech-gh-implementation-october-1-2026091614422722962" target="_blank" rel="noopener">Pulse on the 1 Oct rollout</a>, <a href="https://www.myjoyonline.com/stick-to-speed-limit-not-vehicles-capacity-mttd/" target="_blank" rel="noopener">MTTD truck limits</a>, <a href="https://www.gov.uk/guidance/the-highway-code/general-rules-techniques-and-advice-for-all-drivers-and-riders-103-to-158" target="_blank" rel="noopener">Highway Code stopping distances</a>. Places are real; distances are shortened and the road runs faster than real time.</div>
     </div>
   </aside>
 </div>
@@ -305,6 +335,7 @@ details[open] summary{margin-bottom:10px}
 var DOT = ' · ', CEDI = 'GH¢', ARROW = ' → ', DASH = '–';
 var KMH_PER_MPH = 1.609344, ENFORCE = Date.UTC(2026, 9, 1), LIVE = Date.now() >= ENFORCE;
 var PACE = 1.4, LENF = 0.65; // the world runs 1.4x real time over shortened stretches
+var COARSE = matchMedia('(pointer:coarse)').matches;
 
 /* ---------- data ---------- */
 var LIMITS = {light:{sensitive:30, urban:50, highway:90, motorway:100}, heavy:{sensitive:30, urban:50, highway:60, motorway:80}};
@@ -312,6 +343,13 @@ var ZONE_ORDER = ['sensitive','urban','highway','motorway'];
 var ZONE_LABEL = {sensitive:'Human activity zone', urban:'Built-up area', highway:'Highway', motorway:'Motorway'};
 var WHY_LABEL = {school:'School', market:'Market', hospital:'Hospital', church:'Church', mosque:'Mosque', procession:'Procession'};
 var ZC = {sensitive:'#e8321f', urban:'#ffb400', highway:'#47b477', motorway:'#3f7ee0'};
+// hazards: who steps out, and how far ahead (real metres) when they do
+var HAZ = {
+  school:{who:'A child', what:'steps out between parked cars', D:14}, market:{who:'A trader', what:'steps out with a head pan', D:14},
+  procession:{who:'A mourner', what:'steps into the road', D:14}, mosque:{who:'A worshipper', what:'crosses after prayers', D:14},
+  church:{who:'A churchgoer', what:'crosses to the other side', D:14}, hospital:{who:'A patient', what:'crosses slowly', D:14},
+  goats:{who:'Goats', what:'wander onto the highway', D:72}, truck:{who:'A broken-down truck', what:'appears in the haze, no warning triangle', D:86}
+};
 
 var VEHICLES = [
   {id:'corolla', name:'Toyota Corolla', sub:'US import, "home-used"', cls:'light', dial:'mph', dialMax:140, vmax:185, acc:14, color:'#c7cacf', body:'sedan'},
@@ -320,7 +358,7 @@ var VEHICLES = [
   {id:'tacoma', name:'Toyota Tacoma', sub:'US import pickup', cls:'light', dial:'mph', dialMax:120, vmax:175, acc:12, color:'#2d4b6d', body:'pickup'},
   {id:'hiace', name:'Hiace trotro', sub:'Commercial minibus', cls:'light', dial:'kmh', dialMax:180, vmax:150, acc:9.5, color:'#e8e2d2', body:'hiace'},
   {id:'moto', name:'125cc bike', sub:'Commuter motorbike', cls:'light', dial:'kmh', dialMax:140, vmax:110, acc:16, color:'#1f5fa8', body:'moto'},
-  {id:'coach', name:'Intercity coach', sub:'Over 3.5 t', cls:'heavy', dial:'kmh', dialMax:140, vmax:100, acc:6.5, color:'#f3f1ea', body:'coach'},
+  {id:'coach', name:'Intercity coach', sub:'Over 3.5 t, longer to stop', cls:'heavy', dial:'kmh', dialMax:140, vmax:100, acc:6.5, color:'#f3f1ea', body:'coach'},
   {id:'truck', name:'DAF XF artic', sub:'UK import, over 3.5 t', cls:'heavy', dial:'mph', dialMax:80, vmax:90, acc:5, color:'#c83a2a', body:'truck'}
 ];
 var ROUTES = [
@@ -330,13 +368,13 @@ var ROUTES = [
     {name:'Ofankor', type:'urban', len:450, scen:'town', board:true, sign:false, light:1},
     {name:'Pokuase'+DASH+'Amasaman', type:'highway', len:1500, scen:'bush', lanes:4, cams:1, laser:1, curve:2, wig:2, hill:4},
     {name:'Medie', type:'urban', len:400, scen:'town', cams:1, board:true, light:1},
-    {name:'Nsawam bypass', type:'highway', len:1300, scen:'bush', cams:1, laser:1, curve:3, wig:1, hill:6},
+    {name:'Nsawam bypass', type:'highway', len:1300, scen:'bush', cams:1, laser:1, curve:3, wig:1, hill:6, haz:'goats'},
     {name:'Nsawam market', type:'sensitive', why:'market', len:280, scen:'market', cams:1},
     {name:'Nsawam', type:'urban', len:400, scen:'town', board:true, light:1}
   ]},
   {id:'tema', name:'Tetteh Quarshie'+ARROW+'Tema', road:'Accra'+DASH+'Tema Motorway', zones:[
     {name:'Tetteh Quarshie', type:'urban', len:450, scen:'town', lanes:4, cams:1, light:1},
-    {name:'Tema Motorway', type:'motorway', len:3200, scen:'motorway', lanes:4, cams:2, laser:1, curve:1, wig:2, hill:2},
+    {name:'Tema Motorway', type:'motorway', len:3200, scen:'motorway', lanes:4, cams:2, laser:1, curve:1, wig:2, hill:2, haz:'truck'},
     {name:'Tema Community 1', type:'urban', len:450, scen:'town', cams:1, board:true, sign:false, light:1},
     {name:'Tema General Hospital', type:'sensitive', why:'hospital', len:250, scen:'hospital', cams:1}
   ]},
@@ -344,7 +382,7 @@ var ROUTES = [
     {name:'Kasoa', type:'urban', len:550, scen:'town', cams:1, board:true, light:1},
     {name:'Kasoa market', type:'sensitive', why:'market', len:300, scen:'market', cams:1},
     {name:'Budumburam', type:'urban', len:400, scen:'town', board:true, sign:false, light:1},
-    {name:'Kasoa'+DASH+'Winneba stretch', type:'highway', len:1300, scen:'bush', cams:1, laser:1, curve:2, wig:2, hill:5},
+    {name:'Kasoa'+DASH+'Winneba stretch', type:'highway', len:1300, scen:'bush', cams:1, laser:1, curve:2, wig:2, hill:5, haz:'goats'},
     {name:'Funeral procession', type:'sensitive', why:'procession', len:220, scen:'procession', laser:1, sign:false, alert:'Mourners on the roadside. 30 applies, sign or no sign.'},
     {name:'Okyereko', type:'urban', len:380, scen:'town', cams:1, board:true, light:1},
     {name:'Winneba approach', type:'highway', len:1000, scen:'bush', cams:1, curve:2, wig:1},
@@ -354,7 +392,7 @@ var ROUTES = [
     {name:'Madina', type:'urban', len:550, scen:'town', cams:1, board:true, light:1},
     {name:'Madina Zongo mosque', type:'sensitive', why:'mosque', len:220, scen:'mosque', cams:1, sign:false, alert:'Prayers letting out. 30 applies, sign or no sign.'},
     {name:'Oyarifa', type:'urban', len:400, scen:'town', board:true, light:1},
-    {name:'Ridge climb', type:'highway', len:1700, scen:'hill', cams:1, laser:1, curve:4, wig:3, rise:55, hill:2},
+    {name:'Ridge climb', type:'highway', len:1700, scen:'hill', cams:1, laser:1, curve:4, wig:3, rise:55, hill:2, haz:'goats'},
     {name:'Peduase', type:'highway', len:800, scen:'hill', cams:1, curve:4, wig:2, rise:20},
     {name:'Aburi church', type:'sensitive', why:'church', len:250, scen:'church', cams:1},
     {name:'Aburi', type:'urban', len:400, scen:'town', board:true}
@@ -369,7 +407,6 @@ function toDial(kmh, unit){ return unit === 'mph' ? kmh / KMH_PER_MPH : kmh; }
 function fromDial(v, unit){ return unit === 'mph' ? v * KMH_PER_MPH : v; }
 function unitLbl(u){ return u === 'mph' ? 'mph' : 'km/h'; }
 function fmtTime(s){ s = Math.max(0, Math.round(s)); return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0'); }
-function fmtN(n){ return Math.round(n).toLocaleString('en-GB'); }
 function rng(seed){ return function(){ seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 function hash(n){ var x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
 function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
@@ -379,7 +416,9 @@ function byId(id){ return document.getElementById(id); }
 function vehById(id){ return VEHICLES.filter(function(v){return v.id===id;})[0]; }
 function routeById(id){ return ROUTES.filter(function(r){return r.id===id;})[0]; }
 function zoneLabel(z){ return z.type === 'sensitive' ? WHY_LABEL[z.why] + DOT + '30 zone' : ZONE_LABEL[z.type]; }
-function getBest(){ try { return JSON.parse(load('ns-best', '{}')) || {}; } catch(e){ return {}; } }
+// typical dry-road stopping distance: 0.67 s thinking + braking (heavier vehicles brake less hard)
+function stopDist(kmh, heavy){ var v = kmh / 3.6; return v * .67 + v * v / (2 * (heavy ? 5 : 6.4)); }
+function getClean(){ try { return JSON.parse(load('ns-clean', '{}')) || {}; } catch(e){ return {}; } }
 
 /* ---------- settings ---------- */
 var chosenV = load('ns-vehicle', 'corolla'), chosenR = load('ns-route', 'n6');
@@ -389,37 +428,36 @@ var opt = {steer: load('ns-steer', '0') === '1', coach: load('ns-coach', '1') ==
 var driverEl = byId('driverName'); driverEl.value = load('ns-driver', '');
 
 function renderLists(){
-  var best = getBest();
+  var clean = getClean();
   byId('vehicles').innerHTML = VEHICLES.map(function(v){
     return '<label class="opt"><input type="radio" name="veh" id="veh-'+v.id+'" value="'+v.id+'"'+(v.id===chosenV?' checked':'')+'>'+
       '<span class="card"><span class="nm">'+esc(v.name)+'</span><span class="sub">'+esc(v.sub)+'</span>'+
       '<span class="chips"><span class="chip '+(v.dial==='mph'?'mph':'')+'">'+(v.dial==='mph'?'mph dial':'km/h dial')+'</span>'+(v.cls==='heavy'?'<span class="chip heavy">Heavy</span>':'')+'</span></span></label>';
   }).join('');
   byId('routes').innerHTML = ROUTES.map(function(r){
-    var total = r.zones.reduce(function(a,z){return a+z.len;},0), b = best[r.id];
+    var total = r.zones.reduce(function(a,z){return a+z.len;},0);
     var bar = r.zones.map(function(z){ return '<i style="width:'+(z.len/total*100).toFixed(2)+'%;background:'+ZC[z.type]+'"></i>'; }).join('');
     return '<label class="opt"><input type="radio" name="route" id="route-'+r.id+'" value="'+r.id+'"'+(r.id===chosenR?' checked':'')+'>'+
       '<span class="card"><span class="nm">'+esc(r.name)+'</span><span class="sub">'+esc(r.road)+'</span><span class="zbar" aria-hidden="true">'+bar+'</span>'+
-      '<span class="chips">'+(b ? '<span class="medal '+b.m+'">'+b.m+'</span><span class="chip">Best '+fmtN(b.s)+'</span>' : '<span class="chip">No medal yet</span>')+'</span></span></label>';
+      (clean[r.id] ? '<span class="chips"><span class="chip clean">Driven clean</span></span>' : '')+'</span></label>';
   }).join('');
 }
 renderLists();
 byId('optSteer').checked = opt.steer; byId('optCoach').checked = opt.coach;
 
 function refreshIntro(){
-  var v = vehById(chosenV), r = routeById(chosenR), b = getBest()[r.id];
-  byId('introVeh').textContent = v.name + (v.dial === 'mph' ? ' · mph dial' : ' · km/h dial');
-  byId('introRoute').textContent = r.name;
-  byId('introBest').textContent = b ? fmtN(b.s) + ' ' + b.m.toUpperCase() : '–';
-  var coarse = matchMedia('(pointer:coarse)').matches;
-  byId('introHint').innerHTML = coarse ? 'Hold the right side to start' : 'Hold <kbd>↑</kbd> to start' + (opt.steer ? DOT + '<kbd>←</kbd><kbd>→</kbd> steer' : '');
-  byId('introGoal').textContent = (LIVE ? 'Cameras are live. ' : 'Cameras go live 1 October. ') + 'Every sign is in km/h' + (v.dial === 'mph' ? ', your dial is mph' : '') + '. Hold the needle just under the limit to build a combo.';
-  byId('steerPad').hidden = !(opt.steer && coarse);
+  var v = vehById(chosenV), r = routeById(chosenR);
+  byId('introVehV').textContent = v.name + DOT + (v.dial === 'mph' ? 'mph dial' : 'km/h dial');
+  byId('introRouteV').textContent = r.name;
+  byId('introHint').innerHTML = COARSE ? 'Hold Gas to drive' : 'Hold <kbd>↑</kbd> to drive' + (opt.steer ? DOT + '<kbd>←</kbd><kbd>→</kbd> steer' : '');
+  byId('introSub').textContent = (v.dial === 'mph' ? 'Your ' + v.name + '’s dial is in mph, so a 50 sign is 31 on your dial. ' : '') +
+    (v.cls === 'heavy' ? 'Heavy vehicles get lower limits on open roads. ' : '') + (LIVE ? 'Cameras are live.' : 'Cameras go live 1 October.');
+  byId('steerPad').hidden = !(opt.steer && COARSE);
 }
 byId('vehicles').addEventListener('change', function(e){ chosenV = e.target.value; save('ns-vehicle', chosenV); readyGame(); drillReset(); });
 byId('routes').addEventListener('change', function(e){ chosenR = e.target.value; save('ns-route', chosenR); readyGame(); });
 byId('optSteer').addEventListener('change', function(e){ opt.steer = e.target.checked; save('ns-steer', opt.steer ? '1' : '0'); readyGame(); });
-byId('optCoach').addEventListener('change', function(e){ opt.coach = e.target.checked; save('ns-coach', opt.coach ? '1' : '0'); readyGame(); });
+byId('optCoach').addEventListener('change', function(e){ opt.coach = e.target.checked; save('ns-coach', opt.coach ? '1' : '0'); state.coach = opt.coach; });
 driverEl.addEventListener('input', function(){ save('ns-driver', driverEl.value); });
 
 /* ---------- sheets ---------- */
@@ -435,27 +473,27 @@ function showSheet(id){
 function closeSheet(silent){
   if (!openSheet) return;
   openSheet.classList.remove('on'); openSheet.setAttribute('aria-hidden', 'true'); byId('scrim').classList.remove('on'); openSheet = null;
-  if (!silent && state.mode === 'drive' && state.paused) togglePause(false);
+  if (!silent && state.mode === 'drive' && state.paused && !state.moment) togglePause(false);
 }
 byId('bSetup').addEventListener('click', function(){ showSheet('sheetSetup'); });
-byId('introSetup').addEventListener('click', function(){ showSheet('sheetSetup'); });
-byId('introSetup2').addEventListener('click', function(){ showSheet('sheetSetup'); });
+byId('introRoute').addEventListener('click', function(){ showSheet('sheetSetup'); });
+byId('introVeh').addEventListener('click', function(){ showSheet('sheetSetup'); });
 byId('bRules').addEventListener('click', function(){ showSheet('sheetRules'); });
 byId('scrim').addEventListener('click', function(){ closeSheet(); });
 byId('app').addEventListener('scroll', function(){ this.scrollLeft = 0; this.scrollTop = 0; });
 Array.prototype.forEach.call(document.querySelectorAll('[data-close]'), function(b){ b.addEventListener('click', function(){ closeSheet(); }); });
 byId('goDrive').addEventListener('click', function(){ closeSheet(true); if (state.mode !== 'ready') readyGame(); });
 
-/* ---------- the gauge cluster (race tach, but it tells the law) ---------- */
+/* ---------- gauge cluster: a race tach whose red zone starts at the legal limit ---------- */
 function drawCluster(g, cx, cy, R, v, valDial, limKmh, band, ghostDial, gear){
   var unit = v.dial, max = v.dialMax, a0 = Math.PI*.75, sweep = Math.PI*1.5;
   function ang(x){ return a0 + Math.max(0, Math.min(1, x/max)) * sweep; }
   g.save();
   var bg = g.createRadialGradient(cx, cy, R*.1, cx, cy, R*1.14);
-  bg.addColorStop(0, 'rgba(8,8,10,.88)'); bg.addColorStop(1, 'rgba(8,8,10,.6)');
+  bg.addColorStop(0, 'rgba(8,8,10,.9)'); bg.addColorStop(1, 'rgba(8,8,10,.62)');
   g.fillStyle = bg; g.beginPath(); g.arc(cx, cy, R*1.14, 0, 7); g.fill();
   g.lineWidth = R*.03; g.strokeStyle = 'rgba(255,180,0,.55)'; g.beginPath(); g.arc(cx, cy, R*1.14, a0 - .05, a0 + sweep + .05); g.stroke();
-  g.lineWidth = R*.075; g.lineCap = 'butt';
+  g.lineWidth = R*.085; g.lineCap = 'butt';
   g.strokeStyle = 'rgba(255,255,255,.1)'; g.beginPath(); g.arc(cx, cy, R*.99, a0, a0 + sweep); g.stroke();
   if (limKmh){
     var ld = toDial(limKmh, unit);
@@ -464,8 +502,8 @@ function drawCluster(g, cx, cy, R, v, valDial, limKmh, band, ghostDial, gear){
     var la = ang(ld);
     g.fillStyle = '#ff3b2a'; g.beginPath();
     g.moveTo(cx + Math.cos(la)*R*1.08, cy + Math.sin(la)*R*1.08);
-    g.lineTo(cx + Math.cos(la - .06)*R*1.24, cy + Math.sin(la - .06)*R*1.24);
-    g.lineTo(cx + Math.cos(la + .06)*R*1.24, cy + Math.sin(la + .06)*R*1.24); g.closePath(); g.fill();
+    g.lineTo(cx + Math.cos(la - .07)*R*1.26, cy + Math.sin(la - .07)*R*1.26);
+    g.lineTo(cx + Math.cos(la + .07)*R*1.26, cy + Math.sin(la + .07)*R*1.26); g.closePath(); g.fill();
   }
   var major = max <= 80 ? 10 : 20, minor = major/2;
   g.textAlign = 'center'; g.textBaseline = 'middle';
@@ -494,13 +532,13 @@ function drawCluster(g, cx, cy, R, v, valDial, limKmh, band, ghostDial, gear){
   g.shadowBlur = 0;
   g.fillStyle = '#1b1b1e'; g.beginPath(); g.arc(cx, cy, R*.1, 0, 7); g.fill();
   g.strokeStyle = 'rgba(255,180,0,.8)'; g.lineWidth = R*.02; g.stroke();
-  g.fillStyle = over ? '#ff5a47' : '#fff'; g.font = 'italic 900 ' + (R*.4) + 'px "Exo 2", sans-serif'; g.fillText(String(Math.round(valDial)), cx + R*.02, cy + R*.48);
-  g.fillStyle = '#ffb400'; g.font = 'italic 800 ' + (R*.12) + 'px "Exo 2", sans-serif'; g.fillText(unit === 'mph' ? 'MPH' : 'KM/H', cx, cy + R*.76);
-  if (unit === 'mph'){ g.fillStyle = 'rgba(255,180,0,.7)'; g.font = 'italic 600 ' + (R*.085) + 'px "Exo 2", sans-serif'; g.fillText('km/h inner', cx, cy + R*.9); }
+  g.fillStyle = over ? '#ff5a47' : '#fff'; g.font = 'italic 900 ' + (R*.4) + 'px "Exo 2", sans-serif'; g.fillText(String(Math.round(valDial)), cx + R*.02, cy + R*.46);
+  g.fillStyle = '#ffb400'; g.font = 'italic 800 ' + (R*.12) + 'px "Exo 2", sans-serif'; g.fillText(unit === 'mph' ? 'MPH' : 'KM/H', cx, cy + R*.72);
+  if (unit === 'mph'){ g.fillStyle = over ? '#ff8a7e' : '#fff'; g.font = 'italic 800 ' + (R*.12) + 'px "Exo 2", sans-serif'; g.fillText('= ' + Math.round(fromDial(valDial, 'mph')) + ' KM/H', cx, cy + R*.9); }
   if (gear != null){
-    g.fillStyle = 'rgba(0,0,0,.6)'; g.fillRect(cx + R*.72, cy + R*.28, R*.34, R*.34);
-    g.strokeStyle = 'rgba(255,180,0,.7)'; g.lineWidth = 1.5; g.strokeRect(cx + R*.72, cy + R*.28, R*.34, R*.34);
-    g.fillStyle = '#fff'; g.font = 'italic 900 ' + (R*.24) + 'px "Exo 2", sans-serif'; g.fillText(String(gear), cx + R*.89, cy + R*.46);
+    g.fillStyle = 'rgba(0,0,0,.6)'; g.fillRect(cx + R*.74, cy + R*.26, R*.32, R*.32);
+    g.strokeStyle = 'rgba(255,180,0,.7)'; g.lineWidth = 1.5; g.strokeRect(cx + R*.74, cy + R*.26, R*.32, R*.32);
+    g.fillStyle = '#fff'; g.font = 'italic 900 ' + (R*.22) + 'px "Exo 2", sans-serif'; g.fillText(String(gear), cx + R*.9, cy + R*.43);
   }
   g.restore();
 }
@@ -556,7 +594,7 @@ byId('drillLock').addEventListener('click', function(){
     drill.round++; drill.locked = false; drill.val = 0;
     if (drill.round >= 3){
       var sc = drill.res.filter(Boolean).length;
-      byId('drillFb').innerHTML = '<b>' + sc + ' of 3.</b> ' + (sc === 3 ? 'Now hold it at speed.' : 'On the road you get about a second per sign.');
+      byId('drillFb').innerHTML = '<b>' + sc + ' of 3.</b> ' + (sc === 3 ? 'Now hold it on the road.' : 'On the road you get about a second per sign.');
       lbl.textContent = 'Again'; drill.round = 2; drillDraw(); drill.round = 3; return;
     }
     byId('drillFb').innerHTML = 'Next: where does this sign sit on your <span id="drillVeh"></span>?';
@@ -567,30 +605,32 @@ byId('drillLock').addEventListener('click', function(){
 
 /* ---------- canvas + scale ---------- */
 var canvas = byId('c'), ctx = canvas.getContext('2d');
-var dpr = Math.min(window.devicePixelRatio || 1, 2);
-var W = 960, H = 540, HORIZON = 270, VS = 270, PORTRAIT = false, HS = 1, hudTop = 60;
-var M = 555, SEG = 1000, DRAW = 230, RUMBLE = 4, CAMH = 1500, PLAYERZ = 2600;
-var camDepth = 1 / Math.tan(50 * Math.PI / 180);
+var dpr = Math.min(window.devicePixelRatio || 1, COARSE ? 1.5 : 2);
+var W = 960, H = 540, HORIZON = 270, VS = 270, PORTRAIT = false, HS = 1, hudTop = 60, pedalLog = 0, cssPer = 1;
+var M = 555, SEG = 1000, DRAW = COARSE ? 180 : 230, RUMBLE = 4, CAMH = 1500, PLAYERZ = 2600;
 var vignette = null, grain = null;
 function resize(){
   var cw = Math.max(1, canvas.clientWidth), ch = Math.max(1, canvas.clientHeight);
   PORTRAIT = ch > cw;
   if (!PORTRAIT){ H = 540; W = Math.round(540 * cw / ch); } else { W = 540; H = Math.round(540 * ch / cw); }
-  HORIZON = PORTRAIT ? H*.46 : H*.5; VS = PORTRAIT ? W*.5 : H/2;
-  HS = PORTRAIT ? 1.3 : 1;
-  hudTop = (60 / ch) * H / HS;
+  HORIZON = PORTRAIT ? H*.44 : H*.5; VS = PORTRAIT ? W*.5 : H/2;
+  cssPer = cw / W;                                   // css px per logical px
+  HS = Math.max(1, Math.min(1.6, .9 / cssPer));      // keep HUD text readable on phones
+  hudTop = (56 / cssPer) / HS;
+  pedalLog = COARSE && PORTRAIT ? (96 / cssPer) / HS : 0;
   canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+  document.documentElement.style.setProperty('--hudb', Math.round((hudTop + 70) * HS * cssPer) + 'px');
   vignette = ctx.createRadialGradient(W/2, H*.55, Math.min(W,H)*.35, W/2, H*.55, Math.max(W,H)*.78);
-  vignette.addColorStop(0, 'rgba(20,10,0,0)'); vignette.addColorStop(1, 'rgba(20,10,0,.62)');
+  vignette.addColorStop(0, 'rgba(20,10,0,0)'); vignette.addColorStop(1, 'rgba(20,10,0,.6)');
 }
 window.addEventListener('resize', resize);
+window.addEventListener('orientationchange', function(){ setTimeout(resize, 200); });
 (function(){
   var g = document.createElement('canvas'); g.width = g.height = 160; var gx = g.getContext('2d'), id = gx.createImageData(160, 160), r = rng(3);
   for (var i = 0; i < id.data.length; i += 4){ var v = r() * 255; id.data[i] = id.data[i+1] = id.data[i+2] = v; id.data[i+3] = 255; }
   gx.putImageData(id, 0, 0); grain = ctx.createPattern(g, 'repeat');
 })();
 
-/* harmattan palette: dust-gold air, laterite, dry savanna */
 var SCEN = {
   town:     {grass:['#9c5b2f','#95572d'], shoulder:['#8d8474','#877e6e']},
   procession:{grass:['#8b8a3d','#858439'], shoulder:['#a3612f','#9c5c2c']},
@@ -603,14 +643,14 @@ var HAZE = [228,196,138];
 
 /* ---------- game state ---------- */
 var state = {mode:'ready'};
-var segs = [], cams = [], lights = [], signsList = [], cars = [], route, veh, trackLen = 0, zoneStarts = [];
+var segs = [], cams = [], lights = [], signsList = [], hazards = [], cars = [], route, veh, trackLen = 0, zoneStarts = [];
 function lanesOf(z){ return z.lanes || 2; }
 function limitOf(zi){ return LIMITS[veh.cls][route.zones[zi].type]; }
 
 function buildTrack(){
   route = routeById(chosenR); veh = vehById(chosenV);
   var rand = rng(route.id.length * 7919 + 17);
-  segs = []; cams = []; lights = []; signsList = []; zoneStarts = [];
+  segs = []; cams = []; lights = []; signsList = []; hazards = []; zoneStarts = [];
   var y = 0, idx = 0;
   route.zones.forEach(function(z, zi){
     var n = Math.max(20, Math.round(z.len * M / SEG)), baseY = y;
@@ -640,32 +680,38 @@ function buildTrack(){
     if (z.light){
       var li = s0 + Math.round((s1 - s0) * .58);
       var L = {seg: li, zone: zi, phase:'green', t:0, trig: rand() < .7 ? 2.2 + rand()*1.6 : -1, passed:false, stopped:false};
-      L.sprite = put(li, 'tlight', edge + .05, {L:L}); put(li, 'stopline', 0, {L:L}); put(li, 'tlight', -(edge + .05), {L:L, mirror:true});
+      put(li, 'tlight', edge + .05, {L:L}); put(li, 'stopline', 0, {L:L}); put(li, 'tlight', -(edge + .05), {L:L});
       lights.push(L);
+    }
+    var hk = z.why || z.haz;
+    if (hk && HAZ[hk]){
+      var hs = s0 + Math.round((s1 - s0) * (z.type === 'sensitive' ? .5 : .7));
+      var Hz = {seg: hs, zone: zi, kind: hk, D: HAZ[hk].D, state:'wait', x: hk === 'goats' ? -1.6 : hk === 'truck' ? .25 : 1.3, home: hk === 'goats' ? -1.6 : 1.3, t:0};
+      Hz.sprite = put(hs, 'hazard', Hz.x, {H:Hz}); hazards.push(Hz);
     }
     for (var i = s0; i < s1; i++){
       var r = rand();
       if (z.scen === 'town' || z.scen === 'school' || z.scen === 'hospital' || z.scen === 'church' || z.scen === 'mosque'){
-        if (i % 7 === 0) put(i, r < .5 ? 'kiosk' : 'building', (r < .5 ? 1.5 : 2.3) + rand()*.5, {c:Math.floor(rand()*6), h:3+rand()*4, w:6+rand()*4, seed:i});
-        if (i % 9 === 3) put(i, rand() < .55 ? 'kiosk' : 'building', -(1.5 + rand()*1.1), {c:Math.floor(rand()*6), h:3+rand()*4, w:6+rand()*4, seed:i+.5});
+        if (i % 7 === 0) put(i, r < .5 ? 'kiosk' : 'building', (r < .5 ? 1.5 : 2.3) + rand()*.5, {c:Math.floor(rand()*6), h:3+rand()*4, w:6+rand()*4});
+        if (i % 9 === 3) put(i, rand() < .55 ? 'kiosk' : 'building', -(1.5 + rand()*1.1), {c:Math.floor(rand()*6), h:3+rand()*4, w:6+rand()*4});
         if (i % 31 === 11) put(i, 'tree', (rand()<.5?-1:1)*(1.45+rand()*.4), {s:.8+rand()*.4});
-        if (i % 17 === 6) put(i, 'person', (rand()<.5?-1:1)*(1.22+rand()*.2), {c:Math.floor(rand()*6), pan: rand() < .3});
+        if (i % 17 === 6) put(i, 'person', (rand()<.5?-1:1)*(1.24+rand()*.2), {c:Math.floor(rand()*6), pan: rand() < .3});
         if (z.scen === 'school' && i % 23 === 5) put(i, 'schoolbld', -(2.2+rand()*.4), {pin: i === s0 + 5});
         if (z.scen === 'hospital' && i === s0 + 20) put(i, 'hospital', 2.4, {pin:true});
         if (z.scen === 'church' && i === s0 + 22) put(i, 'church', -2.4, {pin:true});
         if (z.scen === 'mosque' && i === s0 + 18) put(i, 'mosque', 2.5, {pin:true});
       } else if (z.scen === 'market'){
         if (i % 3 === 0) put(i, 'stall', (rand()<.5?-1:1)*(1.3 + rand()*.35), {c:Math.floor(rand()*6), pin: i === s0 + 21});
-        if (i % 4 === 1) put(i, 'person', (rand()<.5?-1:1)*(1.18 + rand()*.25), {c:Math.floor(rand()*6), pan: rand() < .5});
-        if (i % 8 === 0) put(i, 'kiosk', (rand()<.5?-1:1)*(1.9 + rand()*.4), {c:Math.floor(rand()*6), seed:i});
+        if (i % 4 === 1) put(i, 'person', (rand()<.5?-1:1)*(1.2 + rand()*.25), {c:Math.floor(rand()*6), pan: rand() < .5});
+        if (i % 8 === 0) put(i, 'kiosk', (rand()<.5?-1:1)*(1.9 + rand()*.4), {c:Math.floor(rand()*6)});
       } else if (z.scen === 'procession'){
-        if (i % 2 === 0) put(i, 'person', 1.2 + rand()*.35, {mourner:true, c: rand() < .5 ? 0 : 1, pin: i === s0 + 16});
+        if (i % 2 === 0) put(i, 'person', 1.24 + rand()*.35, {mourner:true, c: rand() < .5 ? 0 : 1, pin: i === s0 + 16});
         if (i % 3 === 0) put(i, 'person', -(1.25 + rand()*.3), {mourner:true, c: rand() < .5 ? 0 : 1});
         if (i % 9 === 0) put(i, 'tree', (rand()<.5?-1:1)*(2 + rand()*2), {s:.8});
       } else if (z.scen === 'bush' || z.scen === 'hill'){
         var dens = z.scen === 'hill' ? 3 : 5;
         if (i % dens === 0) put(i, rand() < .45 ? 'palm' : 'tree', (rand()<.5?-1:1)*(1.5 + rand()*3.5), {s:.7+rand()*.7});
-        if (i % 61 === 7) put(i, 'kiosk', 1.6 + rand()*.3, {c:Math.floor(rand()*6), seed:i});
+        if (i % 61 === 7) put(i, 'kiosk', 1.6 + rand()*.3, {c:Math.floor(rand()*6)});
         if (i % 47 === 20) put(i, 'billboard', (rand()<.5?-1:1)*(2.6 + rand()), {c:Math.floor(rand()*4)});
       } else if (z.scen === 'motorway'){
         if (i % 28 === 0) put(i, 'lamp', 0, {});
@@ -678,10 +724,11 @@ function buildTrack(){
       var isLaser = c >= (z.cams||0);
       var frac = (c+1)/(n+1) * .8 + .12 + (rand()-.5)*.08, ci = Math.round(s0 + (s1-s0)*frac), warned = !isLaser && rand() < .45;
       if (z.light){ var ls = lights[lights.length-1].seg; if (Math.abs(ci - ls) < 25) ci = ls + 30 < s1 ? ls + 30 : ls - 30; }
+      var hzz = hazards.length && hazards[hazards.length-1].zone === zi ? hazards[hazards.length-1].seg : -999;
+      if (Math.abs(ci - hzz) < 30) ci = hzz + 40 < s1 ? hzz + 40 : hzz - 40;
       var sp = put(ci, isLaser ? 'laser' : 'camera', edge + (isLaser ? .1 : .15), {});
-      var ws = warned ? ci - Math.round(150*perM) : -1;
-      if (warned) put(ws, 'camwarn', edge, {});
-      cams.push({seg:ci, zone:zi, fired:false, laser:isLaser, sprite:sp, warnSeg:ws});
+      if (warned) put(ci - Math.round(150*perM), 'camwarn', edge, {});
+      cams.push({seg:ci, zone:zi, fired:false, laser:isLaser, sprite:sp});
     }
   });
   var fc = cams.filter(function(c){ return !c.laser; })[0];
@@ -701,32 +748,32 @@ function newCar(dir, z, rand){
     life: (slow ? 450 + rand()*350 : 110 + rand()*140)*M, slogan: SLOGANS[Math.floor(rand()*SLOGANS.length)], warned:false, ahead:true, spd:-1, pull:0};
 }
 function segAt(z){ var i = Math.floor(z/SEG); return segs[Math.max(0, Math.min(segs.length-1, i))]; }
-function laneOffset(car, seg){ if (car.lane != null) return car.lane; var p = car.pull || 0; if (seg.lanes === 4) return car.dir > 0 ? .75 + p*.45 : -.5; return car.dir > 0 ? .5 + p*.85 : -.5; }
+function laneOffset(car, seg){ var p = car.pull || 0; if (seg.lanes === 4) return car.dir > 0 ? .75 + p*.45 : -.5; return car.dir > 0 ? .5 + p*.85 : -.5; }
 function carLen(c){ return (c.body === 'truck' || c.body === 'coach' ? 12 : c.body === 'hiace' ? 5 : 4.5) * M; }
 function legalTime(){ var t = 0; route.zones.forEach(function(z, i){ t += z.len / (limitOf(i) / 3.6); }); return t / PACE; }
 
 function readyGame(){
   buildTrack();
   state = {mode:'ready', pos:0, speed:0, t:0, flashes:0, fines:0, lastSign:null, zoneIdx:-1, msgs:[], pops:[], flashT:0,
-    playerX: segAt(PLAYERZ).lanes === 4 ? .25 : .5, skyX:0, bounce:0, paused:false, freeze:0,
+    playerX: segAt(PLAYERZ).lanes === 4 ? .25 : .5, skyX:0, bounce:0, paused:false, freeze:0, autoBrake:false,
     stats: route.zones.map(function(){ return {max:0, overM:0, flashes:0}; }), coach: opt.coach, ended:false, notices:[],
     crashes:0, bumps:0, overtakes:0, solid:0, offroad:false, solidWarned:false,
-    score:0, mult:1, bandT:0, overT:0, overPopT:0, belt:false, beltChecked:false, patrol:null, pursuits:0, stops:0,
-    tally:{pace:0, perfect:0, perfectN:0, clean:0, cleanN:0, belt:0, overtake:0, penalty:0}, redRun:0};
+    distM:0, overM:0, belt:false, beltChecked:false, moments:[], moment:null, legalCams:0, cleanStops:0, redRun:0};
   clearKeys();
-  byId('result').hidden = true; hideNotice();
+  byId('result').hidden = true; byId('moment').hidden = true; hideNotice();
   byId('intro').classList.remove('gone');
-  byId('belt').hidden = false;
+  byId('belt').hidden = true;
   refreshIntro();
 }
 function beginDrive(){
   if (state.mode !== 'ready') return;
   state.mode = 'drive'; byId('intro').classList.add('gone');
-  pop('GO!', '', '#ffb400', 1.1, true);
+  if (!state.belt) byId('belt').hidden = false;
+  pop('GO', '', '#ffb400', .9, true);
 }
 
 /* ---------- sound (off until asked) ---------- */
-var audio = {on:false, ctx:null, eng:null, siren:null};
+var audio = {on:false, ctx:null, eng:null};
 function audioInit(){
   if (audio.ctx) return true;
   try {
@@ -734,8 +781,7 @@ function audioInit(){
     var a = new AC(), o1 = a.createOscillator(), o2 = a.createOscillator(), f = a.createBiquadFilter(), g = a.createGain();
     o1.type = 'sawtooth'; o2.type = 'square'; f.type = 'lowpass'; f.frequency.value = 620; g.gain.value = 0;
     o1.connect(f); o2.connect(f); f.connect(g); g.connect(a.destination); o1.start(); o2.start();
-    var so = a.createOscillator(), sg = a.createGain(); so.type = 'triangle'; so.frequency.value = 700; sg.gain.value = 0; so.connect(sg); sg.connect(a.destination); so.start();
-    audio.ctx = a; audio.eng = {o1:o1, o2:o2, g:g}; audio.siren = {o:so, g:sg}; return true;
+    audio.ctx = a; audio.eng = {o1:o1, o2:o2, g:g}; return true;
   } catch(e){ return false; }
 }
 function setSound(on){
@@ -744,7 +790,7 @@ function setSound(on){
   if (audio.ctx){ try { if (on) audio.ctx.resume(); } catch(e){} }
   byId('bSound').setAttribute('aria-pressed', on ? 'true' : 'false');
   byId('bSound').firstChild.textContent = on ? 'Sound on' : 'Sound';
-  if (!on && audio.eng){ audio.eng.g.gain.value = 0; audio.siren.g.gain.value = 0; }
+  if (!on && audio.eng) audio.eng.g.gain.value = 0;
 }
 byId('bSound').addEventListener('click', function(){ setSound(!audio.on); });
 function engineTick(){
@@ -752,24 +798,20 @@ function engineTick(){
   var s = state.speed, heavy = veh.cls === 'heavy', gw = heavy ? 18 : 30, gear = Math.floor(s / gw), rev = (s % gw) / gw, tt = audio.ctx.currentTime;
   var base = (heavy ? 34 : 50) + rev * (heavy ? 45 : 95) + gear * 7;
   audio.eng.o1.frequency.setTargetAtTime(base, tt, .04); audio.eng.o2.frequency.setTargetAtTime(base * .5, tt, .04);
-  var driving = state.mode === 'drive' && !state.paused;
-  audio.eng.g.gain.setTargetAtTime(driving ? .03 + (keys.gas ? .03 : 0) : 0, tt, .08);
-  var p = state.patrol && state.patrol.phase !== 'leave' && driving;
-  audio.siren.o.frequency.setTargetAtTime(p ? 650 + 450 * (Math.sin(performance.now() / 180) * .5 + .5) : 700, tt, .03);
-  audio.siren.g.gain.setTargetAtTime(p ? .035 : 0, tt, .1);
+  audio.eng.g.gain.setTargetAtTime(state.mode === 'drive' && !state.paused ? .03 + (keys.gas ? .03 : 0) : 0, tt, .08);
 }
 function blip(kind){
   if (!audio.on || !audio.ctx) return;
   var a = audio.ctx, t = a.currentTime;
   try {
-    if (kind === 'shutter' || kind === 'crash'){
-      var b = a.createBuffer(1, a.sampleRate * (kind === 'crash' ? .5 : .12), a.sampleRate), d = b.getChannelData(0);
-      for (var i = 0; i < d.length; i++) d[i] = (Math.random()*2-1) * Math.pow(1 - i/d.length, 3);
+    if (kind === 'shutter' || kind === 'crash' || kind === 'skid'){
+      var b = a.createBuffer(1, a.sampleRate * (kind === 'shutter' ? .12 : .5), a.sampleRate), d = b.getChannelData(0);
+      for (var i = 0; i < d.length; i++) d[i] = (Math.random()*2-1) * Math.pow(1 - i/d.length, kind === 'skid' ? 1 : 3);
       var src = a.createBufferSource(), fl = a.createBiquadFilter(), g = a.createGain();
-      fl.type = kind === 'crash' ? 'lowpass' : 'highpass'; fl.frequency.value = kind === 'crash' ? 700 : 1800; g.gain.value = .5;
+      fl.type = kind === 'shutter' ? 'highpass' : 'bandpass'; fl.frequency.value = kind === 'shutter' ? 1800 : kind === 'skid' ? 2400 : 700; g.gain.value = kind === 'skid' ? .25 : .5;
       src.buffer = b; src.connect(fl); fl.connect(g); g.connect(a.destination); src.start(t);
     }
-    var tones = kind === 'shutter' ? [[880,.18],[1320,.34]] : kind === 'good' ? [[660,0],[990,.08]] : kind === 'combo' ? [[1180,0]] : [];
+    var tones = kind === 'shutter' ? [[880,.18],[1320,.34]] : kind === 'good' ? [[660,0],[990,.08]] : [];
     tones.forEach(function(p){ var o = a.createOscillator(), g2 = a.createGain(); o.type = 'square'; o.frequency.value = p[0];
       g2.gain.setValueAtTime(0, t+p[1]); g2.gain.linearRampToValueAtTime(.05, t+p[1]+.01); g2.gain.exponentialRampToValueAtTime(.001, t+p[1]+.16);
       o.connect(g2); g2.connect(a.destination); o.start(t+p[1]); o.stop(t+p[1]+.2); });
@@ -777,14 +819,15 @@ function blip(kind){
 }
 
 /* ---------- input ---------- */
-var keys = {};
+var keys = {}, pointers = {};
 function clearKeys(){ keys.gas = keys.brake = keys.left = keys.right = false; pointers = {}; }
 function typing(e){ return e.target && (e.target.tagName === 'INPUT' || e.target === dc); }
 window.addEventListener('keydown', function(e){
   if (typing(e)) return;
   var k = e.key;
+  if (state.moment && (k === 'Enter' || k === ' ' || k === 'Escape')){ e.preventDefault(); closeMoment(); return; }
   if (k === 'Escape'){ if (openSheet) closeSheet(); else if (state.mode === 'drive') togglePause(); return; }
-  if (openSheet || state.mode === 'done') return;
+  if (openSheet || state.mode === 'done' || state.moment) return;
   if (k==='ArrowUp'||k==='w'||k==='W'){ keys.gas = true; beginDrive(); e.preventDefault(); }
   if (k==='ArrowDown'||k==='s'||k==='S'||k===' '){ keys.brake = true; e.preventDefault(); }
   if (opt.steer && (k==='ArrowLeft'||k==='a'||k==='A')){ keys.left = true; e.preventDefault(); }
@@ -801,28 +844,35 @@ window.addEventListener('keyup', function(e){
   if (k==='ArrowLeft'||k==='a'||k==='A') keys.left = false;
   if (k==='ArrowRight'||k==='d'||k==='D') keys.right = false;
 });
-var pointers = {};
 function syncPointers(){ var g = false, b = false; for (var id in pointers){ if (pointers[id] === 'gas') g = true; else b = true; } keys.gas = g; keys.brake = b; }
-canvas.addEventListener('pointerdown', function(e){
-  if (state.mode === 'done') return;
-  e.preventDefault(); try { canvas.setPointerCapture(e.pointerId); } catch(_){}
-  var r = canvas.getBoundingClientRect(), side = (e.clientX - r.left) > r.width / 2 ? 'gas' : 'brake';
-  pointers[e.pointerId] = side; syncPointers(); if (side === 'gas') beginDrive();
-});
-function upPtr(e){ delete pointers[e.pointerId]; syncPointers(); }
-canvas.addEventListener('pointerup', upPtr); canvas.addEventListener('pointercancel', upPtr); canvas.addEventListener('lostpointercapture', upPtr);
+if (!COARSE){
+  canvas.addEventListener('pointerdown', function(e){
+    if (state.mode === 'done' || state.moment) return;
+    e.preventDefault(); try { canvas.setPointerCapture(e.pointerId); } catch(_){}
+    var r = canvas.getBoundingClientRect(), side = (e.clientX - r.left) > r.width / 2 ? 'gas' : 'brake';
+    pointers[e.pointerId] = side; syncPointers(); if (side === 'gas') beginDrive();
+  });
+  var upPtr = function(e){ delete pointers[e.pointerId]; syncPointers(); };
+  canvas.addEventListener('pointerup', upPtr); canvas.addEventListener('pointercancel', upPtr); canvas.addEventListener('lostpointercapture', upPtr);
+}
 canvas.addEventListener('contextmenu', function(e){ e.preventDefault(); });
 function holdBtn(id, key){
   var el = byId(id);
-  el.addEventListener('pointerdown', function(e){ e.preventDefault(); keys[key] = true; el.classList.add('on'); try { el.setPointerCapture(e.pointerId); } catch(_){} });
+  el.addEventListener('pointerdown', function(e){
+    e.preventDefault(); if (state.mode === 'done' || state.moment) return;
+    keys[key] = true; el.classList.add('on'); try { el.setPointerCapture(e.pointerId); } catch(_){}
+    if (key === 'gas') beginDrive();
+    try { if (navigator.vibrate) navigator.vibrate(8); } catch(_){}
+  });
   ['pointerup','pointercancel','lostpointercapture'].forEach(function(t){ el.addEventListener(t, function(){ keys[key] = false; el.classList.remove('on'); }); });
+  el.addEventListener('contextmenu', function(e){ e.preventDefault(); });
 }
-holdBtn('sLeft', 'left'); holdBtn('sRight', 'right');
+holdBtn('pGas', 'gas'); holdBtn('pBrake', 'brake'); holdBtn('sLeft', 'left'); holdBtn('sRight', 'right');
 byId('belt').addEventListener('click', buckle);
 function buckle(){
   if (state.belt || state.mode === 'done') return;
   state.belt = true; byId('belt').hidden = true;
-  addScore('belt', 100); pop('BELT ON', '+100', '#5ad27a', 1.4); blip('good');
+  pop('BELT ON', 'Seatbelts are checked by camera', '#5ad27a', 1.6); blip('good');
 }
 window.addEventListener('blur', function(){ clearKeys(); });
 document.addEventListener('visibilitychange', function(){ if (document.hidden && state.mode === 'drive' && !state.paused) togglePause(true); });
@@ -831,38 +881,75 @@ function togglePause(force){
   state.paused = typeof force === 'boolean' ? force : !state.paused; clearKeys();
 }
 
-/* ---------- feedback: pops, notices, score ---------- */
-function pop(text, sub, color, dur, big){ state.pops.push({text:text, sub:sub||'', color:color||'#fff', t:dur||1.6, d:dur||1.6, big:!!big}); if (state.pops.length > 3) state.pops.shift(); }
-function toast(text, sub, color, dur){ state.msgs.push({text:text, sub:sub||'', color:color||'#fff', t:dur||3}); if (state.msgs.length > 2) state.msgs.shift(); }
-function addScore(kind, n){ if (n < 0) n = -Math.min(-n, state.score); state.score += n; if (state.tally[kind] != null) state.tally[kind] += n; if (n < 0) state.tally.penalty += -n; }
+/* ---------- feedback ---------- */
+function pop(text, sub, color, dur, big){ state.pops.push({text:text, sub:sub||'', color:color||'#fff', t:dur||1.6, d:dur||1.6, big:!!big}); if (state.pops.length > 2) state.pops.shift(); }
+function toast(text, sub, color, dur){ state.msgs.push({text:text, sub:sub||'', color:color||'#fff', t:dur||3}); if (state.msgs.length > 1) state.msgs.shift(); }
 var noticeTimer = 0;
 function showNotice(n){
   var el = byId('notice');
   el.innerHTML = '<div class="n-top"><span>Practice notice</span><span>' + esc(n.clock) + '</span></div>' +
     '<div class="n-title">' + esc(n.title) + DOT + esc(n.ticket) + '</div>' +
     '<div class="n-grid"><span>Where</span><span>' + esc(n.where) + '</span><span>Vehicle</span><span>' + PLATE + '</span>' +
-    '<span>Offence</span><span>' + esc(n.what) + '</span><span>Fine</span><span class="n-amt">' + CEDI + n.fine + ', pay within 14 days</span></div>';
+    '<span>Offence</span><span>' + esc(n.what) + '</span><span>Fine</span><span class="n-amt">' + (n.fine ? CEDI + n.fine + ', pay within 14 days' : 'Licence suspended') + '</span></div>';
   el.classList.add('in'); clearTimeout(noticeTimer); noticeTimer = setTimeout(hideNotice, 4200);
 }
 function hideNotice(){ byId('notice').classList.remove('in'); }
 function clock(){ var d = new Date(); return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); }
-function offence(zoneIdx, title, what, laser){
+function nextFine(){ return state.flashes < 5 ? FINES[state.flashes] : 0; }
+function offence(zoneIdx, title, what){
   state.flashes++; state.stats[zoneIdx].flashes++; state.flashT = 1; blip('shutter');
   try { if (navigator.vibrate) navigator.vibrate(70); } catch(e){}
-  state.mult = 1; state.bandT = 0; addScore('penalty', -400);
   var fine = state.flashes <= 5 ? FINES[state.flashes-1] : 0;
   var n = {ticket: 'NS-' + String(100000 + Math.floor(Math.random()*899999)), where: route.zones[zoneIdx].name, what: what, title: title, fine: fine, clock: clock()};
   state.notices.push(n);
   if (state.flashes >= 6){ finish('suspended'); return; }
   state.fines += fine; showNotice(n);
-  pop(title.toUpperCase(), 'HEAT ' + state.flashes + DOT + CEDI + fine, '#ff5a47', 1.8, true);
-  if ((laser || state.flashes === 3 || state.flashes === 5) && !state.patrol) startPatrol(laser);
+  pop('−' + CEDI + fine, title, '#ff5a47', 1.9, true);
 }
-function startPatrol(laser){
-  var pz = state.pos + PLAYERZ, seg = segAt(pz);
-  state.patrol = {z: pz - 70*M, lane: seg.lanes === 4 ? .75 : -.5, phase:'approach', t:0, spd: state.speed + 30, laser: laser};
-  state.pursuits++;
-  toast(laser ? 'LASER CHECK' : 'HEAT LEVEL ' + state.flashes, 'MTTD patrol behind you. When it pulls in front, stop.', '#6aa8ff', 3.2);
+
+/* ---------- the "why" moment ---------- */
+function triggerHazard(h, s){
+  var heavy = veh.cls === 'heavy', lim = limitOf(h.zone);
+  var need = stopDist(s, heavy), needLim = stopDist(lim, heavy), ok = need <= h.D;
+  h.state = 'active'; h.t = 0; h.need = need; h.needLim = needLim; h.speed = s; h.ok = ok; h.lim = lim;
+  var info = HAZ[h.kind];
+  state.moments.push({where: route.zones[h.zone].name, who: info.who, ok: ok, speed: Math.round(s), need: need, D: h.D, lim: lim, needLim: needLim});
+  state.autoBrake = true; blip('skid');
+  if (ok){
+    pop('STOPPED IN TIME', 'You needed ' + Math.round(need) + ' m. You had ' + h.D + ' m.', '#5ad27a', 2.6, true);
+  } else {
+    state.moment = h; state.paused = true; clearKeys();
+    showMoment(h);
+  }
+}
+function barsHtml(h){
+  var max = Math.max(h.need, h.needLim, h.D) * 1.12;
+  function pct(v){ return (v / max * 100).toFixed(1); }
+  var youLbl = Math.round(h.speed) + ' km/h' + (veh.dial === 'mph' ? ' (' + Math.round(toDial(h.speed,'mph')) + ' mph)' : '');
+  return '<div class="bars">' +
+    '<div class="brow"><span class="lab"><b>You</b>' + youLbl + '</span><div class="track"><div class="fill you" style="width:' + pct(h.need) + '%"><span>' + Math.round(h.need) + ' m</span></div></div></div>' +
+    '<div class="brow"><span class="lab"><b>The limit</b>' + h.lim + ' km/h</span><div class="track"><div class="fill lim" style="width:' + pct(h.needLim) + '%"><span>' + Math.round(h.needLim) + ' m</span></div></div></div>' +
+    '<div class="mark" style="left:calc(98px + (100% - 98px) * ' + (h.D / max).toFixed(3) + ')"><span>' + (h.kind === 'goats' ? 'Goats' : h.kind === 'truck' ? 'Truck' : 'Person') + ' ' + h.D + ' m ahead</span></div>' +
+  '</div>';
+}
+function showMoment(h){
+  var info = HAZ[h.kind], spare = h.D - h.needLim;
+  hideNotice();
+  var el = byId('moment');
+  el.innerHTML = '<div class="mcard" role="alertdialog" aria-labelledby="mH" aria-describedby="mP">' +
+    '<div class="k">' + esc(route.zones[h.zone].name) + '</div>' +
+    '<h2 id="mH">Too fast to stop</h2>' +
+    '<p id="mP">' + esc(info.who) + ' ' + esc(info.what) + ', <b>' + h.D + ' m</b> ahead. At ' + Math.round(h.speed) + ' km/h you need <b>' + Math.round(h.need) + ' m</b> to stop. At the ' + h.lim + ' limit you would have stopped with <b>' + Math.max(0, Math.round(spare)) + ' m</b> to spare.</p>' +
+    barsHtml(h) +
+    '<p class="note">That’s why the limit is ' + h.lim + ' here. Stopping distance grows with the square of your speed.</p>' +
+    '<button class="rbtn" id="mGo"><span>Got it, drive on</span></button></div>';
+  el.hidden = false;
+  byId('mGo').addEventListener('click', closeMoment);
+  setTimeout(function(){ var b = byId('mGo'); if (b) b.focus({preventScroll:true}); }, 60);
+}
+function closeMoment(){
+  if (!state.moment) return;
+  state.moment = null; byId('moment').hidden = true; state.paused = false; state.speed = 0;
 }
 
 /* ---------- update ---------- */
@@ -870,7 +957,8 @@ function update(dt){
   if (state.mode !== 'drive' || state.ended || state.paused) return;
   state.t += dt;
   var s = state.speed;
-  if (state.freeze > 0){ state.freeze -= dt; s = Math.max(0, s - 60*dt); }
+  if (state.autoBrake){ s = Math.max(0, s - 70*dt); if (s === 0) state.autoBrake = false; }
+  else if (state.freeze > 0){ state.freeze -= dt; s = Math.max(0, s - 60*dt); }
   else {
     if (keys.gas) s += veh.acc * (1 - Math.pow(s/veh.vmax, 2)) * dt; else s -= (1.5 + s*0.018) * dt;
     if (keys.brake) s -= 38 * dt;
@@ -887,12 +975,29 @@ function update(dt){
     if (off && s > 30) s -= 70 * dt;
     if (off && !state.offroad) toast('OFF THE ROAD', 'Laterite and gutters. Ease back on.', '#ffb400', 1.8);
     state.offroad = off;
-    if (pSeg.sens && pSeg.lanes === 2 && state.playerX < -.05 && !state.solidWarned){ state.solidWarned = true; state.solid++; toast('SOLID LINE', 'That’s wrongful overtaking. Cameras here will catch it.', '#ffb400', 2.6); }
+    if (pSeg.sens && pSeg.lanes === 2 && state.playerX < -.05 && !state.solidWarned){ state.solidWarned = true; state.solid++; toast('SOLID LINE', 'Overtaking here is wrongful overtaking. Cameras catch it.', '#ffb400', 2.6); }
     if (!(pSeg.sens && state.playerX < -.05)) state.solidWarned = false;
   } else {
     var targetX = pSeg.lanes === 4 ? .25 : .5;
     state.playerX += (targetX - state.playerX) * Math.min(1, dt*1.5);
   }
+
+  // hazards: someone steps out when they are D real metres ahead
+  for (var hi = 0; hi < hazards.length; hi++){
+    var h = hazards[hi], hz = h.seg * SEG;
+    if (h.state === 'wait' && hz - pz <= h.D * M && hz > pz){ triggerHazard(h, s); if (state.paused) { state.speed = s; return; } }
+    if (h.state === 'active'){
+      h.t += dt;
+      var target = h.kind === 'truck' ? .25 : (opt.steer ? state.playerX : (pSeg.lanes === 4 ? .25 : .5));
+      h.x += (target - h.x) * Math.min(1, dt * 4);
+      if (h.t > (h.ok ? 2.2 : .3) && !state.autoBrake){ h.state = 'leaving'; }
+    } else if (h.state === 'leaving'){
+      h.x += ((h.kind === 'goats' ? 1.8 : h.home) - h.x) * Math.min(1, dt * 1.6);
+      if (Math.abs(h.x - (h.kind === 'goats' ? 1.8 : h.home)) < .05) h.state = 'done';
+    }
+    h.sprite.offset = h.x;
+  }
+  s = state.autoBrake ? Math.min(s, state.speed) : s;
 
   // traffic lights
   lights.forEach(function(L){
@@ -903,9 +1008,9 @@ function update(dt){
     if (!L.passed && L.phase === 'red' && dist > 0 && dist < 45*M && s < 3) L.stopped = true;
     if (!L.passed && dist <= 0){
       L.passed = true;
-      if (L.phase === 'red'){ state.redRun++; offence(L.zone, 'Red light', 'Tyres crossed the stop line on red'); if (state.ended) return; }
-      else if (L.stopped){ addScore('clean', 300); state.tally.cleanN++; pop('CLEAN STOP', '+300', '#5ad27a', 1.5); blip('good'); }
-      else if (L.phase === 'amber') pop('AMBER', 'Legal, but close', '#ffb400', 1.1);
+      if (L.phase === 'red'){ state.redRun++; offence(L.zone, 'Red light', 'Tyres crossed the stop line on red'); }
+      else if (L.stopped){ state.cleanStops++; pop('CLEAN STOP', 'You waited for green', '#5ad27a', 1.4); blip('good'); }
+      else if (L.phase === 'amber') pop('AMBER', 'Legal, but only just', '#ffb400', 1.1);
     }
   });
   if (state.ended) return;
@@ -918,7 +1023,7 @@ function update(dt){
       var cv = c.spd >= 0 ? c.spd : cSpd;
       if (gap > 0 && gap < 9*M && s > cv){
         s = Math.max(cv, s - 60*dt*(1 - gap/(9*M)));
-        if (gap < 5*M){ s = Math.min(s, cv); if (!c.warned){ c.warned = true; toast('TOO CLOSE', 'Trotros stop anywhere. Back off.', '#ffb400', 2); } }
+        if (gap < 5*M){ s = Math.min(s, cv); if (!c.warned){ c.warned = true; toast('TOO CLOSE', 'Trotros stop anywhere. Leave a gap.', '#ffb400', 2); } }
       }
       return;
     }
@@ -926,38 +1031,15 @@ function update(dt){
     var hit = lat < thr && gap > -len*.2 && gap < len*.8;
     if (c.dir > 0){
       var cv2 = c.spd >= 0 ? c.spd : cSpd;
-      if (hit && s > cv2){ s = cv2 * .6; state.pos -= 1.5*M; state.bumps++; addScore('penalty', -100); blip('crash'); pop('BUMP', '-100', '#ff5a47', 1.3); }
-      if (c.ahead && gap < -len){ c.ahead = false; state.overtakes++; addScore('overtake', 75); pop('OVERTAKE', '+75', '#fff', 1); }
+      if (hit && s > cv2){ s = cv2 * .6; state.pos -= 1.5*M; state.bumps++; blip('crash'); toast('BUMP', 'You ran into the car ahead. Leave a gap.', '#ff5a47', 2); }
+      if (c.ahead && gap < -len){ c.ahead = false; state.overtakes++; }
       if (!c.ahead && gap > 0) c.ahead = true;
     } else if (hit){
-      s = 0; state.freeze = 1.2; state.pos = Math.max(0, state.pos - 5*M); state.crashes++; addScore('penalty', -500); blip('crash');
-      pop('HEAD-ON', '-500', '#ff5a47', 1.8, true); toast('HEAD-ON', 'Only overtake when the other lane is clear.', '#ff5a47', 2.6);
+      s = 0; state.freeze = 1.2; state.pos = Math.max(0, state.pos - 5*M); state.crashes++; blip('crash');
+      toast('HEAD-ON', 'Only overtake when the other lane is clear.', '#ff5a47', 2.6);
       c.z = state.pos - 50*M;
     }
   });
-
-  // MTTD patrol
-  var P = state.patrol;
-  if (P){
-    var pgap = P.z - pz;
-    if (P.phase === 'approach'){
-      P.spd = s + 32; P.z += P.spd/3.6*M*dt*PACE;
-      if (pgap > 14*M){ P.phase = 'lead'; P.t = 8; P.spd = Math.max(s, 20); toast('PULL OVER', 'Brake to a full stop behind the patrol.', '#6aa8ff', 2.4); }
-    } else if (P.phase === 'lead'){
-      var myLane = opt.steer ? state.playerX : (pSeg.lanes === 4 ? .25 : .5);
-      P.lane += (myLane - P.lane) * Math.min(1, dt*2);
-      P.spd = Math.max(28, P.spd - 14*dt); P.z += P.spd/3.6*M*dt*PACE; P.t -= dt;
-      var myX = opt.steer ? state.playerX : (pSeg.lanes === 4 ? .25 : .5);
-      if (Math.abs(P.lane - myX) < 1.75*M/pSeg.w && pgap > -2*M && pgap < 3.5*M && s > P.spd){ s = P.spd * .8; state.pos -= 1*M; addScore('penalty', -200); blip('crash'); pop('DON\u2019T RAM THE PATROL', '-200', '#ff5a47', 1.4); }
-      if (s < 3) P.spd = Math.max(0, P.spd - 40*dt);
-      if (s < 3){ P.phase = 'stopped'; P.t = 2.6; state.freeze = 2.6; state.stops++; toast('STOPPED BY MTTD', 'Roadside check on a handheld PDA. Know your licence number.', '#6aa8ff', 3.2); }
-      else if (P.t <= 0){ finish('busted'); return; }
-    } else if (P.phase === 'stopped'){
-      P.t -= dt; s = 0; if (P.t <= 0){ P.phase = 'leave'; P.spd = 40; pop('CLEARED', 'Drive on', '#6aa8ff', 1.4); }
-    } else {
-      P.spd += 30*dt; P.z += P.spd/3.6*M*dt*PACE; if (pgap > 300*M) state.patrol = null;
-    }
-  }
 
   state.speed = s;
   var dz = s / 3.6 * M * dt * PACE;
@@ -965,29 +1047,19 @@ function update(dt){
   state.skyX += pSeg.curve * dz / SEG * 0.0009;
   state.bounce = s > 1 ? Math.sin(state.t * 23) * Math.min(1.2, s/60) : 0;
 
-  // zones + signs
   if (zi !== state.zoneIdx){
     state.zoneIdx = zi;
     var z = route.zones[zi], lim = limitOf(zi);
-    var sub = z.alert || (z.sign === false ? 'No sign posted. Know the default.' : zoneLabel(z));
-    if (state.coach) sub += DOT + lim + (veh.dial === 'mph' ? ' = ' + Math.round(lim/KMH_PER_MPH) + ' mph' : ' km/h');
-    toast(z.name.toUpperCase(), sub, z.type === 'sensitive' ? '#ffb400' : '#fff', 3);
+    var sub = z.alert || (z.sign === false ? 'No sign posted. The default still applies.' : zoneLabel(z));
+    if (state.coach) sub += DOT + lim + ' km/h' + (veh.dial === 'mph' ? ' = ' + Math.round(lim/KMH_PER_MPH) + ' mph on your dial' : '');
+    toast(z.name.toUpperCase(), sub, z.type === 'sensitive' ? '#ffb400' : '#fff', 3.2);
     if (z.sign === false) state.lastSign = 'none';
   }
   if (route.zones[zi].sign !== false && pSeg.index >= zoneStarts[zi] + 2) state.lastSign = limitOf(zi);
   var lim0 = limitOf(zi), st = state.stats[zi];
   st.max = Math.max(st.max, s);
-  if (s > lim0 + .5) st.overM += dz / M;
-
-  // pace combo
-  var inBand = s >= lim0 * .85 && s <= lim0 + .5, over = s > lim0 + .5;
-  if (over){ state.overT += dt; if (state.overT > .8 && state.mult > 1){ state.mult = 1; state.bandT = 0; pop('OVER THE LIMIT', 'Combo lost', '#ff5a47', 1.2); } }
-  else state.overT = 0;
-  if (inBand && !state.patrol){
-    state.bandT += dt; var nm = Math.min(5, 1 + Math.floor(state.bandT / 3));
-    if (nm > state.mult){ state.mult = nm; pop('PACE x' + nm, '', '#5ad27a', 1.1); blip('combo'); }
-    addScore('pace', 10 * state.mult * dt);
-  } else if (!over){ state.bandT = Math.max(0, state.bandT - dt); var dm = Math.min(5, 1 + Math.floor(state.bandT / 3)); if (dm < state.mult) state.mult = dm; }
+  var dm = dz / M; state.distM += dm;
+  if (s > lim0 + .5){ st.overM += dm; state.overM += dm; }
 
   // cameras + seatbelt
   for (var ci = 0; ci < cams.length; ci++){
@@ -995,20 +1067,16 @@ function update(dt){
     if (c.fired || pz < c.seg * SEG) continue;
     c.fired = true;
     var lim = limitOf(c.zone), caught = false;
-    if (!state.beltChecked){ state.beltChecked = true; if (!state.belt){ byId('belt').hidden = true; offence(c.zone, 'No seatbelt', 'Driver not wearing a seatbelt', c.laser); caught = true; if (state.ended) return; } }
+    if (!state.beltChecked){ state.beltChecked = true; if (!state.belt){ byId('belt').hidden = true; offence(c.zone, 'No seatbelt', 'Driver not wearing a seatbelt'); caught = true; if (state.ended) return; } }
     if (Math.round(s) > lim){
       c.sprite.data.flash = 1;
-      offence(c.zone, c.laser ? 'Laser speed check' : 'Speed camera', Math.round(s) + ' km/h in a ' + lim + ' zone' + (veh.dial === 'mph' ? ' (dial read ' + Math.round(toDial(s,'mph')) + ' mph)' : ''), c.laser);
+      offence(c.zone, c.laser ? 'Laser speed check' : 'Speed camera', Math.round(s) + ' km/h in a ' + lim + ' zone' + (veh.dial === 'mph' ? ' (your dial read ' + Math.round(toDial(s,'mph')) + ' mph)' : ''));
       caught = true; if (state.ended) return;
     }
-    if (opt.steer && segs[c.seg].sens && state.playerX < -.05){ offence(c.zone, 'Wrongful overtaking', 'Crossed a solid centre line', false); caught = true; if (state.ended) return; }
-    if (!caught){
-      if (s >= lim * .85){ var b = 250 * state.mult; addScore('perfect', b); state.tally.perfectN++; pop('PERFECT PASS', '+' + fmtN(b), '#5ad27a', 1.6, true); blip('good'); }
-      else if (s > 5){ addScore('perfect', 50); pop('SAFE PASS', '+50', '#fff', 1.2); }
-    }
+    if (opt.steer && segs[c.seg].sens && state.playerX < -.05){ offence(c.zone, 'Wrongful overtaking', 'Crossed a solid centre line'); caught = true; if (state.ended) return; }
+    if (!caught && s > 5){ state.legalCams++; pop(c.laser ? 'LASER CHECK · LEGAL' : 'CAMERA · LEGAL', Math.round(s) + ' in a ' + lim + DOT + 'no notice', '#5ad27a', 1.4); }
   }
 
-  // AI cars move (and stop at red lights)
   cars.forEach(function(c){
     var cs = segAt(c.z), spd = LIMITS.light[route.zones[cs.zone].type] * c.speedMul;
     if (c.dir > 0) for (var i = 0; i < lights.length; i++){ var L = lights[i], d = L.seg*SEG - c.z; if (L.phase !== 'green' && d > 0 && d < 16*M){ spd = 0; break; } }
@@ -1048,7 +1116,6 @@ function drawSegment(seg, fog){
   band(p1.x,p1.y,p1.w, p2.x,p2.y,p2.w, -1.32, 1.32, sc.shoulder[alt]);
   band(p1.x,p1.y,p1.w, p2.x,p2.y,p2.w, -1.1, 1.1, seg.sens ? (alt ? '#f1ece0' : '#c4281a') : (alt ? '#f1ece0' : '#2b2926'));
   band(p1.x,p1.y,p1.w, p2.x,p2.y,p2.w, -1, 1, alt ? '#58544d' : '#534f48');
-  band(p1.x,p1.y,p1.w, p2.x,p2.y,p2.w, -.35, .35, 'rgba(255,230,180,.035)');
   var edgeC = seg.scen === 'motorway' ? '#f0b400' : '#ebe6da';
   band(p1.x,p1.y,p1.w, p2.x,p2.y,p2.w, -0.97, -0.94, edgeC); band(p1.x,p1.y,p1.w, p2.x,p2.y,p2.w, 0.94, 0.97, edgeC);
   if (seg.lanes === 4){
@@ -1092,11 +1159,24 @@ function drawPin(x, y, top, big){
   var w = Math.max(w1, w2) + 24, h = 40, bx = x - w/2, by = y - h - 10;
   skewBox(bx, by, w, h, 'rgba(10,10,12,.86)');
   ctx.fillStyle = '#ffb400'; ctx.fillRect(bx - 4, by + 2, 3, h - 4);
-  ctx.fillStyle = '#ffb400'; ctx.beginPath(); ctx.moveTo(x - 7, by + h); ctx.lineTo(x + 7, by + h); ctx.lineTo(x, by + h + 9); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(x - 7, by + h); ctx.lineTo(x + 7, by + h); ctx.lineTo(x, by + h + 9); ctx.closePath(); ctx.fill();
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillStyle = '#ffb400'; ctx.font = 'italic 800 10px "Exo 2", sans-serif'; ctx.fillText(top, x, by + 12);
   ctx.fillStyle = '#fff'; ctx.font = 'italic 900 17px "Exo 2", sans-serif'; ctx.fillText(big, x, by + 27);
   ctx.restore();
+}
+function drawPerson(x, y, u, cloth, band2, pan){
+  ctx.fillStyle = '#2b2b2b'; ctx.fillRect(x - .14*u, y - .8*u, .1*u, .8*u); ctx.fillRect(x + .04*u, y - .8*u, .1*u, .8*u);
+  ctx.fillStyle = cloth; roundRect(x - .25*u, y - 1.55*u, .5*u, .85*u, .12*u); ctx.fill();
+  if (band2){ ctx.fillStyle = band2; ctx.fillRect(x - .25*u, y - 1.2*u, .5*u, .1*u); }
+  ctx.fillStyle = '#5a3a26'; ctx.beginPath(); ctx.arc(x, y - 1.72*u, .15*u, 0, 7); ctx.fill();
+  if (pan){ ctx.fillStyle = '#c9c9c4'; ctx.beginPath(); ctx.ellipse(x, y - 1.92*u, .42*u, .1*u, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#e0482c'; ctx.beginPath(); ctx.arc(x - .12*u, y - 2*u, .1*u, 0, 7); ctx.arc(x + .12*u, y - 2*u, .1*u, 0, 7); ctx.fill(); }
+}
+function drawGoat(x, y, u, c){
+  ctx.fillStyle = c; roundRect(x - .45*u, y - .75*u, .9*u, .4*u, .15*u); ctx.fill();
+  ctx.fillRect(x - .38*u, y - .4*u, .07*u, .4*u); ctx.fillRect(x + .3*u, y - .4*u, .07*u, .4*u);
+  ctx.beginPath(); ctx.ellipse(x + .52*u, y - .82*u, .16*u, .12*u, -.4, 0, 7); ctx.fill();
+  ctx.fillStyle = '#3a2a1a'; ctx.fillRect(x + .5*u, y - 1*u, .04*u, .14*u);
 }
 
 function drawSprite(sp, x, y, ppm, clipY, fog, segW){
@@ -1120,22 +1200,17 @@ function drawSprite(sp, x, y, ppm, clipY, fog, segW){
       ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(x - s*.1, ty - s*.5, s*.05, 0, 7); ctx.arc(x + s*.1, ty - s*.45, s*.045, 0, 7); ctx.fill();
       ctx.fillRect(x - s*.14, ty - s*.44, s*.08, s*.25); ctx.fillRect(x + s*.06, ty - s*.4, s*.07, s*.22);
       break; }
-    case 'crossing': {
-      var w = segW*.95;
-      for (var i = -5; i < 5; i++){ ctx.fillStyle = '#efeadd'; ctx.fillRect(x + (i+.2)/5*w, y - .25*u, w/5*.55, .25*u); }
-      break; }
-    case 'stopline': {
-      ctx.fillStyle = '#f4f0e4'; ctx.fillRect(x, y - .3*u, segW*.95, .3*u);
-      break; }
+    case 'crossing': { var w = segW*.95; for (var i = -5; i < 5; i++){ ctx.fillStyle = '#efeadd'; ctx.fillRect(x + (i+.2)/5*w, y - .25*u, w/5*.55, .25*u); } break; }
+    case 'stopline': { ctx.fillStyle = '#f4f0e4'; ctx.fillRect(x, y - .3*u, segW*.95, .3*u); break; }
     case 'tlight': {
       var L = d.L, col = L.phase;
       ctx.fillStyle = '#3c3f44'; ctx.fillRect(x - .08*u, y - 3.4*u, .16*u, 3.4*u);
       ctx.fillStyle = '#16171a'; roundRect(x - .32*u, y - 4.9*u, .64*u, 1.6*u, .1*u); ctx.fill();
-      var lamps = [['red','#ff3b2a',-4.6],['amber','#ffb400',-4.1],['green','#3ddc6a',-3.6]];
+      var lamps = [['red','#ff3b2a',-4.6,'rgba(255,60,40,A)'],['amber','#ffb400',-4.1,'rgba(255,180,0,A)'],['green','#3ddc6a',-3.6,'rgba(60,220,110,A)']];
       for (var li = 0; li < 3; li++){
         var on = lamps[li][0] === col;
         ctx.fillStyle = on ? lamps[li][1] : '#2a2b2e'; ctx.beginPath(); ctx.arc(x, y + lamps[li][2]*u, .19*u, 0, 7); ctx.fill();
-        if (on){ ctx.save(); ctx.globalCompositeOperation = 'lighter'; glowAt(x, y + lamps[li][2]*u, 1.3*u, lamps[li][1] === '#ff3b2a' ? 'rgba(255,60,40,A)' : lamps[li][1] === '#ffb400' ? 'rgba(255,180,0,A)' : 'rgba(60,220,110,A)', .6); ctx.restore(); }
+        if (on){ ctx.save(); ctx.globalCompositeOperation = 'lighter'; glowAt(x, y + lamps[li][2]*u, 1.3*u, lamps[li][3], .6); ctx.restore(); }
       }
       break; }
     case 'camwarn': {
@@ -1161,6 +1236,19 @@ function drawSprite(sp, x, y, ppm, clipY, fog, segW){
       ctx.fillStyle = '#333'; ctx.fillRect(x - .52*u, y - 1.45*u, .32*u, .14*u);
       flashGlow(d, x - .52*u, y - 1.38*u, u*.6);
       break; }
+    case 'hazard': {
+      var Hh = d.H;
+      if (Hh.kind === 'goats'){ drawGoat(x - .9*u, y, u, '#f1ece0'); drawGoat(x + .2*u, y + .05*u, u, '#6b4a2e'); drawGoat(x + 1.2*u, y, u, '#2b2320'); }
+      else if (Hh.kind === 'truck'){
+        if (Hh.state === 'wait') break;
+        drawVehicle('truck', '#7a6a4a', x, y, u, true, false);
+        var bl = Math.floor(performance.now()/300) % 2;
+        if (bl){ ctx.save(); ctx.globalCompositeOperation = 'lighter'; glowAt(x - 1*u, y - .55*u, 1*u, 'rgba(255,170,0,A)', .8); glowAt(x + 1*u, y - .55*u, 1*u, 'rgba(255,170,0,A)', .8); ctx.restore(); }
+      }
+      else if (Hh.kind === 'procession') drawPerson(x, y, u, '#1b1b1b', '#b3261e');
+      else if (Hh.kind === 'school'){ drawPerson(x, y, u*.72, '#c9a227', '#6b4a2a'); }
+      else drawPerson(x, y, u, Hh.kind === 'market' ? '#2a67b1' : Hh.kind === 'hospital' ? '#8fb3c9' : '#f2efe6', null, Hh.kind === 'market');
+      break; }
     case 'board': {
       ctx.fillStyle = '#6f7275'; ctx.fillRect(x - 1.4*u, y - 1.8*u, .09*u, 1.8*u); ctx.fillRect(x + 1.31*u, y - 1.8*u, .09*u, 1.8*u);
       ctx.fillStyle = '#1f6a45'; ctx.fillRect(x - 1.6*u, y - 2.8*u, 3.2*u, 1.05*u);
@@ -1171,7 +1259,6 @@ function drawSprite(sp, x, y, ppm, clipY, fog, segW){
       var bb = BILL[d.c % BILL.length];
       ctx.fillStyle = '#4a4a48'; ctx.fillRect(x - 2*u, y - 4*u, .18*u, 4*u); ctx.fillRect(x + 1.82*u, y - 4*u, .18*u, 4*u);
       ctx.fillStyle = bb[0]; ctx.fillRect(x - 2.6*u, y - 6.6*u, 5.2*u, 2.7*u);
-      ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(x - 2.6*u, y - 4.05*u, 5.2*u, .15*u);
       if (u > 3) txt(bb[2], x, y - 5.25*u, 1*u, 'italic 800', bb[1], 4.8*u, '"Exo 2", sans-serif');
       break; }
     case 'palm': {
@@ -1192,7 +1279,6 @@ function drawSprite(sp, x, y, ppm, clipY, fog, segW){
       ctx.fillStyle = 'rgba(0,0,0,.22)'; for (var k = 0; k < 6; k++) ctx.fillRect(x - 1.5*u + k*.5*u, y - 2.5*u, .06*u, 2.5*u);
       ctx.fillStyle = '#2a2a2a'; ctx.fillRect(x - 1*u, y - 1.9*u, 2*u, 1.3*u);
       ctx.fillStyle = '#eee'; ctx.fillRect(x - 1.8*u, y - 2.7*u, 3.6*u, .28*u);
-      ctx.fillStyle = 'rgba(0,0,0,.2)'; ctx.fillRect(x - 1.8*u, y - 2.44*u, 3.6*u, .08*u);
       break; }
     case 'stall': {
       ctx.fillStyle = '#6b5a44'; ctx.fillRect(x - .04*u, y - 2.2*u, .08*u, 2.2*u);
@@ -1203,12 +1289,7 @@ function drawSprite(sp, x, y, ppm, clipY, fog, segW){
       if (d.pin && fog < .65 && u > 1.2) pinQueue.push([x, y - 3.1*u, 'MARKET', '30 ZONE']);
       break; }
     case 'person': {
-      var cloth = d.mourner ? (d.c ? '#1b1b1b' : '#b3261e') : CLOTH[d.c % CLOTH.length];
-      ctx.fillStyle = '#2b2b2b'; ctx.fillRect(x - .14*u, y - .8*u, .1*u, .8*u); ctx.fillRect(x + .04*u, y - .8*u, .1*u, .8*u);
-      ctx.fillStyle = cloth; roundRect(x - .25*u, y - 1.55*u, .5*u, .85*u, .12*u); ctx.fill();
-      if (d.mourner){ ctx.fillStyle = d.c ? '#b3261e' : '#1b1b1b'; ctx.fillRect(x - .25*u, y - 1.2*u, .5*u, .1*u); }
-      ctx.fillStyle = '#5a3a26'; ctx.beginPath(); ctx.arc(x, y - 1.72*u, .15*u, 0, 7); ctx.fill();
-      if (d.pan){ ctx.fillStyle = '#c9c9c4'; ctx.beginPath(); ctx.ellipse(x, y - 1.92*u, .42*u, .1*u, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#e0482c'; ctx.beginPath(); ctx.arc(x - .12*u, y - 2*u, .1*u, 0, 7); ctx.arc(x + .12*u, y - 2*u, .1*u, 0, 7); ctx.fill(); }
+      drawPerson(x, y, u, d.mourner ? (d.c ? '#1b1b1b' : '#b3261e') : CLOTH[d.c % CLOTH.length], d.mourner ? (d.c ? '#b3261e' : '#1b1b1b') : null, d.pan);
       if (d.pin && fog < .65 && u > 1.2) pinQueue.push([x, y - 2.3*u, 'PROCESSION', '30 ZONE']);
       break; }
     case 'building': {
@@ -1259,7 +1340,7 @@ function drawSprite(sp, x, y, ppm, clipY, fog, segW){
       ctx.fillStyle = '#3c3f44'; ctx.fillRect(x - fw, y - 6*u, .25*u, 6*u); ctx.fillRect(x + fw - .25*u, y - 6*u, .25*u, 6*u);
       for (var fi = 0; fi < 16; fi++){ ctx.fillStyle = fi % 2 ? '#111' : '#f4f0e4'; ctx.fillRect(x - fw + fi*fw/8, y - 7.4*u, fw/8, .5*u); }
       ctx.fillStyle = '#ffb400'; ctx.fillRect(x - fw, y - 6.9*u, fw*2, 1.1*u);
-      if (u > 2) txt('FINISH' + DOT + d.name.toUpperCase(), x, y - 6.35*u, .75*u, 'italic 900', '#111', fw*1.9, '"Exo 2", sans-serif');
+      if (u > 2) txt('ARRIVED' + DOT + d.name.toUpperCase(), x, y - 6.35*u, .75*u, 'italic 900', '#111', fw*1.9, '"Exo 2", sans-serif');
       break; }
   }
   ctx.restore();
@@ -1316,15 +1397,10 @@ function drawVehicle(body, color, x, y, u, braking, front, slogan){
     if (body === 'taxi'){ ctx.fillStyle = '#e9a51c'; ctx.fillRect(L, y - bodyH - .05*u, w*.24, bodyH - .2*u); ctx.fillRect(L + w*.76, y - bodyH - .05*u, w*.24, bodyH - .2*u); }
     if (isPolice){
       ctx.fillStyle = '#1f4f9b'; ctx.fillRect(L, y - bodyH*.62, w, .14*u);
-      if (u > 14) txt('POLICE', x, y - bodyH*.62 + .07*u, .12*u, 800, '#fff');
       var blink = Math.floor(performance.now() / 160) % 2;
       ctx.fillStyle = '#111'; ctx.fillRect(x - .55*u, cabT - .16*u, 1.1*u, .16*u);
       ctx.fillStyle = blink ? '#ff2a1a' : '#5a0d08'; ctx.fillRect(x - .52*u, cabT - .14*u, .5*u, .12*u);
       ctx.fillStyle = blink ? '#0f2a66' : '#2f7bff'; ctx.fillRect(x + .02*u, cabT - .14*u, .5*u, .12*u);
-      ctx.save(); ctx.globalCompositeOperation = 'lighter';
-      glowAt(x - .27*u, cabT - .08*u, 2.4*u, 'rgba(255,40,20,A)', blink ? .75 : .15);
-      glowAt(x + .27*u, cabT - .08*u, 2.4*u, 'rgba(47,123,255,A)', blink ? .15 : .8);
-      ctx.restore();
     }
     lamp(L + .08*u, y - bodyH + .08*u, .38*u, .2*u); lamp(L + w - .46*u, y - bodyH + .08*u, .38*u, .2*u);
   }
@@ -1335,126 +1411,98 @@ function drawVehicle(body, color, x, y, u, braking, front, slogan){
 
 /* ---------- HUD ---------- */
 function rtext(s, x, y, size, color, align, weight){ ctx.font = 'italic ' + (weight || 900) + ' ' + size + 'px "Exo 2", sans-serif'; ctx.fillStyle = color; ctx.textAlign = align || 'left'; ctx.textBaseline = 'middle'; ctx.fillText(s, x, y); }
+function nextSignAhead(pz){
+  for (var i = 0; i < signsList.length; i++){ var z = signsList[i].seg * SEG; if (z > pz) return {n: signsList[i].n, m: (z - pz) / M}; }
+  return null;
+}
 function drawHUD(){
   var hw = W / HS, hh = H / HS, top = hudTop;
   ctx.setTransform(dpr*HS, 0, 0, dpr*HS, 0, 0);
   var zi = Math.max(0, state.zoneIdx), lim = limitOf(zi), noSign = state.lastSign === 'none', driving = state.mode !== 'ready';
   if (driving){
-    // score block (top left)
-    skewBox(20, top, 214, 70, 'rgba(8,8,10,.74)');
-    ctx.fillStyle = '#ffb400'; ctx.fillRect(10, top + 4, 4, 62);
-    rtext(route.name.toUpperCase(), 26, top + 13, 10.5, '#ffb400', 'left', 800);
-    rtext(fmtN(state.score), 26, top + 38, 30, '#fff', 'left', 900);
-    var mx = 26 + Math.max(90, ctx.measureText(fmtN(state.score)).width + 12);
-    if (state.mult > 1){ skewBox(mx, top + 26, 40, 24, '#5ad27a'); rtext('x' + state.mult, mx + 20, top + 38.5, 16, '#111', 'center', 900); }
-    var prog = Math.min(1, (state.bandT % 3) / 3);
-    ctx.fillStyle = 'rgba(255,255,255,.12)'; ctx.fillRect(26, top + 56, 170, 3);
-    ctx.fillStyle = state.mult >= 5 ? '#5ad27a' : '#ffb400'; ctx.fillRect(26, top + 56, 170 * (state.mult >= 5 ? 1 : prog), 3);
-    rtext(fmtTime(state.t) + '  /  PAR ' + fmtTime(legalTime()), 26, top + 66, 10, '#bdb7aa', 'left', 700);
-    // sign + fines (top right)
-    skewBox(hw - 196, top, 176, 58, 'rgba(8,8,10,.74)');
-    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(hw - 166, top + 29, 20, 0, 7); ctx.fill();
-    ctx.strokeStyle = noSign ? '#7d8084' : '#d42a1f'; ctx.lineWidth = 5.5; ctx.beginPath(); ctx.arc(hw - 166, top + 29, 17.5, 0, 7); ctx.stroke();
-    txt(noSign ? '?' : (state.lastSign ? String(state.lastSign) : '–'), hw - 166, top + 30, 16, 800, '#111');
-    rtext(noSign ? 'NO SIGN · KNOW IT' : 'LAST SIGN', hw - 138, top + 15, 10, noSign ? '#ffb400' : '#bdb7aa', 'left', 800);
-    ctx.save(); ctx.beginPath(); ctx.rect(hw - 140, top, 124, 58); ctx.clip();
-    rtext(route.zones[zi].name.toUpperCase(), hw - 138, top + 31, 13, '#fff', 'left', 800);
+    // status: the one thing to read
+    var over = state.speed > lim + .5, byK = Math.round(state.speed - lim);
+    var pw = Math.min(210, hw * .5 - 20);
+    skewBox(20, top, pw, 62, over ? 'rgba(120,16,8,.86)' : 'rgba(8,8,10,.76)');
+    ctx.fillStyle = over ? '#ff5a47' : '#5ad27a'; ctx.fillRect(10, top + 4, 4, 54);
+    rtext(over ? 'OVER +' + byK : 'LEGAL', 24, top + 21, 26, over ? '#fff' : '#5ad27a', 'left', 900);
+    rtext(over ? (nextFine() ? 'A CAMERA HERE = ' + CEDI + nextFine() : 'NEXT NOTICE = SUSPENSION') : Math.round(state.speed) + ' of ' + lim + ' km/h', 24, top + 46, 11, over ? '#ffd0c8' : '#d8d2c4', 'left', 800);
+    // sign + fines
+    var sw = Math.min(176, hw * .5 - 20);
+    skewBox(hw - sw - 20, top, sw, 62, 'rgba(8,8,10,.76)');
+    var rx = hw - sw + 4;
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(rx, top + 31, 20, 0, 7); ctx.fill();
+    ctx.strokeStyle = noSign ? '#7d8084' : '#d42a1f'; ctx.lineWidth = 5.5; ctx.beginPath(); ctx.arc(rx, top + 31, 17.5, 0, 7); ctx.stroke();
+    txt(noSign ? '?' : (state.lastSign ? String(state.lastSign) : '–'), rx, top + 32, 16, 800, '#111');
+    ctx.save(); ctx.beginPath(); ctx.rect(rx + 24, top, sw - 40, 62); ctx.clip();
+    rtext(noSign ? 'NO SIGN' : 'LAST SIGN', rx + 28, top + 15, 10, noSign ? '#ffb400' : '#bdb7aa', 'left', 800);
+    rtext(noSign ? 'DEFAULT ' + lim : route.zones[zi].name.toUpperCase(), rx + 28, top + 32, 12.5, '#fff', 'left', 800);
+    rtext('FINES ' + CEDI + state.fines, rx + 28, top + 49, 11, state.fines ? '#ff8a7e' : '#bdb7aa', 'left', 800);
     ctx.restore();
-    rtext('FINES ' + CEDI + state.fines, hw - 138, top + 47, 11, state.fines ? '#ff8a7e' : '#bdb7aa', 'left', 800);
-    // radar + heat (bottom left; hidden in portrait)
-    if (!PORTRAIT) drawRadar(22 + 66, hh - 66 - 30, 66);
-    drawHeat(PORTRAIT ? 26 : 22, PORTRAIT ? top + 80 : hh - 66*2 - 58);
+    // coming up
+    if (state.coach){
+      var nx = nextSignAhead(state.pos + PLAYERZ);
+      if (nx && nx.m < 260 && nx.n !== state.lastSign){
+        var slower = nx.n < lim, txtN = 'NEXT SIGN ' + nx.n + DOT + Math.round(nx.m) + ' m' + (slower ? DOT + 'EASE OFF' : '');
+        ctx.font = 'italic 800 12px "Exo 2", sans-serif'; var tw = ctx.measureText(txtN).width + 30;
+        skewBox(hw/2 - tw/2, top + 70, tw, 24, slower ? 'rgba(255,180,0,.92)' : 'rgba(8,8,10,.76)');
+        rtext(txtN, hw/2, top + 82.5, 12, slower ? '#111' : '#fff', 'center', 800);
+      }
+    }
   }
-  var R = PORTRAIT ? 70 : 88, dcx = PORTRAIT ? hw/2 : hw - R - 34, dcy = PORTRAIT ? hh - R - 190 : hh - R - 26;
+  var R = PORTRAIT ? 74 : COARSE ? 62 : 86, centerCluster = COARSE || PORTRAIT;
+  var dcx = centerCluster ? hw/2 : hw - R - 34, dcy = hh - R*1.2 - pedalLog - (COARSE && PORTRAIT ? 6 : 16);
   var gear = veh.body === 'moto' ? Math.min(5, 1 + Math.floor(state.speed / 22)) : Math.min(6, 1 + Math.floor(state.speed / (veh.cls === 'heavy' ? 14 : 28)));
   drawCluster(ctx, dcx, dcy, R, veh, toDial(state.speed, veh.dial), driving ? lim : null, driving && state.coach, null, driving ? gear : null);
 
-  // pull-over meter
-  var P = state.patrol;
-  if (P && P.phase === 'lead'){
-    var bw2 = Math.min(320, hw - 60), bx2 = hw/2 - bw2/2, by2 = PORTRAIT ? hh*.44 : hh - 70;
-    var blink = Math.floor(performance.now() / 200) % 2;
-    skewBox(bx2, by2 - 30, bw2, 52, 'rgba(8,8,10,.8)');
-    rtext('MTTD · PULL OVER', hw/2, by2 - 16, 15, blink ? '#ff5a47' : '#6aa8ff', 'center', 900);
-    ctx.fillStyle = 'rgba(255,255,255,.12)'; ctx.fillRect(bx2 + 14, by2, bw2 - 28, 8);
-    ctx.fillStyle = '#ff5a47'; ctx.fillRect(bx2 + 14, by2, (bw2 - 28) * Math.max(0, P.t / 8), 8);
-    rtext('STOP IN ' + Math.max(0, P.t).toFixed(1) + 's', hw/2, by2 + 16, 10, '#bdb7aa', 'center', 800);
-  }
-
-  // big pops (center)
-  ctx.textAlign = 'center';
-  var py0 = top + (PORTRAIT ? 170 : 104);
+  // pops (centre) and zone toasts
+  var py0 = top + (PORTRAIT ? 262 : 128);
   state.pops.forEach(function(p, k){
     var life = 1 - p.t / p.d, a = Math.min(1, p.t / .3), sc = 1 + Math.max(0, .25 - life) * 1.2;
-    ctx.save(); ctx.globalAlpha = a; ctx.translate(hw/2, py0 + k*46); ctx.scale(sc, sc);
-    var size = p.big ? 34 : 24;
-    ctx.font = 'italic 900 ' + size + 'px "Exo 2", sans-serif';
-    ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(0,0,0,.7)'; ctx.strokeText(p.text, 0, 0);
+    ctx.save(); ctx.globalAlpha = a; ctx.translate(hw/2, py0 + k*52); ctx.scale(sc, sc);
+    var size = p.big ? 32 : 22;
+    ctx.font = 'italic 900 ' + size + 'px "Exo 2", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.lineWidth = 5; ctx.strokeStyle = 'rgba(0,0,0,.72)'; ctx.strokeText(p.text, 0, 0);
     ctx.fillStyle = p.color; ctx.fillText(p.text, 0, 0);
-    if (p.sub){ ctx.font = 'italic 800 14px "Exo 2", sans-serif'; ctx.lineWidth = 4; ctx.strokeText(p.sub, 0, size*.7); ctx.fillStyle = '#fff'; ctx.fillText(p.sub, 0, size*.7); }
+    if (p.sub){ ctx.font = 'italic 800 13px "Exo 2", sans-serif'; ctx.lineWidth = 4; ctx.strokeText(p.sub, 0, size*.72); ctx.fillStyle = '#fff'; ctx.fillText(p.sub, 0, size*.72); }
     ctx.restore();
   });
-  // zone toasts (lower)
-  state.msgs.forEach(function(m, k){
-    var a = Math.min(1, m.t / .4), y = (PORTRAIT ? hh*.56 : hh*.66) + k*50;
+  state.msgs.forEach(function(m){
+    var a = Math.min(1, m.t / .4), y = dcy - R*1.3 - 36;
     ctx.globalAlpha = a;
-    ctx.font = 'italic 900 19px "Exo 2", sans-serif'; var w1 = ctx.measureText(m.text).width;
-    ctx.font = '500 13.5px Barlow, sans-serif'; var w2 = ctx.measureText(m.sub).width;
+    ctx.font = 'italic 900 18px "Exo 2", sans-serif'; var w1 = ctx.measureText(m.text).width;
+    ctx.font = '500 13px Barlow, sans-serif'; var w2 = ctx.measureText(m.sub).width;
     var tw = Math.min(hw - 40, Math.max(w1, w2) + 40);
-    skewBox(hw/2 - tw/2, y - 22, tw, 46, 'rgba(8,8,10,.76)');
+    skewBox(hw/2 - tw/2, y - 22, tw, 46, 'rgba(8,8,10,.8)');
     ctx.fillStyle = m.color; ctx.fillRect(hw/2 - tw/2 - 8, y - 18, 3, 38);
-    rtext(m.text, hw/2, y - 7, 19, m.color, 'center', 900);
-    ctx.fillStyle = '#e8e2d4'; ctx.font = '500 13.5px Barlow, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(m.sub, hw/2, y + 12, tw - 24);
+    rtext(m.text, hw/2, y - 7, 18, m.color, 'center', 900);
+    ctx.fillStyle = '#e8e2d4'; ctx.font = '500 13px Barlow, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(m.sub, hw/2, y + 12, tw - 24);
     ctx.globalAlpha = 1;
   });
-  if (state.paused){
+  if (state.paused && !state.moment){
     ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(0, 0, hw, hh);
-    rtext('PAUSED', hw/2, hh/2 - 10, 56, '#fff', 'center', 900);
-    ctx.font = '500 15px Barlow, sans-serif'; ctx.fillStyle = '#d8d2c4'; ctx.fillText('P or Esc to carry on · R restarts', hw/2, hh/2 + 30);
+    rtext('PAUSED', hw/2, hh/2 - 10, 52, '#fff', 'center', 900);
+    ctx.font = '500 15px Barlow, sans-serif'; ctx.fillStyle = '#d8d2c4'; ctx.textAlign = 'center'; ctx.fillText(COARSE ? 'Close the menu to carry on' : 'P or Esc to carry on · R restarts', hw/2, hh/2 + 30);
   }
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
-function drawHeat(x, y){
-  skewBox(x + 4, y, 132, 26, 'rgba(8,8,10,.74)');
-  rtext('HEAT', x + 8, y + 13, 11, state.flashes ? '#ff5a47' : '#bdb7aa', 'left', 900);
-  for (var i = 0; i < 5; i++){
-    var on = i < state.flashes, bx = x + 50 + i*16;
-    skewBox(bx, y + 7, 11, 12, on ? (i >= 2 ? '#ff3b2a' : '#ff8a1a') : 'rgba(255,255,255,.14)', 3);
-  }
-}
-function drawRadar(cx, cy, R){
-  var pz = state.pos + PLAYERZ, range = 420 * M;
-  ctx.save();
-  ctx.fillStyle = 'rgba(8,8,10,.72)'; ctx.beginPath(); ctx.arc(cx, cy, R, 0, 7); ctx.fill();
-  ctx.beginPath(); ctx.arc(cx, cy, R, 0, 7); ctx.clip();
-  ctx.fillStyle = 'rgba(255,180,0,.08)'; ctx.fillRect(cx - R*.16, cy - R, R*.32, R*2);
-  ctx.strokeStyle = 'rgba(255,255,255,.08)'; ctx.lineWidth = 1;
-  [.33, .66].forEach(function(f){ ctx.beginPath(); ctx.arc(cx, cy, R*f, 0, 7); ctx.stroke(); });
-  function yOf(z){ return cy + R*.35 - (z - pz) / range * R * 1.25; }
-  signsList.forEach(function(sg){ var y = yOf(sg.seg*SEG); if (y < cy - R || y > cy + R) return; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx + R*.3, y, 5.5, 0, 7); ctx.fill(); ctx.strokeStyle = '#d42a1f'; ctx.lineWidth = 2; ctx.stroke(); txt(String(sg.n), cx + R*.3, y + .5, 6.5, 800, '#111'); });
-  lights.forEach(function(L){ var y = yOf(L.seg*SEG); if (y < cy - R || y > cy + R) return; ctx.fillStyle = L.phase === 'red' ? '#ff3b2a' : L.phase === 'amber' ? '#ffb400' : '#3ddc6a'; ctx.fillRect(cx - R*.16, y - 1.5, R*.32, 3); });
-  cams.forEach(function(c){ if (c.warnSeg < 0 || pz < c.warnSeg*SEG || c.fired) return; var y = yOf(c.seg*SEG); if (y < cy - R) return; ctx.fillStyle = '#fff'; ctx.fillRect(cx + R*.18, y - 3.5, 8, 7); ctx.fillStyle = '#111'; ctx.fillRect(cx + R*.18 + 2, y - 1.5, 3, 3); });
-  cars.forEach(function(c){ var y = yOf(c.z); if (y < cy - R || y > cy + R) return; ctx.fillStyle = c.dir > 0 ? '#bdb7aa' : '#8a847a'; var cs = segAt(c.z); ctx.fillRect(cx + laneOffset(c, cs) * R*.28 - 2, y - 3, 4, 6); });
-  if (state.patrol){ var py = yOf(state.patrol.z), bl = Math.floor(performance.now()/160) % 2; ctx.fillStyle = bl ? '#ff3b2a' : '#2f7bff'; ctx.beginPath(); ctx.arc(cx + state.patrol.lane * R*.28, Math.max(cy - R + 6, Math.min(cy + R - 6, py)), 5, 0, 7); ctx.fill(); }
-  ctx.fillStyle = '#ffb400'; ctx.beginPath(); var px = cx + state.playerX * R*.28, pyy = cy + R*.35; ctx.moveTo(px, pyy - 7); ctx.lineTo(px + 5, pyy + 5); ctx.lineTo(px - 5, pyy + 5); ctx.closePath(); ctx.fill();
-  ctx.restore();
-  ctx.strokeStyle = 'rgba(255,180,0,.5)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(cx, cy, R, 0, 7); ctx.stroke();
-}
 
-/* ---------- render (world + post) ---------- */
+/* ---------- render ---------- */
 function render(){
   var sf = Math.max(0, Math.min(1, (state.speed - 40) / 110));
   var cd = 1 / Math.tan((50 + sf * 9) * Math.PI / 180);
   ctx.setTransform(dpr,0,0,dpr,0,0);
-  var shake = state.mode === 'drive' && !state.paused ? sf * 1.6 : 0;
+  var shake = state.mode === 'drive' && !state.paused ? sf * 1.4 : 0;
   if (state.freeze > 0 && state.crashes) shake += 3;
   ctx.save();
   if (shake) ctx.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake);
   drawSky();
   var base = segAt(state.pos), basePct = (state.pos % SEG) / SEG;
-  var pSeg = segAt(state.pos + PLAYERZ), pPct = ((state.pos + PLAYERZ) % SEG) / SEG;
+  var pz = state.pos + PLAYERZ, pSeg = segAt(pz), pPct = (pz % SEG) / SEG;
   var playerY = pSeg.p1.world.y + (pSeg.p2.world.y - pSeg.p1.world.y) * pPct;
-  var maxy = H, x = 0, dx = -(base.curve * basePct), n, seg, drawn = [];
+  var stopZ = state.coach && state.mode === 'drive' && state.speed > 3 ? pz + stopDist(state.speed, veh.cls === 'heavy') * M : -1;
+  var over = state.speed > limitOf(Math.max(0, state.zoneIdx)) + .5;
+  var maxy = H, x = 0, dx = -(base.curve * basePct), n, seg, drawn = [], stopMark = null;
   for (n = 0; n < DRAW; n++){
     var idx = base.index + n; if (idx >= segs.length) break;
     seg = segs[idx]; seg.cars.length = 0;
@@ -1463,11 +1511,16 @@ function render(){
     project(seg.p2, state.playerX*seg.w - x - dx, playerY + CAMH, state.pos, seg.w, cd);
     x += dx; dx += seg.curve; seg.clip = maxy; drawn.push(seg);
     if (seg.p1.camera.z <= cd || seg.p2.screen.y >= seg.p1.screen.y || seg.p2.screen.y >= maxy) continue;
-    drawSegment(seg, seg.fog); maxy = seg.p1.screen.y;
+    drawSegment(seg, seg.fog);
+    // stopping-distance strip in your lane
+    if (stopZ > 0 && seg.p2.world.z > pz && seg.p1.world.z < stopZ){
+      var lx = state.playerX, p1 = seg.p1.screen, p2 = seg.p2.screen;
+      band(p1.x, p1.y, p1.w, p2.x, p2.y, p2.w, lx - .3, lx + .3, over ? 'rgba(255,70,50,.2)' : 'rgba(255,200,80,.16)');
+      if (seg.p2.world.z >= stopZ){ band(p1.x, p1.y, p1.w, p2.x, p2.y, p2.w, lx - .34, lx + .34, over ? 'rgba(255,90,71,.85)' : 'rgba(255,200,80,.85)'); stopMark = {x: p2.x + p2.w * lx, y: p2.y, w: p2.w}; }
+    }
+    maxy = seg.p1.screen.y;
   }
   cars.forEach(function(c){ var i = Math.floor(c.z / SEG); if (i >= base.index && i < base.index + drawn.length) segs[i].cars.push(c); });
-  var P = state.patrol, pcar = null;
-  if (P){ pcar = {dir:1, z:P.z, body:'police', color:'#f4f4f0', lane:P.lane}; var pi = Math.floor(P.z / SEG); if (pi >= base.index && pi < base.index + drawn.length) segs[pi].cars.push(pcar); }
   pinQueue.length = 0;
   for (n = drawn.length - 1; n > 0; n--){
     seg = drawn[n];
@@ -1476,8 +1529,8 @@ function render(){
     var ppm = sc.scale * M * W/2;
     for (var si = 0; si < seg.sprites.length; si++){ var sp = seg.sprites[si]; drawSprite(sp, sc.x + sc.scale * sp.offset * seg.w * W/2, sc.y, ppm, seg.clip, seg.fog, sc.w); }
     for (var ci = 0; ci < seg.cars.length; ci++){
-      var c = seg.cars[ci], pct = (c.z % SEG) / SEG, p2 = seg.p2.screen, s2 = sc.scale + (p2.scale - sc.scale)*pct;
-      var cxp = sc.x + (p2.x - sc.x)*pct + s2 * laneOffset(c, seg) * seg.w * W/2, cyp = sc.y + (p2.y - sc.y)*pct, cu = s2 * M * W/2;
+      var c = seg.cars[ci], pct = (c.z % SEG) / SEG, p2s = seg.p2.screen, s2 = sc.scale + (p2s.scale - sc.scale)*pct;
+      var cxp = sc.x + (p2s.x - sc.x)*pct + s2 * laneOffset(c, seg) * seg.w * W/2, cyp = sc.y + (p2s.y - sc.y)*pct, cu = s2 * M * W/2;
       if (cu < .5) continue;
       ctx.save(); ctx.beginPath(); ctx.rect(0,0,W,seg.clip); ctx.clip(); ctx.globalAlpha = Math.max(0, 1 - seg.fog*1.05);
       drawVehicle(c.body, c.color, cxp, cyp, cu, c.dir > 0 && c.spd === 0, c.dir < 0, c.slogan);
@@ -1485,98 +1538,98 @@ function render(){
     }
   }
   if (state.mode !== 'ready') pinQueue.forEach(function(p){ drawPin(p[0], p[1], p[2], p[3]); });
+  if (stopMark && stopMark.w > 12){
+    var sd = Math.round(stopDist(state.speed, veh.cls === 'heavy'));
+    ctx.font = 'italic 800 13px "Exo 2", sans-serif'; var lblT = 'STOPS IN ' + sd + ' m', lw2 = ctx.measureText(lblT).width + 18;
+    skewBox(stopMark.x - lw2/2, stopMark.y - 26, lw2, 20, over ? 'rgba(160,20,10,.85)' : 'rgba(10,10,12,.78)');
+    rtext(lblT, stopMark.x, stopMark.y - 15.5, 13, over ? '#fff' : '#ffc850', 'center', 800);
+  }
   var pu = cd / PLAYERZ * M * W/2, py = HORIZON + cd / PLAYERZ * CAMH * VS + state.bounce;
-  drawVehicle(veh.body, veh.color, W/2, py, pu, keys.brake || state.freeze > 0, false, 'SEE ME AND GO');
+  drawVehicle(veh.body, veh.color, W/2, py, pu, keys.brake || state.freeze > 0 || state.autoBrake, false, 'SEE ME AND GO');
   ctx.restore();
 
-  // speed streaks
-  if (sf > .05 && state.mode === 'drive'){
-    var t = Math.floor(performance.now() / 33), vx = W/2, vy = HORIZON;
+  if (sf > .05 && state.mode === 'drive' && !state.paused){
+    var t = Math.floor(performance.now() / 33), vx = W/2, vy = HORIZON, nS = COARSE ? 24 : 44;
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
-    for (var i = 0; i < 44; i++){
-      var a = hash(i * 3.1 + t * .7) * Math.PI * 2, r0 = Math.max(W, H) * (.36 + hash(i + t) * .3), len = 40 + sf * 180;
-      var ex = Math.cos(a), ey = Math.sin(a);
-      ctx.strokeStyle = 'rgba(255,236,200,' + (sf * .22 * hash(i * 7 + t)).toFixed(3) + ')'; ctx.lineWidth = 1 + hash(i) * 2;
+    for (var i = 0; i < nS; i++){
+      var a = hash(i * 3.1 + t * .7) * Math.PI * 2, r0 = Math.max(W, H) * (.36 + hash(i + t) * .3), len = 40 + sf * 180, ex = Math.cos(a), ey = Math.sin(a);
+      ctx.strokeStyle = 'rgba(255,236,200,' + (sf * .2 * hash(i * 7 + t)).toFixed(3) + ')'; ctx.lineWidth = 1 + hash(i) * 2;
       ctx.beginPath(); ctx.moveTo(vx + ex * r0, vy + ey * r0 * .8); ctx.lineTo(vx + ex * (r0 + len), vy + ey * (r0 + len) * .8); ctx.stroke();
     }
     ctx.restore();
   }
-  // harmattan grade, bloom, vignette, grain
   ctx.save();
-  ctx.globalCompositeOperation = 'soft-light'; ctx.fillStyle = 'rgba(255,165,50,.55)'; ctx.fillRect(0, 0, W, H);
+  ctx.globalCompositeOperation = 'soft-light'; ctx.fillStyle = 'rgba(255,165,50,.5)'; ctx.fillRect(0, 0, W, H);
   ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = vignette; ctx.fillRect(0, 0, W, H);
-  ctx.globalAlpha = .06; ctx.fillStyle = grain; ctx.translate((Math.random() * 160) | 0, (Math.random() * 160) | 0); ctx.fillRect(-160, -160, W + 160, H + 160);
+  if (!COARSE){ ctx.globalAlpha = .06; ctx.fillStyle = grain; ctx.translate((Math.random() * 160) | 0, (Math.random() * 160) | 0); ctx.fillRect(-160, -160, W + 160, H + 160); }
   ctx.restore();
   if (state.flashT > 0){ ctx.fillStyle = 'rgba(255,255,255,' + (state.flashT*.75).toFixed(3) + ')'; ctx.fillRect(0,0,W,H); }
-  if (state.patrol && state.patrol.phase !== 'leave'){
-    var bl = Math.floor(performance.now() / 160) % 2;
-    var eg = ctx.createLinearGradient(0, 0, W, 0);
-    eg.addColorStop(0, bl ? 'rgba(255,40,20,.22)' : 'rgba(255,40,20,0)'); eg.addColorStop(.2, 'rgba(0,0,0,0)'); eg.addColorStop(.8, 'rgba(0,0,0,0)'); eg.addColorStop(1, bl ? 'rgba(47,123,255,0)' : 'rgba(47,123,255,.25)');
-    ctx.fillStyle = eg; ctx.fillRect(0, 0, W, H);
-  }
   drawHUD();
 }
 
-/* ---------- results ---------- */
-var runNo = parseInt(load('ns-runno', '0'), 10) || 0;
+/* ---------- results: what it meant ---------- */
 function finish(kind){
   if (state.ended) return;
-  state.ended = true; state.mode = 'done'; clearKeys(); byId('belt').hidden = true;
-  if (audio.eng) try { audio.eng.g.gain.setTargetAtTime(0, audio.ctx.currentTime, .1); audio.siren.g.gain.setTargetAtTime(0, audio.ctx.currentTime, .1); } catch(e){}
-  hideNotice(); runNo++; save('ns-runno', String(runNo));
+  state.ended = true; state.mode = 'done'; clearKeys(); byId('belt').hidden = true; byId('moment').hidden = true; state.moment = null;
+  if (audio.eng) try { audio.eng.g.gain.setTargetAtTime(0, audio.ctx.currentTime, .1); } catch(e){}
+  hideNotice();
   var legal = legalTime(), u = veh.dial, name = driverEl.value.trim();
-  var bonus = 0, rows = [];
-  if (kind === 'complete'){
-    if (!state.flashes){ bonus += 1500; rows.push(['Clean run', 1500]); }
-    if (state.t <= legal * 1.35){ bonus += 500; rows.push(['On pace', 500]); }
+  var pct = state.distM > 0 ? Math.round(100 * (1 - state.overM / state.distM)) : 100;
+  var cls, head, line;
+  if (kind === 'suspended'){ cls = 'bad'; head = 'Licence suspended'; line = 'Six notices within 24 months means at least 12 months off the road, then retraining and a retest.'; }
+  else if (!state.flashes){ cls = 'ok'; head = 'Clean licence'; line = 'No notices. You drove within the limit for <b>' + pct + '%</b> of the road.'; }
+  else { cls = 'warn'; head = state.flashes + (state.flashes > 1 ? ' notices' : ' notice') + DOT + CEDI + state.fines; line = 'You drove within the limit for <b>' + pct + '%</b> of the road.'; }
+  var saved = legal - state.t;
+  if (kind !== 'suspended'){
+    if (state.overM > 20 && saved > 1) line += ' Speeding saved you about <b>' + fmtTime(saved) + '</b>' + (state.fines ? ' and cost <b>' + CEDI + state.fines + '</b>.' : '.');
+    else if (state.fines) line += ' Speeding didn’t even get you there faster than the legal time.';
   }
-  state.score += bonus;
-  var hard = !state.coach, total = Math.round(state.score * (hard ? 1.5 : 1));
-  var maxScore = legal * 45 + cams.length * 1250 + lights.length * 300 + 2100, ratio = total / (maxScore * (hard ? 1.5 : 1));
-  var medal = kind !== 'complete' ? '' : ratio >= .7 ? 'gold' : ratio >= .45 ? 'silver' : ratio >= .25 ? 'bronze' : '';
-  var best = getBest(), prev = best[route.id], newBest = kind === 'complete' && (!prev || total > prev.s);
-  if (newBest && medal){ best[route.id] = {s: total, m: medal, v: veh.id}; save('ns-best', JSON.stringify(best)); }
-  var head = kind === 'busted' ? 'Busted' : kind === 'suspended' ? 'Suspended' : medal ? 'Run complete' : 'Finished';
-  var cls = kind === 'complete' ? 'ok' : 'bad';
-  var line;
-  if (kind === 'busted') line = 'You didn’t stop for the MTTD patrol. Disobeying a traffic officer is its own offence under L.I. 2519. When a patrol pulls in front, brake to a full stop.';
-  else if (kind === 'suspended') line = 'Six notices within 24 months. That’s at least 12 months off the road, then retraining and a retest.';
-  else {
-    var saved = legal - state.t;
-    line = state.flashes && saved > 1 ? 'Speeding saved you <b>' + fmtTime(saved) + '</b> and cost <b>' + CEDI + state.fines + '</b>.' :
-      state.flashes ? 'You paid <b>' + CEDI + state.fines + '</b> and still missed par.' :
-      'No notices. Par was ' + fmtTime(legal) + '; you did <b>' + fmtTime(state.t) + '</b>.';
-    if (u === 'mph') line += ' On this road your needle belongs at <b>' + route.zones.map(function(z,i){return Math.round(limitOf(i)/KMH_PER_MPH);}).filter(function(v,i,a){return a.indexOf(v)===i;}).sort(function(a,b){return a-b;}).join(', ') + ' mph</b>.';
-  }
-  var T = state.tally;
-  var brk = [['Pace', T.pace], ['Perfect passes ×' + T.perfectN, T.perfect], ['Clean stops ×' + T.cleanN, T.clean], ['Seatbelt', T.belt]];
-  if (opt.steer) brk.push(['Overtakes ×' + state.overtakes, T.overtake]);
-  rows.forEach(function(r){ brk.push(r); });
-  if (T.penalty) brk.push(['Penalties (notices, bumps, crashes)', -T.penalty]);
-  if (hard) brk.push(['Hard mode ×1.5', Math.round(state.score * .5)]);
-  var brkHtml = brk.filter(function(r){ return r[1]; }).map(function(r){ return '<div class="' + (r[1] < 0 ? 'neg' : '') + '"><span>' + esc(r[0]) + '</span><span>' + (r[1] > 0 ? '+' : '') + fmtN(r[1]) + '</span></div>'; }).join('');
-  var rap = state.notices.length ? state.notices.map(function(n){ return '<div><span>' + esc(n.title) + DOT + esc(n.where) + '</span><span>' + (n.fine ? CEDI + n.fine : '–') + '</span></div>'; }).join('') : '<p class="none">Nothing on your record. Keep it that way.</p>';
+  if (u === 'mph') line += ' On this road your needle belongs at <b>' + route.zones.map(function(z,i){return Math.round(limitOf(i)/KMH_PER_MPH);}).filter(function(v,i,a){return a.indexOf(v)===i;}).sort(function(a,b){return a-b;}).join(', ') + ' mph</b>.';
+  if (kind === 'complete' && !state.flashes){ var cl = getClean(); cl[route.id] = 1; save('ns-clean', JSON.stringify(cl)); }
+
+  var moments = state.moments.length ? state.moments.map(function(m){
+    return '<div class="' + (m.ok ? 'ok' : 'bad') + '"><span>' + esc(m.who) + DOT + esc(m.where) + '<br><small style="color:var(--muted)">At ' + m.speed + ' km/h you needed ' + Math.round(m.need) + ' m; they were ' + m.D + ' m ahead. At ' + m.lim + ': ' + Math.round(m.needLim) + ' m.</small></span><span>' + (m.ok ? 'Stopped' : 'Too fast') + '</span></div>';
+  }).join('') : '<div class="none">Nothing stepped out this time.</div>';
+  var rap = state.notices.length ? state.notices.map(function(n){ return '<div class="bad"><span>' + esc(n.title) + DOT + esc(n.where) + '</span><span>' + (n.fine ? CEDI + n.fine : 'Suspended') + '</span></div>'; }).join('') : '<div class="none">Nothing on your record.</div>';
+  var good = [];
+  if (state.legalCams) good.push(state.legalCams + ' camera' + (state.legalCams > 1 ? 's' : '') + ' passed legally');
+  if (state.cleanStops) good.push(state.cleanStops + ' clean stop' + (state.cleanStops > 1 ? 's' : '') + ' at red lights');
+  if (state.belt) good.push('Seatbelt on');
+  var f = state.fines, late30 = Math.round(f * (1 + .01 * 16));
+  var timeline = f ? '<div class="rsec"><h3>If these were real</h3><div class="timeline">' +
+      '<div>An SMS notice goes to the <b>registered owner</b>, one per offence.</div>' +
+      '<div>Pay within <b>14 days</b>: ' + CEDI + f + '.</div>' +
+      '<div class="bad">Pay at day 30: <b>' + CEDI + late30 + '</b>. It grows 1% a day after day 14.</div>' +
+      '<div class="bad">Unpaid: DVLA won’t renew your licence, transfer the car or inspect it for roadworthiness.</div>' +
+    '</div></div>' : '';
   var zrows = route.zones.map(function(z, i){
     var s = state.stats[i], lim = limitOf(i), ov = s.max > lim + .5;
     return '<tr><td><span class="dot" style="background:'+ZC[z.type]+'"></span>'+esc(z.name)+(z.sign===false?' <span style="color:var(--muted)">(no sign)</span>':'')+'</td><td class="num">'+lim+(u==='mph' ? ' <span style="color:var(--muted)">/ '+Math.round(lim/KMH_PER_MPH)+' mph</span>' : '')+'</td><td class="num '+(ov?'over':'')+'">'+Math.round(s.max)+(u==='mph' ? ' <span style="color:var(--muted)">/ '+Math.round(s.max/KMH_PER_MPH)+'</span>' : '')+'</td><td class="num">'+(s.flashes||'&ndash;')+'</td></tr>';
   }).join('');
   var nextR = ROUTES[(ROUTES.indexOf(route) + 1) % ROUTES.length];
+  var other = veh.cls === 'heavy' ? vehById('corolla') : (veh.dial === 'mph' ? vehById('truck') : vehById('corolla'));
   var el = byId('result');
   el.innerHTML = '<div class="rcard" role="dialog" aria-labelledby="rH">'+
-    '<div class="rbanner"><div><div class="k">' + esc(route.name) + DOT + esc(veh.name) + (name ? DOT + esc(name) : '') + '</div><h2 id="rH" class="' + cls + '">' + esc(head) + '</h2></div>'+
-      '<div class="rscore"><div class="v">' + fmtN(total) + '</div>' + (medal ? '<span class="medal ' + medal + '">' + medal + (newBest ? DOT + 'new best' : '') + '</span>' : kind === 'complete' ? '<span class="medal bronze" style="background:#555;color:#ddd">No medal</span>' : '') + '</div></div>'+
-    '<div class="rbody"><p class="rline">' + line + '</p>'+
-      '<div><div class="lbl">Score</div><div class="breakdown">' + (brkHtml || '<div><span>No points</span><span>0</span></div>') + '</div></div>'+
-      '<div class="rap"><h3>Rap sheet</h3><div class="breakdown">' + rap + '</div><div class="cost"><span>Cost to you</span><span>' + CEDI + state.fines + '</span></div></div>'+
+    '<div class="rbanner"><div class="k">' + esc(route.name) + DOT + esc(veh.name) + (name ? DOT + esc(name) : '') + '</div><h2 id="rH" class="' + cls + '">' + esc(head) + '</h2><p>' + line + '</p></div>'+
+    '<div class="rstats">'+
+      '<div class="rstat"><div class="k">Within the limit</div><div class="v ' + (pct >= 95 ? 'ok' : pct < 75 ? 'bad' : '') + '">' + pct + '%</div></div>'+
+      '<div class="rstat"><div class="k">Fines</div><div class="v ' + (f ? 'bad' : 'ok') + '">' + CEDI + f + '</div></div>'+
+      '<div class="rstat"><div class="k">Your time</div><div class="v">' + fmtTime(state.t) + '</div></div>'+
+      '<div class="rstat"><div class="k">Legal minimum</div><div class="v">' + fmtTime(legal) + '</div></div>'+
     '</div>'+
-    '<div class="ractions"><button class="rbtn" id="rAgain"><span>Retry</span></button><button class="rbtn ghost" id="rNext"><span>Next event: ' + esc(nextR.name) + '</span></button><button class="rbtn ghost" id="rChange"><span>Car &amp; road</span></button></div>'+
+    '<div class="rbody">'+
+      '<div class="rsec"><h3>Moments that mattered</h3><div class="rlist">' + moments + '</div></div>'+
+      '<div class="rsec"><h3>Notices</h3><div class="rlist">' + rap + '</div>' + (good.length ? '<p class="note" style="margin-top:8px">' + esc(good.join(DOT)) + '</p>' : '') + '</div>'+
+      timeline +
+    '</div>'+
+    '<div class="ractions"><button class="rbtn" id="rAgain"><span>Drive again</span></button><button class="rbtn ghost" id="rOther"><span>Try the ' + esc(other.name) + '</span></button><button class="rbtn ghost" id="rNext"><span>Next road</span></button></div>'+
     '<details><summary>Stretch by stretch</summary><div class="tbl"><table><thead><tr><th>Stretch</th><th class="num">Limit</th><th class="num">Your top</th><th class="num">Notices</th></tr></thead><tbody>'+zrows+'</tbody></table></div></details>'+
   '</div>';
-  el.hidden = false;
+  el.hidden = false; el.scrollTop = 0;
   renderLists();
   byId('rAgain').addEventListener('click', function(){ readyGame(); });
+  byId('rOther').addEventListener('click', function(){ chosenV = other.id; save('ns-vehicle', chosenV); renderLists(); drillReset(); readyGame(); });
   byId('rNext').addEventListener('click', function(){ chosenR = nextR.id; save('ns-route', chosenR); renderLists(); readyGame(); });
-  byId('rChange').addEventListener('click', function(){ readyGame(); showSheet('sheetSetup'); });
   setTimeout(function(){ var b = byId('rAgain'); if (b) b.focus({preventScroll:true}); }, 60);
 }
 
@@ -1589,7 +1642,7 @@ function frame(now){
 }
 resize();
 readyGame();
-if (location.hash === '#test') window.__ns = {state: function(){ return state; }, tick: function(sec){ for (var i = 0; i < sec*60 && state.mode === 'drive'; i++) update(1/60); }, bench: function(){ var t = performance.now(); for (var i = 0; i < 10; i++) render(); return (performance.now() - t) / 10; }, keys: keys, cars: function(){ return cars; }, lights: function(){ return lights; }, limit: function(){ return limitOf(Math.max(0, state.zoneIdx)); }, begin: beginDrive, buckle: buckle, ready: readyGame};
+if (location.hash === '#test') window.__ns = {state: function(){ return state; }, tick: function(sec){ for (var i = 0; i < sec*60 && state.mode === 'drive' && !state.paused; i++) update(1/60); }, bench: function(){ var t = performance.now(); for (var i = 0; i < 10; i++) render(); return (performance.now() - t) / 10; }, keys: keys, lights: function(){ return lights; }, hazards: function(){ return hazards; }, limit: function(){ return limitOf(Math.max(0, state.zoneIdx)); }, begin: beginDrive, buckle: buckle, ready: readyGame, closeMoment: closeMoment};
 var fontsReady = document.fonts && document.fonts.load ? Promise.all([document.fonts.load('italic 900 20px "Exo 2"'), document.fonts.load('italic 800 20px "Exo 2"'), document.fonts.load('700 20px "Barlow Condensed"')]).catch(function(){}) : Promise.resolve();
 fontsReady.then(function(){ drillDraw(); requestAnimationFrame(frame); });
 })();
