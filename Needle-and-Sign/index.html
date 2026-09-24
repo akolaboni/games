@@ -347,7 +347,7 @@ details[open] summary{margin-bottom:10px}
         </ul>
         <p class="note" style="margin-top:8px">The notices in this game are practice cards, not real ones.</p>
       </div>
-      <div class="sources">Sources (checked 23 Sep 2026): <a href="https://police.gov.gh/en/index.php/traffitech-gh/" target="_blank" rel="noopener">Ghana Police Traffitech-GH FAQ</a>, <a href="https://www.pulse.com.gh/story/new-road-traffic-regulations-li-2519-list-of-offences-penalties-and-jail-terms-you-need-to-know-2026091807093555414" target="_blank" rel="noopener">Pulse Ghana on L.I. 2519</a>, <a href="https://www.pulse.com.gh/story/ghana-police-traffitech-gh-implementation-october-1-2026091614422722962" target="_blank" rel="noopener">Pulse on the 1 Oct rollout</a>, <a href="https://www.myjoyonline.com/stick-to-speed-limit-not-vehicles-capacity-mttd/" target="_blank" rel="noopener">MTTD truck limits</a>, <a href="https://www.gov.uk/guidance/the-highway-code/general-rules-techniques-and-advice-for-all-drivers-and-riders-103-to-158" target="_blank" rel="noopener">Highway Code stopping distances</a>. Places are real; distances are shortened and the road runs faster than real time.</div>
+      <div class="sources">Sources (checked 23 Sep 2026): <a href="https://police.gov.gh/en/index.php/traffitech-gh/" target="_blank" rel="noopener">Ghana Police Traffitech-GH FAQ</a>, <a href="https://www.pulse.com.gh/story/new-road-traffic-regulations-li-2519-list-of-offences-penalties-and-jail-terms-you-need-to-know-2026091807093555414" target="_blank" rel="noopener">Pulse Ghana on L.I. 2519</a>, <a href="https://www.pulse.com.gh/story/ghana-police-traffitech-gh-implementation-october-1-2026091614422722962" target="_blank" rel="noopener">Pulse on the 1 Oct rollout</a>, <a href="https://www.myjoyonline.com/stick-to-speed-limit-not-vehicles-capacity-mttd/" target="_blank" rel="noopener">MTTD truck limits</a>, <a href="https://www.gov.uk/guidance/the-highway-code/general-rules-techniques-and-advice-for-all-drivers-and-riders-103-to-158" target="_blank" rel="noopener">Highway Code stopping distances</a>. Route order from <a href="https://en.wikipedia.org/wiki/N1_road_(Ghana)" target="_blank" rel="noopener">N1</a> and <a href="https://en.wikipedia.org/wiki/N5_road_(Ghana)" target="_blank" rel="noopener">N5</a> (Wikipedia). Places are real; distances are shortened, zone types are simplified and the road runs faster than real time.</div>
     </div>
   </aside>
 </div>
@@ -428,6 +428,45 @@ var ROUTES = [
     {name:'Aburi', type:'urban', len:400, scen:'town', board:true}
   ]}
 ];
+ROUTES.push(
+  {id:'aflao', name:'Tema'+ARROW+'Aflao', road:'N1 Tema'+DASH+'Aflao Road, over the Volta at Sogakope', zones:[
+    {name:'Kpone Barrier', type:'urban', len:450, scen:'town', lanes:4, cams:1, light:1},
+    {name:'Kpone'+DASH+'Dawhenya', type:'highway', len:1000, scen:'bush', lanes:4, cams:1, laser:1, curve:1, wig:1},
+    {name:'Dawhenya', type:'urban', len:380, scen:'town', board:true, cams:1},
+    {name:'Sege', type:'urban', len:330, scen:'town', board:true, sign:false},
+    {name:'Sege'+DASH+'Kasseh stretch', type:'highway', len:1000, scen:'bush', cams:1, curve:2, wig:2, haz:'goats'},
+    {name:'Kasseh market', type:'sensitive', why:'market', len:240, scen:'market', cams:1},
+    {name:'Volta Bridge, Sogakope', type:'highway', len:450, scen:'bridge', bridge:'deck'},
+    {name:'Sogakope', type:'urban', len:380, scen:'town', board:true, cams:1, light:1},
+    {name:'Sogakope'+DASH+'Akatsi', type:'highway', len:1100, scen:'bush', cams:1, laser:1, curve:2, wig:1, hill:3},
+    {name:'Akatsi', type:'urban', len:380, scen:'town', board:true, cams:1},
+    {name:'Denu', type:'urban', len:330, scen:'town', board:true, light:1},
+    {name:'Aflao border market', type:'sensitive', why:'market', len:240, scen:'market', cams:1}
+  ]},
+  {id:'akosombo', name:'Ashaiman'+ARROW+'Akosombo', road:'Tema'+DASH+'Akosombo Road', zones:[
+    {name:'Ashaiman', type:'urban', len:480, scen:'town', board:true, cams:1, light:1},
+    {name:'Ashaiman market', type:'sensitive', why:'market', len:250, scen:'market', cams:1},
+    {name:'Afienya', type:'urban', len:380, scen:'town', board:true, sign:false},
+    {name:'Afienya'+DASH+'Kpong stretch', type:'highway', len:1400, scen:'bush', cams:1, laser:1, curve:2, wig:2, hill:4, haz:'goats'},
+    {name:'Kpong', type:'urban', len:380, scen:'town', board:true, cams:1, light:1},
+    {name:'School zone, Kpong', type:'sensitive', why:'school', len:240, scen:'school', cams:1},
+    {name:'Atimpoku', type:'urban', len:360, scen:'town', board:true, cams:1},
+    {name:'Akosombo hills', type:'highway', len:800, scen:'hill', cams:1, curve:4, wig:2, rise:30},
+    {name:'Akosombo', type:'urban', len:380, scen:'town', board:true}
+  ]},
+  {id:'ho', name:'Akosombo'+ARROW+'Ho', road:'N2 and N5 over the Adomi Bridge', zones:[
+    {name:'Akosombo', type:'urban', len:380, scen:'town', board:true, cams:1},
+    {name:'Atimpoku', type:'urban', len:330, scen:'town', board:true, light:1},
+    {name:'Adomi Bridge', type:'highway', len:450, scen:'bridge', bridge:'arch'},
+    {name:'Adomi'+DASH+'Juapong', type:'highway', len:850, scen:'hill', cams:1, curve:3, wig:2, hill:3},
+    {name:'Juapong', type:'urban', len:380, scen:'town', board:true, cams:1, sign:false},
+    {name:'Juapong'+DASH+'Sokode stretch', type:'highway', len:1400, scen:'bush', cams:1, laser:1, curve:2, wig:2, hill:5, haz:'goats'},
+    {name:'Sokode-Etoe', type:'urban', len:360, scen:'town', board:true, cams:1},
+    {name:'Ho approach', type:'highway', len:650, scen:'hill', cams:1, curve:2, rise:20},
+    {name:'Ho Central Market', type:'sensitive', why:'market', len:240, scen:'market', cams:1},
+    {name:'Ho', type:'urban', len:380, scen:'town', board:true, light:1}
+  ]}
+);
 ROUTES.forEach(function(r){ r.zones.forEach(function(z){ z.len = Math.round(z.len * LENF); }); });
 var FINES = [120,120,120,180,240];
 var PLATE = 'GR 4821-24';
@@ -673,7 +712,8 @@ var SCEN = {
   procession:{grass:['#8b8a3d','#858439'], shoulder:['#a3612f','#9c5c2c']},
   bush:     {grass:['#8b8a3d','#858439'], shoulder:['#a3612f','#9c5c2c']},
   hill:     {grass:['#6f7b36','#6a7533'], shoulder:['#a3612f','#9c5c2c']},
-  motorway: {grass:['#948d4a','#8e8746'], shoulder:['#807a6e','#7a7468']}
+  motorway: {grass:['#948d4a','#8e8746'], shoulder:['#807a6e','#7a7468']},
+  bridge:   {grass:['#4d7486','#4a7082'], shoulder:['#9a968e','#949088']}
 };
 ['school','market','hospital','church','mosque'].forEach(function(k){ SCEN[k] = SCEN.town; });
 var HAZE_DRY = [228,196,138], HAZE_WET = [146,154,160], HAZE = HAZE_DRY;
@@ -696,7 +736,8 @@ function buildTrack(){
       var t = (i+1)/n, ny = baseY + (z.rise||0)*M*(t*t*(3-2*t)) + (z.hill||0)*M*Math.sin(t*Math.PI*2), lanes = lanesOf(z);
       segs.push({index: idx, zone: zi, lanes: lanes, w: lanes === 4 ? 3400 : 2000, scen: z.scen, sens: z.type === 'sensitive',
         curve: (z.curve||0) * Math.sin(t * Math.PI * (z.wig||1)),
-        p1: {world:{y:y, z:idx*SEG}, camera:{}, screen:{}}, p2: {world:{y:ny, z:(idx+1)*SEG}, camera:{}, screen:{}}, sprites: [], cars: [], clip: 0});
+        p1: {world:{y:y, z:idx*SEG}, camera:{}, screen:{}}, p2: {world:{y:ny, z:(idx+1)*SEG}, camera:{}, screen:{}}, sprites: [], cars: [], clip: 0,
+        bridge: z.bridge || null, bt1: i / n, bt2: (i + 1) / n});
       y = ny; idx++;
     }
   });
@@ -752,6 +793,8 @@ function buildTrack(){
         if (i % dens === 0){ var pk = rand() < .45, psz = .7 + rand()*.7; put(i, pk ? 'palm' : 'tree', sideOff(rand()<.5?-1:1, (pk ? 3.3 : 2.7)*psz + rand()*6, zw), {s:psz}); }
         if (i % 61 === 7) put(i, 'kiosk', sideOff(1, 1.8 + rand(), zw), {c:Math.floor(rand()*6)});
         if (i % 47 === 20) put(i, 'billboard', (rand()<.5?-1:1)*(2.6 + rand()), {c:Math.floor(rand()*4)});
+      } else if (z.scen === 'bridge'){
+        if (i % 18 === 4){ put(i, 'lamp', 1.3, {}); put(i, 'lamp', -1.3, {}); }
       } else if (z.scen === 'motorway'){
         if (i % 28 === 0) put(i, 'lamp', 0, {});
         if (i % 11 === 0){ var mk = rand() < .3, msz = .6 + rand()*.6; put(i, mk ? 'palm' : 'tree', sideOff(rand()<.5?-1:1, (mk ? 3.3 : 2.7)*msz + rand()*8, zw), {s:msz}); }
@@ -1302,9 +1345,10 @@ function poly(x1,y1,x2,y2,x3,y3,x4,y4,c){ ctx.fillStyle=c; ctx.beginPath(); ctx.
 function band(x1,y1,w1,x2,y2,w2,a,b,c){ poly(x1+w1*a,y1+.9, x1+w1*b,y1+.9, x2+w2*b,y2, x2+w2*a,y2, c); }
 function drawSegment(seg, fog){
   var p1 = seg.p1.screen, p2 = seg.p2.screen, alt = Math.floor(seg.index/RUMBLE)%2, sc = SCEN[seg.scen];
-  var town = !(seg.scen === 'bush' || seg.scen === 'hill' || seg.scen === 'motorway' || seg.scen === 'procession'), hz = hash(seg.index * .37), near = p1.w > 18;
+  var town = !(seg.scen === 'bush' || seg.scen === 'hill' || seg.scen === 'motorway' || seg.scen === 'procession' || seg.scen === 'bridge'), hz = hash(seg.index * .37), near = p1.w > 18;
   ctx.fillStyle = sc.grass[alt]; ctx.fillRect(0, p2.y, W, p1.y - p2.y + 1);
   if (hz > .72){ ctx.fillStyle = 'rgba(0,0,0,.035)'; ctx.fillRect(0, p2.y, W, p1.y - p2.y + 1); }
+  if (seg.scen === 'bridge' && hz > .45){ ctx.fillStyle = RAIN ? 'rgba(200,210,220,.14)' : 'rgba(255,245,220,.28)'; for (var sk = 0; sk < 3; sk++){ var skx = hash(seg.index * 3.1 + sk) * W; ctx.fillRect(skx, p2.y, 20 + hash(seg.index + sk) * 60, Math.max(1, (p1.y - p2.y) * .5)); } }
   band(p1.x,p1.y,p1.w, p2.x,p2.y,p2.w, -1.32, 1.32, sc.shoulder[alt]);
   if (RAIN){ ctx.fillStyle = 'rgba(22,28,34,.3)'; ctx.fillRect(0, p2.y, W, p1.y - p2.y + 1); }
   if (town){
@@ -1804,6 +1848,24 @@ function drawHUD(){
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 
+function drawBridgeSeg(seg){
+  var p1 = seg.p1.screen, p2 = seg.p2.screen; if (p1.w < 1.5 || p2.y >= p1.y) return;
+  ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, seg.clip); ctx.clip(); ctx.globalAlpha = Math.max(0, 1 - seg.fog * 1.05);
+  var ph = 1 * M, h1 = p1.scale * ph * VS, h2 = p2.scale * ph * VS;
+  for (var sd = -1; sd <= 1; sd += 2){
+    var x1 = p1.x + sd * p1.w * 1.3, x2 = p2.x + sd * p2.w * 1.3;
+    poly(x1, p1.y, x2, p2.y, x2, p2.y - h2, x1, p1.y - h1, sd < 0 ? '#b8b3a9' : '#a7a298');
+    poly(x1, p1.y - h1, x2, p2.y - h2, x2, p2.y - h2 * 1.12, x1, p1.y - h1 * 1.12, '#6d6a64');
+    if (seg.bridge === 'arch'){
+      var a1 = (24 * (1 - Math.pow(2 * seg.bt1 - 1, 2)) + 2) * M, a2 = (24 * (1 - Math.pow(2 * seg.bt2 - 1, 2)) + 2) * M, rib = 1.4 * M;
+      var ax1 = p1.x + sd * p1.w * 1.42, ax2 = p2.x + sd * p2.w * 1.42;
+      var ya1 = p1.y - p1.scale * a1 * VS, ya2 = p2.y - p2.scale * a2 * VS;
+      poly(ax1, ya1, ax2, ya2, ax2, ya2 - p2.scale * rib * VS, ax1, ya1 - p1.scale * rib * VS, sd < 0 ? '#e1e4e5' : '#c9cdcf');
+      if (seg.index % 3 === 0){ ctx.strokeStyle = 'rgba(210,214,216,.85)'; ctx.lineWidth = Math.max(.8, p1.scale * .12 * M * W/2); ctx.beginPath(); ctx.moveTo(ax1, p1.y - h1); ctx.lineTo(ax1, ya1); ctx.stroke(); }
+    }
+  }
+  ctx.restore();
+}
 function drawFX(){
   var f = state.fx; if (!f) return;
   if (f.red > 0){
@@ -1865,6 +1927,7 @@ function render(){
     var sc = seg.p1.screen;
     if (seg.p1.camera.z <= cd) continue;
     var ppm = sc.scale * M * W/2; curSeg = seg;
+    if (seg.bridge) drawBridgeSeg(seg);
     for (var si = 0; si < seg.sprites.length; si++){ var sp = seg.sprites[si]; drawSprite(sp, sc.x + sc.scale * sp.offset * seg.w * W/2, sc.y, ppm, seg.clip, seg.fog, sc.w); }
     for (var ci = 0; ci < seg.cars.length; ci++){
       var c = seg.cars[ci], pct = (c.z % SEG) / SEG, p2s = seg.p2.screen, s2 = sc.scale + (p2s.scale - sc.scale)*pct;
