@@ -790,10 +790,11 @@ function buildTrack(){
   route.zones.forEach(function(z, zi){
     var s0 = zoneStarts[zi], s1 = zi+1 < zoneStarts.length ? zoneStarts[zi+1] : segs.length, lim = LIMITS[veh.cls][z.type];
     var edge = lanesOf(z) === 4 ? 1.12 : 1.18, zw = lanesOf(z) === 4 ? 3400 : 2000;
+    var posted = LIMITS.light[z.type]; // the sign shows the road's limit; lower heavy-vehicle limits are never posted
     if (z.sign !== false){
-      put(s0 + 2, 'limit', edge, {n:lim}); signsList.push({seg:s0+2, n:lim});
-      if (lanesOf(z) === 4) put(s0 + 2, 'limit', -1.12, {n:lim});
-      if (z.type === 'highway' && s1 - s0 > 300){ var mid = s0 + Math.round((s1-s0)*.55); put(mid, 'limit', edge, {n:lim}); signsList.push({seg:mid, n:lim}); }
+      put(s0 + 2, 'limit', edge, {n:posted}); signsList.push({seg:s0+2, n:posted});
+      if (lanesOf(z) === 4) put(s0 + 2, 'limit', -1.12, {n:posted});
+      if (z.type === 'highway' && s1 - s0 > 300){ var mid = s0 + Math.round((s1-s0)*.55); put(mid, 'limit', edge, {n:posted}); signsList.push({seg:mid, n:posted}); }
     }
     if (z.board) put(s0 + 8, 'board', 1.75, {name:z.name});
     if (z.why === 'school') put(s0 + 30, 'crossing', 0);
@@ -1217,13 +1218,13 @@ function quizReason(z, lim){
   if (veh.dial === 'mph') r += ' On your dial that\u2019s ' + Math.round(lim / KMH_PER_MPH) + ' mph.';
   return r;
 }
-function askQuiz(zi){
-  var z = route.zones[zi], lim = limitOf(zi);
+function askQuiz(zi, heavySign){
+  var z = route.zones[zi], lim = limitOf(zi), posted = LIMITS.light[z.type];
   var opts = ZONE_ORDER.map(function(t){ return LIMITS[veh.cls][t]; }).filter(function(v, i, a){ return a.indexOf(v) === i; }).sort(function(a, b){ return a - b; });
-  state.quiz = {zone: zi, answer: lim, done: false}; state.paused = true; clearKeys();
+  state.quiz = {zone: zi, answer: lim, done: false, heavy: !!heavySign}; state.paused = true; clearKeys();
   var el = byId('quiz');
-  el.innerHTML = '<div class="qcard" role="dialog" aria-labelledby="qH" aria-describedby="qP"><div class="k">' + esc(z.name) + DOT + 'no sign</div>' +
-    '<h2 id="qH">What\u2019s the limit here?</h2><p id="qP">' + esc(QHINT[z.why || z.type] || '') + '</p>' +
+  el.innerHTML = '<div class="qcard" role="dialog" aria-labelledby="qH" aria-describedby="qP"><div class="k">' + esc(z.name) + DOT + (heavySign ? 'sign says ' + posted : 'no sign') + '</div>' +
+    '<h2 id="qH">' + (heavySign ? 'The sign says ' + posted + '. What\u2019s your limit?' : 'What\u2019s the limit here?') + '</h2><p id="qP">' + esc(heavySign ? 'You\u2019re driving the ' + veh.name + ', over 3.5 t.' : QHINT[z.why || z.type] || '') + '</p>' +
     '<div class="qopts">' + opts.map(function(n){ return '<button class="qopt" data-n="' + n + '" aria-label="' + n + ' km/h">' + n + '</button>'; }).join('') + '</div>' +
     '<p class="qfb" id="qFb">' + (COARSE ? 'Tap a sign.' : 'Click a sign, or press 1 to ' + opts.length + '.') + '</p></div>';
   el.hidden = false;
@@ -1236,7 +1237,7 @@ function answerQuiz(n){
   state.quizzes.push({where: z.name, ok: ok, picked: n, answer: q.answer});
   Array.prototype.forEach.call(byId('quiz').querySelectorAll('.qopt'), function(b){ var v = +b.getAttribute('data-n'); b.disabled = true; if (v === q.answer) b.classList.add('right'); else b.classList.add('wrong'); });
   var fb = byId('qFb'); fb.className = 'qfb ' + (ok ? 'ok' : 'no');
-  fb.innerHTML = (ok ? '<b>Right.</b> ' : '<b>It\u2019s ' + q.answer + '.</b> ') + esc(quizReason(z, q.answer));
+  fb.innerHTML = (ok ? '<b>Right.</b> ' : '<b>It\u2019s ' + q.answer + '.</b> ') + esc(q.heavy ? 'The sign is for cars. Vehicles over 3.5 t: ' + LIMITS.heavy.highway + ' on highways, ' + LIMITS.heavy.motorway + ' on motorways, whatever the sign says.' + (veh.dial === 'mph' ? ' On your dial that\u2019s ' + Math.round(q.answer / KMH_PER_MPH) + ' mph here.' : '') : quizReason(z, q.answer));
   blip(ok ? 'good' : 'bad');
   var go = document.createElement('button'); go.className = 'rbtn'; go.innerHTML = '<span>Drive on</span>'; go.addEventListener('click', closeQuiz);
   fb.parentNode.appendChild(go); setTimeout(function(){ go.focus({preventScroll:true}); }, 40);
@@ -1404,8 +1405,9 @@ function update(dt){
     if (state.coach) sub += DOT + lim + ' km/h' + (veh.dial === 'mph' ? ' = ' + Math.round(lim/KMH_PER_MPH) + ' mph on your dial' : '');
     toast(z.name.toUpperCase(), sub, z.type === 'sensitive' ? '#ffb400' : '#fff', 3.2);
     if (z.sign === false){ state.lastSign = 'none'; askQuiz(zi); }
+    else if (veh.cls === 'heavy' && !state.heavyAsked && LIMITS.light[z.type] !== lim){ state.heavyAsked = true; askQuiz(zi, true); }
   }
-  if (route.zones[zi].sign !== false && pSeg.index >= zoneStarts[zi] + 2) state.lastSign = limitOf(zi);
+  if (route.zones[zi].sign !== false && pSeg.index >= zoneStarts[zi] + 2) state.lastSign = LIMITS.light[route.zones[zi].type];
   var lim0 = limitOf(zi), st = state.stats[zi];
   st.max = Math.max(st.max, s);
   var dm = dz / M; state.distM += dm;
@@ -1939,6 +1941,7 @@ function drawHUD(){
     ctx.strokeStyle = noSign ? '#7d8084' : '#d42a1f'; ctx.lineWidth = 5.5; ctx.beginPath(); ctx.arc(sx0, sy0, 16.5, 0, 7); ctx.stroke();
     var known = !noSign || state.knownZones[zi];
     txt(known ? String(lim) : '?', sx0, sy0 + 1, 15, 800, '#111');
+    if (veh.cls === 'heavy' && known && lim !== LIMITS.light[route.zones[zi].type]){ var tg = veh.body === 'coach' ? 'BUS' : 'TRUCK'; ctx.fillStyle = '#ffb400'; roundRect(sx0 - 17, sy0 + 13, 34, 11, 2); ctx.fill(); txt(tg, sx0, sy0 + 18.8, 8.5, 800, '#111'); }
     ctx.save(); ctx.beginPath(); ctx.rect(64, top, pw - 50, 62); ctx.clip();
     rtext(over ? 'OVER +' + byK : 'LEGAL', 68, top + 22, 24, over ? '#fff' : '#5ad27a', 'left', 900);
     var l2 = over ? (nextFine() ? 'A CAMERA HERE = ' + CEDI + nextFine() : 'NEXT NOTICE = SUSPENSION')
@@ -1960,7 +1963,7 @@ function drawHUD(){
     var chips = [], pzN = state.pos + PLAYERZ;
     if (state.coach){
       var nx = nextSignAhead(pzN);
-      if (nx && nx.m < 260 && nx.n !== state.lastSign){ var slower = nx.n < lim; chips.push(['NEXT SIGN ' + nx.n + DOT + Math.round(nx.m) + ' m' + (slower ? DOT + 'EASE OFF' : ''), slower ? 'rgba(255,180,0,.94)' : 'rgba(8,8,10,.78)', slower ? '#111' : '#fff']); }
+      if (nx && nx.m < 260 && nx.n !== state.lastSign){ var slower = nx.n < LIMITS.light[route.zones[zi].type]; chips.push(['NEXT SIGN ' + nx.n + DOT + Math.round(nx.m) + ' m' + (slower ? DOT + 'EASE OFF' : ''), slower ? 'rgba(255,180,0,.94)' : 'rgba(8,8,10,.78)', slower ? '#111' : '#fff']); }
     }
     for (var lq = 0; lq < lights.length; lq++){
       var LL = lights[lq], lm = (LL.seg * SEG - pzN) / M;
