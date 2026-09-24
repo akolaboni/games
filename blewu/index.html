@@ -1,6 +1,6 @@
 <title>Blewu</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Blewu (Ewe: slowly). Drive real Ghanaian roads and feel what the L.I. 2519 km/h limits mean: on your own speedometer, in stopping distance, and in fines.">
+<meta name="description" content="Blewu. Drive real Ghanaian roads and feel what the L.I. 2519 km/h limits mean: on your own speedometer, in stopping distance, and in fines.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@1,600;1,800;1,900&family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap">
@@ -253,7 +253,7 @@ details[open] summary{margin-bottom:10px}
   </header>
 
   <div class="intro" id="intro">
-    <div class="tag">Ewe for &ldquo;slowly&rdquo; &middot; Ghana</div>
+    <div class="tag">Ghana&rsquo;s new speed limits</div>
     <h1>Blewu<b>.</b></h1>
     <p class="rule">Every sign is in km/h. Keep your needle in the <em>green</em>. Go into the <span class="red">red</span> and a camera can fine you.</p>
     <p class="rule-sub" id="introSub"></p>
@@ -316,6 +316,10 @@ details[open] summary{margin-bottom:10px}
         <p>At 30 km/h a car stops in about 11 m. At 50 it needs about 24 m, more than double. A child stepping out 14 m ahead is safe at 30, and not at 40.</p>
       </div>
       <div class="sec">
+        <h3>Read the roadside</h3>
+        <p>The warning comes before the danger: a red triangle sign, then people or animals at the edge of the road. An amber tag marks anyone who might step out. Ease off early. If you are already braking when they move, you lose no time reacting.</p>
+      </div>
+      <div class="sec">
         <h3>In the rain</h3>
         <p>Wet roads at least double your braking distance. At 50 km/h a car needs about 24 m to stop when dry and about 39 m when wet. The limit is the most you may do in good conditions, not a target.</p>
       </div>
@@ -375,13 +379,19 @@ var ZONE_ORDER = ['sensitive','urban','highway','motorway'];
 var ZONE_LABEL = {sensitive:'Human activity zone', urban:'Built-up area', highway:'Highway', motorway:'Motorway'};
 var WHY_LABEL = {school:'School', market:'Market', hospital:'Hospital', church:'Church', mosque:'Mosque', procession:'Procession'};
 var ZC = {sensitive:'#e8321f', urban:'#ffb400', highway:'#47b477', motorway:'#3f7ee0'};
-// hazards: who steps out, and how far ahead (real metres) when they do
+// hazards: the cue you can see coming, then who steps out and how far ahead of your bumper (real metres)
+var KERB = 'When people wait at the roadside, ease off and cover the brake.';
 var HAZ = {
-  school:{who:'A child', what:'steps out between parked cars', D:14}, market:{who:'A trader', what:'steps out with a head pan', D:14},
-  procession:{who:'A mourner', what:'steps into the road', D:14}, mosque:{who:'A worshipper', what:'crosses after prayers', D:14},
-  church:{who:'A churchgoer', what:'crosses to the other side', D:14}, hospital:{who:'A patient', what:'crosses slowly', D:14},
-  goats:{who:'Goats', what:'wander onto the highway', D:72}, truck:{who:'A broken-down truck', what:'appears in the haze, no warning triangle', D:86}
+  school:{who:'A child', what:'runs out after a ball', D:14, walk:3, label:'CHILD AT THE KERB', short:'CHILD', sign:'kids', seen:'The child was at the kerb with a ball', tip:'When children are at the roadside, ease off and cover the brake.'},
+  market:{who:'A trader', what:'steps out with a head pan', D:14, walk:1.4, label:'TRADER AT THE KERB', short:'TRADER', sign:'walk', seen:'The trader was waiting at the kerb', tip:KERB},
+  procession:{who:'A mourner', what:'steps into the road', D:14, walk:1.3, label:'MOURNER AT THE KERB', short:'MOURNER', seen:'The mourner was at the kerb', tip:KERB},
+  mosque:{who:'A worshipper', what:'crosses after prayers', D:14, walk:1.4, label:'WORSHIPPER AT THE KERB', short:'WORSHIPPER', seen:'The worshipper was waiting at the kerb', tip:KERB},
+  church:{who:'A churchgoer', what:'crosses to the other side', D:14, walk:1.4, label:'CHURCHGOER AT THE KERB', short:'CHURCHGOER', sign:'walk', seen:'The churchgoer was waiting at the kerb', tip:KERB},
+  hospital:{who:'A patient', what:'crosses slowly', D:14, walk:1, label:'PATIENT AT THE KERB', short:'PATIENT', sign:'walk', seen:'The patient was waiting at the kerb', tip:KERB},
+  goats:{who:'Goats', what:'wander onto the highway', D:72, walk:1.2, label:'GOATS ON THE VERGE', short:'GOATS', sign:'animals', seen:'The goats were grazing on the verge', tip:'Animals on the verge can walk out at any time. Slow down until you are past them.'},
+  truck:{who:'A broken-down truck', what:'turns out to be stopped in your lane', D:86, walk:0, label:'TRUCK, LIGHTS FLASHING', short:'TRUCK', seen:'Its hazard lights were flashing', tip:'Hazard lights ahead mean slow down until you know why. Nobody had put out a warning triangle.'}
 };
+var FRONT_M = {moto:1.9, trike:2.6, hatch:3.7, sedan:4.5, taxi:4.5, suv:4.7, pickup:5.3, hiace:4.8, coach:12, truck:16}; // your front bumper, ahead of the rear wheels
 
 var VEHICLES = [
   {id:'corolla', name:'Toyota Corolla', sub:'US import, "home-used"', cls:'light', dial:'mph', dialMax:140, vmax:185, acc:14, color:'#c7cacf', body:'sedan'},
@@ -786,7 +796,7 @@ function buildTrack(){
       if (z.type === 'highway' && s1 - s0 > 300){ var mid = s0 + Math.round((s1-s0)*.55); put(mid, 'limit', edge, {n:lim}); signsList.push({seg:mid, n:lim}); }
     }
     if (z.board) put(s0 + 8, 'board', 1.75, {name:z.name});
-    if (z.why === 'school'){ put(s0 - 25, 'school', edge); put(s0 + 30, 'crossing', 0); }
+    if (z.why === 'school') put(s0 + 30, 'crossing', 0);
     if (z.why === 'market') put(s0 + 35, 'crossing', 0);
     if (z.light){
       var li = s0 + Math.round((s1 - s0) * .58);
@@ -796,9 +806,11 @@ function buildTrack(){
     }
     var hk = z.why || z.haz;
     if (hk && HAZ[hk]){
-      var hs = s0 + Math.round((s1 - s0) * (z.type === 'sensitive' ? .5 : .7));
-      var Hz = {seg: hs, zone: zi, kind: hk, D: HAZ[hk].D, state:'wait', x: hk === 'goats' ? -1.6 : hk === 'truck' ? .25 : 1.3, home: hk === 'goats' ? -1.6 : 1.3, t:0};
+      var hs = s0 + Math.round((s1 - s0) * (z.type === 'sensitive' ? .6 : .7)), hx0 = hk === 'goats' ? -1.3 : hk === 'truck' ? .25 : 1.14;
+      var Hz = {seg: hs, zone: zi, kind: hk, D: HAZ[hk].D, state:'wait', x: hx0, home: hx0, t:0, seen:false, dist:1e9};
       Hz.sprite = put(hs, 'hazard', Hz.x, {H:Hz}); hazards.push(Hz);
+      // the real-world warning comes first: a triangle sign, where the road has one
+      if (HAZ[hk].sign) put(hs - Math.round((hk === 'goats' ? 240 : 150) * perM), 'warn', edge, {sym: HAZ[hk].sign});
     }
     for (var i = s0; i < s1; i++){
       var r = rand();
@@ -868,8 +880,9 @@ function legalTime(){ var t = 0; route.zones.forEach(function(z, i){ t += z.len 
 function readyGame(){
   RAIN = opt.rain; HAZE = RAIN ? HAZE_WET : HAZE_DRY;
   buildTrack();
+  CAMH = veh.cls === 'heavy' ? 2800 : 1500; // you sit high in a bus or a truck cab: see the road over your own roof
   state = {mode:'ready', pos:0, speed:0, t:0, flashes:0, fines:0, lastSign:null, zoneIdx:-1, msgs:[], pops:[], flashT:0,
-    playerX: segAt(PLAYERZ).lanes === 4 ? .25 : .5, skyX:0, bounce:0, paused:false, freeze:0, autoBrake:false,
+    playerX: segAt(PLAYERZ).lanes === 4 ? .25 : .5, skyX:0, bounce:0, paused:false, freeze:0, hz:null, beat:null, bypass:null,
     stats: route.zones.map(function(){ return {max:0, overM:0, flashes:0}; }), coach: opt.coach, ended:false, notices:[],
     crashes:0, bumps:0, overtakes:0, solid:0, offroad:false, solidWarned:false,
     distM:0, overM:0, quizzes:[], quiz:null, knownZones:{}, fx:{shake:0, red:0, slow:0, crack:0, smoke:0, tilt:0, parts:[], puffs:[], cracks:null, spawn:0, puffT:0}, crashLog:[], crashCard:null, crashCardShown:false, belt:false, beltChecked:false, moments:[], moment:null, legalCams:0, cleanStops:0, redRun:0};
@@ -962,6 +975,15 @@ function blip(kind){
       tone(t + .18, 'square', 880, 880, .16, .05); tone(t + .34, 'square', 1320, 1320, .16, .05);
     } else if (kind === 'good'){ tone(t, 'square', 660, 660, .14, .05); tone(t + .08, 'square', 990, 990, .16, .05); }
     else if (kind === 'bad'){ tone(t, 'square', 330, 330, .16, .05); tone(t + .12, 'square', 247, 247, .2, .05); }
+    else if (kind === 'thud'){ tone(t, 'sine', 85, 36, .38, .75); envNoise(t, .14, 'lowpass', 380, .7, .4); }
+    else if (kind === 'bleat'){
+      var a0 = audio.ctx, o = a0.createOscillator(), vb = a0.createOscillator(), vg = a0.createGain(), bf = a0.createBiquadFilter(), g0 = a0.createGain();
+      o.type = 'sawtooth'; o.frequency.setValueAtTime(430, t); o.frequency.linearRampToValueAtTime(370, t + .6);
+      vb.frequency.value = 16; vg.gain.value = 30; vb.connect(vg); vg.connect(o.frequency);
+      bf.type = 'bandpass'; bf.frequency.value = 1150; bf.Q.value = 2;
+      g0.gain.setValueAtTime(0, t); g0.gain.linearRampToValueAtTime(.08, t + .05); g0.gain.setValueAtTime(.08, t + .45); g0.gain.exponentialRampToValueAtTime(.0005, t + .65);
+      o.connect(bf); bf.connect(g0); g0.connect(audio.out); o.start(t); vb.start(t); o.stop(t + .7); vb.stop(t + .7);
+    }
   } catch(e){}
 }
 function hornOn(){
@@ -1100,19 +1122,57 @@ function offence(zoneIdx, title, what){
 }
 
 /* ---------- the "why" moment ---------- */
-function triggerHazard(h, s){
-  var heavy = veh.cls === 'heavy', lim = limitOf(h.zone);
-  var need = stopDist(s, heavy), needLim = stopDist(lim, heavy), ok = need <= h.D;
-  h.state = 'active'; h.t = 0; h.need = need; h.needLim = needLim; h.speed = s; h.ok = ok; h.lim = lim;
-  var info = HAZ[h.kind];
-  state.moments.push({where: route.zones[h.zone].name, who: info.who, ok: ok, speed: Math.round(s), need: need, D: h.D, lim: lim, needLim: needLim});
-  state.autoBrake = true; blip('skid');
-  if (ok){
-    pop('STOPPED IN TIME', 'You needed ' + Math.round(need) + ' m. You had ' + h.D + ' m.', '#5ad27a', 2.6, true);
-  } else {
-    state.moment = h; state.paused = true; clearKeys();
-    showMoment(h);
+// They step out D m ahead of your bumper. The car then stops the way an alert driver would:
+// 0.67 s to react (none if you were already braking), then full braking. What you see matches the card.
+function stepOut(h, s, front){
+  var heavy = veh.cls === 'heavy', a = decel(heavy), v0 = s / 3.6, lim = limitOf(h.zone), r = keys.brake ? 0 : .67;
+  var need = v0 * r + v0 * v0 / (2 * a), ok = need <= h.D, vi = 0, tc = 0;
+  if (!ok){
+    if (v0 * r >= h.D){ vi = v0; tc = h.D / v0; }
+    else { vi = Math.sqrt(Math.max(0, v0 * v0 - 2 * a * (h.D - v0 * r))); tc = r + (v0 - vi) / a; }
   }
+  var seg = segs[h.seg], hw = seg.w / M; // metres per half-width of road
+  h.state = 'out'; h.tau = 0; h.v0 = v0; h.a = a; h.react = r; h.covered = r === 0 && v0 > .5; h.brakeOn = r === 0;
+  h.need = need; h.ok = ok; h.impact = vi * 3.6; h.braked = !ok && v0 * r < h.D; h.speed = s; h.lim = lim; h.needLim = stopDist(lim, heavy);
+  h.pos0 = h.seg * SEG - (h.D + front) * M - PLAYERZ;  // the gap is exactly D when they move
+  h.tx = h.kind === 'truck' ? h.x : opt.steer ? state.playerX : seg.lanes === 4 ? .25 : .5;
+  h.walkHW = HAZ[h.kind].walk / hw;
+  h.vx = Math.max(h.walkHW, Math.abs(h.tx - h.x) / Math.max(.3, .8 * (ok ? r + v0 / a : tc)));
+  h.far = h.kind === 'goats' ? 1.6 : -1.25;
+  state.moments.push({where: route.zones[h.zone].name, who: HAZ[h.kind].who, kind: h.kind, ok: ok, speed: Math.round(s), need: need, D: h.D, lim: lim, needLim: h.needLim, impact: Math.round(h.impact)});
+  state.fx.slow = Math.max(state.fx.slow, 1.3);  // slow motion through the thinking time, so you see it happen
+  if (h.brakeOn && v0 > 1) blip('skid');
+  state.hz = h;
+}
+// one frame of the stop: moves the car along the script and returns its speed in km/h
+function runHazard(h, dt){
+  h.tau += dt * PACE;
+  var r = h.react, a = h.a, v0 = h.v0, v, d;
+  if (h.tau < r){ v = v0; d = v0 * h.tau; }
+  else {
+    v = Math.max(0, v0 - a * (h.tau - r)); d = v0 * r + (v0 * v0 - v * v) / (2 * a);
+    if (!h.brakeOn){ h.brakeOn = true; if (v0 > 1) blip('skid'); }
+  }
+  if (h.kind !== 'truck' && !h.inPath){ h.x += Math.sign(h.tx - h.x) * Math.min(Math.abs(h.tx - h.x), h.vx * dt * PACE); if (Math.abs(h.tx - h.x) < .01) h.inPath = true; }
+  if (!h.ok && d >= h.D){
+    // contact: hold on it for a beat, then explain
+    d = h.D; v = h.impact / 3.6; h.state = 'hit'; h.x = h.tx; state.hz = null;
+    if (h.kind === 'truck'){ blip('crash'); crashFX('head'); }
+    else { blip('thud'); state.fx.red = .8; state.fx.shake = .35; try { if (navigator.vibrate) navigator.vibrate([70]); } catch(e){} }
+    state.beat = {t: .9, h: h};
+  } else if (v === 0 && (h.inPath || h.kind === 'truck')){
+    if (!h.stopT){ h.stopT = state.t; pop('STOPPED IN TIME', Math.max(0, Math.round(h.D - h.need)) + ' m to spare' + (h.covered ? DOT + 'you were already braking' : ''), '#5ad27a', 2.6, true); blip('good'); }
+    if (h.kind === 'truck'){
+      state.bypass = h;  // pull out round it
+      if (opt.steer ? state.t - h.stopT > .8 : state.playerX > .62){ h.state = 'done'; state.hz = null; }
+    } else {
+      // wait while they finish crossing your lane
+      h.x += Math.sign(h.far - h.x) * h.walkHW * 1.3 * dt * PACE;
+      if (Math.abs(h.x - h.tx) > .45){ h.state = 'clear'; state.hz = null; }
+    }
+  }
+  state.pos = h.pos0 + d * M;
+  return v * 3.6;
 }
 function barsHtml(h){
   var max = Math.max(h.need, h.needLim, h.D) * 1.12;
@@ -1121,20 +1181,22 @@ function barsHtml(h){
   return '<div class="bars">' +
     '<div class="brow"><span class="lab"><b>You</b>' + youLbl + '</span><div class="track"><div class="fill you" style="width:' + pct(h.need) + '%"><span>' + Math.round(h.need) + ' m</span></div></div></div>' +
     '<div class="brow"><span class="lab"><b>The limit</b>' + h.lim + ' km/h</span><div class="track"><div class="fill lim" style="width:' + pct(h.needLim) + '%"><span>' + Math.round(h.needLim) + ' m</span></div></div></div>' +
-    '<div class="mark" style="left:calc(98px + (100% - 98px) * ' + (h.D / max).toFixed(3) + ')"><span>' + (h.kind === 'goats' ? 'Goats' : h.kind === 'truck' ? 'Truck' : 'Person') + ' ' + h.D + ' m ahead</span></div>' +
+    '<div class="mark" style="left:calc(98px + (100% - 98px) * ' + (h.D / max).toFixed(3) + ')"><span>' + HAZ[h.kind].short.charAt(0) + HAZ[h.kind].short.slice(1).toLowerCase() + ' ' + h.D + ' m ahead</span></div>' +
   '</div>';
 }
 function showMoment(h){
-  var info = HAZ[h.kind], spare = h.D - h.needLim;
+  var info = HAZ[h.kind], spare = h.D - h.needLim, them = h.kind === 'truck' ? 'it' : 'them', sp = Math.round(h.speed);
+  var how = h.braked ? ', so you were still doing <b>' + Math.round(h.impact) + ' km/h</b> when you reached ' + them + '.'
+    : '. You cover <b>' + Math.round(h.v0 * h.react) + ' m</b> just reacting, so you reached ' + them + ' at the full ' + sp + ' km/h.';
   hideNotice();
   var el = byId('moment');
   el.innerHTML = '<div class="mcard" role="alertdialog" aria-labelledby="mH" aria-describedby="mP">' +
     '<div class="k">' + esc(route.zones[h.zone].name) + '</div>' +
     '<h2 id="mH">' + (RAIN && spare < 0 ? 'Too fast for the rain' : 'Too fast to stop') + '</h2>' +
-    '<p id="mP">' + esc(info.who) + ' ' + esc(info.what) + ', <b>' + h.D + ' m</b> ahead. At ' + Math.round(h.speed) + ' km/h' + (RAIN ? ' on a wet road' : '') + ' you need <b>' + Math.round(h.need) + ' m</b> to stop. ' +
+    '<p id="mP">' + esc(info.who) + ' ' + esc(info.what) + ', <b>' + h.D + ' m</b> ahead. At ' + sp + ' km/h' + (RAIN ? ' on a wet road' : '') + ' you need <b>' + Math.round(h.need) + ' m</b> to stop' + how + (h.covered ? ' You were already braking, so you lost no time reacting.' : '') + ' ' +
       (spare >= 0 ? 'At the ' + h.lim + ' limit you would have stopped with <b>' + Math.round(spare) + ' m</b> to spare.' : 'Even at the ' + h.lim + ' limit you needed ' + Math.round(h.needLim) + ' m. In this rain, about <b>' + safeSpeed(h.D, veh.cls === 'heavy') + ' km/h</b> would have stopped in time.') + '</p>' +
     barsHtml(h) +
-    '<p class="note">' + (RAIN ? 'Wet roads double braking distance. The limit is the most you may do in good conditions, not a target.' : 'That\u2019s why the limit is ' + h.lim + ' here. Stopping distance grows with the square of your speed.') + '</p>' +
+    '<p class="note">' + (h.seenAt ? esc(info.seen) + ' from about ' + h.seenAt + ' m back. ' : '') + esc(info.tip) + (RAIN ? ' Wet roads double braking distance, so drive below the limit.' : '') + '</p>' +
     '<button class="rbtn" id="mGo"><span>Got it, drive on</span></button></div>';
   el.hidden = false;
   byId('mGo').addEventListener('click', closeMoment);
@@ -1223,11 +1285,15 @@ function update(dt){
   if (state.mode !== 'drive' || state.ended || state.paused) return;
   var rdt = dt; if (state.fx.slow > 0){ state.fx.slow -= rdt; dt *= .35; }
   if (state.crashCard && state.fx.slow <= 0){ var cc = state.crashCard; state.crashCard = null; showCrashCard(cc); return; }
+  if (state.beat){ // hold on the moment of impact, then explain it
+    state.beat.t -= rdt;
+    if (state.beat.t <= 0){ var hb = state.beat.h; state.beat = null; hb.state = 'gone'; state.moment = hb; state.paused = true; clearKeys(); showMoment(hb); }
+    return;
+  }
   state.t += dt;
-  var s = state.speed;
-  if (state.autoBrake){ s = Math.max(0, s - 70*dt); if (s === 0) state.autoBrake = false; }
-  else if (state.freeze > 0){ state.freeze -= dt; s = Math.max(0, s - 60*dt); }
-  else {
+  var s = state.speed, pos0 = state.pos, seqS = -1;
+  if (state.freeze > 0){ state.freeze -= dt; s = Math.max(0, s - 60*dt); }
+  else if (!state.hz){
     if (keys.gas) s += veh.acc * (1 - Math.pow(s/veh.vmax, 2)) * dt; else s -= (1.5 + s*0.018) * dt;
     if (keys.brake) s -= (RAIN ? 26 : 38) * dt;
   }
@@ -1235,9 +1301,9 @@ function update(dt){
   var pz = state.pos + PLAYERZ, pSeg = segAt(pz), zi = pSeg.zone;
 
   if (opt.steer){
-    var sd = (keys.left ? -1 : 0) + (keys.right ? 1 : 0);
+    var sd = state.hz ? 0 : (keys.left ? -1 : 0) + (keys.right ? 1 : 0);
     state.playerX += sd * dt * 1.7 * Math.min(1, .35 + s/70);
-    state.playerX -= pSeg.curve * Math.pow(s/120, 2) * dt * .16;
+    if (!state.hz) state.playerX -= pSeg.curve * Math.pow(s/120, 2) * dt * .16;
     state.playerX = Math.max(-1.7, Math.min(1.7, state.playerX));
     var off = Math.abs(state.playerX) > 1.03;
     if (off && s > 30) s -= 70 * dt;
@@ -1247,25 +1313,29 @@ function update(dt){
     if (!(pSeg.sens && state.playerX < -.05)) state.solidWarned = false;
   } else {
     var targetX = pSeg.lanes === 4 ? .25 : .5;
+    if (state.bypass){ if (state.bypass.seg * SEG - pz > -30*M) targetX = .75; else state.bypass = null; } // round the stopped truck
     state.playerX += (targetX - state.playerX) * Math.min(1, dt*1.5);
   }
 
-  // hazards: someone steps out when they are D real metres ahead
+  // hazards: you can see them coming (the cue), then they step out D real metres ahead of your bumper
+  var front = FRONT_M[veh.body] || 4.5;
   for (var hi = 0; hi < hazards.length; hi++){
-    var h = hazards[hi], hz = h.seg * SEG;
-    if (h.state === 'wait' && hz - pz <= h.D * M && hz > pz){ triggerHazard(h, s); if (state.paused) { state.speed = s; return; } }
-    if (h.state === 'active'){
-      h.t += dt;
-      var target = h.kind === 'truck' ? .25 : (opt.steer ? state.playerX : (pSeg.lanes === 4 ? .25 : .5));
-      h.x += (target - h.x) * Math.min(1, dt * 4);
-      if (h.t > (h.ok ? 2.2 : .3) && !state.autoBrake){ h.state = 'leaving'; }
-    } else if (h.state === 'leaving'){
-      h.x += ((h.kind === 'goats' ? 1.8 : h.home) - h.x) * Math.min(1, dt * 1.6);
-      if (Math.abs(h.x - (h.kind === 'goats' ? 1.8 : h.home)) < .05) h.state = 'done';
+    var h = hazards[hi];
+    h.dist = (h.seg * SEG - pz) / M - front;
+    if (h.state === 'wait'){
+      if (!h.seen && h.dist > h.D && h.dist < Math.max(120, s / 3.6 * 7)){ h.seen = true; h.seenAt = Math.round(h.dist / 10) * 10; if (h.kind === 'goats') blip('bleat'); }
+      if (h.kind === 'goats') h.x = h.home + .1 * Math.sin(state.t * .8);
+      if (h.dist <= h.D && h.dist > -2 && !state.hz){
+        if (h.kind === 'truck' && opt.steer && Math.abs(state.playerX - h.x) > .4){ h.state = 'done'; pop('GAVE IT ROOM', 'You were already in the other lane', '#5ad27a', 1.8); }
+        else stepOut(h, s, front);
+      }
+    } else if (h.state === 'clear'){
+      h.x += Math.sign(h.far - h.x) * Math.min(Math.abs(h.far - h.x), h.walkHW * 1.3 * dt * PACE);
+      if (Math.abs(h.far - h.x) < .02) h.state = 'done';
     }
-    h.sprite.offset = h.x;
   }
-  s = state.autoBrake ? Math.min(s, state.speed) : s;
+  if (state.hz) seqS = runHazard(state.hz, dt);
+  hazards.forEach(function(h){ h.sprite.offset = h.x; });
 
   // traffic lights
   lights.forEach(function(L){
@@ -1285,6 +1355,7 @@ function update(dt){
 
   // traffic
   cars.forEach(function(c){
+    if (seqS >= 0) return;
     var cs = segAt(c.z), cSpd = LIMITS.light[route.zones[cs.zone].type] * c.speedMul, gap = c.z - pz, len = carLen(c);
     if (!opt.steer){
       if (c.dir < 0 || cs.lanes === 4 || c.pull > .3) return;
@@ -1319,9 +1390,10 @@ function update(dt){
     }
   });
 
+  if (seqS >= 0) s = seqS;
   state.speed = s;
-  var dz = s / 3.6 * M * dt * PACE;
-  state.pos += dz;
+  var dz = seqS >= 0 ? state.pos - pos0 : s / 3.6 * M * dt * PACE;
+  if (seqS < 0) state.pos += dz;
   state.skyX += pSeg.curve * dz / SEG * 0.0009;
   state.bounce = s > 1 ? Math.sin(state.t * 23) * Math.min(1.2, s/60) : 0;
 
@@ -1462,7 +1534,7 @@ function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w
 function shade(hex, f){ var n = parseInt(hex.slice(1),16); return 'rgb('+Math.round(Math.min(255,(n>>16)*f))+','+Math.round(Math.min(255,(n>>8&255)*f))+','+Math.round(Math.min(255,(n&255)*f))+')'; }
 function glowAt(x, y, r, color, a){ var g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, color.replace('A', a)); g.addColorStop(1, color.replace('A', 0)); ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r*2, r*2); }
 function skewBox(x, y, w, h, fill, k){ k = k == null ? h*.26 : k; ctx.fillStyle = fill; ctx.beginPath(); ctx.moveTo(x + k, y); ctx.lineTo(x + w + k, y); ctx.lineTo(x + w - k, y + h); ctx.lineTo(x - k, y + h); ctx.closePath(); ctx.fill(); }
-var pinQueue = [], curSeg = null;
+var pinQueue = [], hazQ = [], curSeg = null;
 function pushPin(p){ if (!curSeg || !curSeg.nearLight) pinQueue.push(p); }
 function drawPin(x, y, top, big){
   ctx.save();
@@ -1477,6 +1549,23 @@ function drawPin(x, y, top, big){
   ctx.fillStyle = '#fff'; ctx.font = 'italic 900 17px "Exo 2", sans-serif'; ctx.fillText(big, x, by + 27);
   ctx.restore();
 }
+// the amber tag over someone who might step out; red once they do
+function drawHazMarker(x, y, H){
+  var info = HAZ[H.kind], out = H.state === 'out', m = Math.max(0, Math.round(H.dist));
+  var top = out ? (H.kind === 'goats' ? 'WANDERING IN' : H.kind === 'truck' ? 'NOT MOVING' : 'STEPPING OUT') : 'HAZARD' + DOT + m + ' M';
+  var big = out ? info.short + DOT + m + ' M' : info.label;
+  ctx.save(); ctx.translate(x, y); ctx.scale(HS, HS);
+  ctx.font = 'italic 800 9.5px "Exo 2", sans-serif'; var w1 = ctx.measureText(top).width;
+  ctx.font = 'italic 900 14px "Exo 2", sans-serif'; var w2 = ctx.measureText(big).width;
+  var w = Math.max(w1, w2) + 22, h = 36, by = -h - 9, col = out ? 'rgba(214,40,26,.96)' : 'rgba(255,180,0,.96)';
+  var cx = Math.max((12 - x) / HS + w/2, Math.min((W - 12 - x) / HS - w/2, 0));
+  skewBox(cx - w/2, by, w, h, col);
+  ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(-6, by + h); ctx.lineTo(6, by + h); ctx.lineTo(0, by + h + 8); ctx.closePath(); ctx.fill();
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillStyle = out ? '#ffd9d2' : '#3d2c00'; ctx.font = 'italic 800 9.5px "Exo 2", sans-serif'; ctx.fillText(top, cx, by + 11);
+  ctx.fillStyle = out ? '#fff' : '#111'; ctx.font = 'italic 900 14px "Exo 2", sans-serif'; ctx.fillText(big, cx, by + 25);
+  ctx.restore();
+}
 function drawPerson(x, y, u, cloth, band2, pan){
   ctx.fillStyle = '#2b2b2b'; ctx.fillRect(x - .14*u, y - .8*u, .1*u, .8*u); ctx.fillRect(x + .04*u, y - .8*u, .1*u, .8*u);
   ctx.fillStyle = cloth; roundRect(x - .25*u, y - 1.55*u, .5*u, .85*u, .12*u); ctx.fill();
@@ -1484,11 +1573,12 @@ function drawPerson(x, y, u, cloth, band2, pan){
   ctx.fillStyle = '#5a3a26'; ctx.beginPath(); ctx.arc(x, y - 1.72*u, .15*u, 0, 7); ctx.fill();
   if (pan){ ctx.fillStyle = '#c9c9c4'; ctx.beginPath(); ctx.ellipse(x, y - 1.92*u, .42*u, .1*u, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#e0482c'; ctx.beginPath(); ctx.arc(x - .12*u, y - 2*u, .1*u, 0, 7); ctx.arc(x + .12*u, y - 2*u, .1*u, 0, 7); ctx.fill(); }
 }
-function drawGoat(x, y, u, c){
+function drawGoat(x, y, u, c, graze){
   ctx.fillStyle = c; roundRect(x - .45*u, y - .75*u, .9*u, .4*u, .15*u); ctx.fill();
   ctx.fillRect(x - .38*u, y - .4*u, .07*u, .4*u); ctx.fillRect(x + .3*u, y - .4*u, .07*u, .4*u);
-  ctx.beginPath(); ctx.ellipse(x + .52*u, y - .82*u, .16*u, .12*u, -.4, 0, 7); ctx.fill();
-  ctx.fillStyle = '#3a2a1a'; ctx.fillRect(x + .5*u, y - 1*u, .04*u, .14*u);
+  var hy = graze ? y - .32*u : y - .82*u;
+  ctx.beginPath(); ctx.ellipse(x + .52*u, hy, .16*u, .12*u, graze ? .9 : -.4, 0, 7); ctx.fill();
+  ctx.fillStyle = '#3a2a1a'; ctx.fillRect(x + .5*u, hy - .18*u, .04*u, .14*u);
 }
 
 function drawSprite(sp, x, y, ppm, clipY, fog, segW){
@@ -1504,13 +1594,26 @@ function drawSprite(sp, x, y, ppm, clipY, fog, segW){
       ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x, cy, r*.78, 0, 7); ctx.fill();
       if (r > 5) txt(String(d.n), x, cy + r*.05, r*.9, 800, '#111');
       break; }
-    case 'school': {
+    case 'warn': {
+      // red warning triangle: children, pedestrians or animals ahead
       ctx.fillStyle = '#7d8084'; ctx.fillRect(x - .04*u, y - 2.1*u, .08*u, 2.1*u);
-      var s = .95*u, ty = y - 2.1*u;
+      var s = Math.max(1.1*u, 8), ty = y - 2.1*u;
       ctx.fillStyle = '#d42a1f'; ctx.beginPath(); ctx.moveTo(x, ty - s); ctx.lineTo(x + s*.58, ty); ctx.lineTo(x - s*.58, ty); ctx.closePath(); ctx.fill();
       ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(x, ty - s*.78); ctx.lineTo(x + s*.42, ty - s*.1); ctx.lineTo(x - s*.42, ty - s*.1); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(x - s*.1, ty - s*.5, s*.05, 0, 7); ctx.arc(x + s*.1, ty - s*.45, s*.045, 0, 7); ctx.fill();
-      ctx.fillRect(x - s*.14, ty - s*.44, s*.08, s*.25); ctx.fillRect(x + s*.06, ty - s*.4, s*.07, s*.22);
+      ctx.fillStyle = '#111';
+      if (d.sym === 'kids'){
+        ctx.beginPath(); ctx.arc(x - s*.1, ty - s*.5, s*.05, 0, 7); ctx.arc(x + s*.1, ty - s*.45, s*.045, 0, 7); ctx.fill();
+        ctx.fillRect(x - s*.14, ty - s*.44, s*.08, s*.25); ctx.fillRect(x + s*.06, ty - s*.4, s*.07, s*.22);
+      } else if (d.sym === 'walk'){
+        ctx.beginPath(); ctx.arc(x + s*.02, ty - s*.53, s*.055, 0, 7); ctx.fill();
+        poly(x - s*.04, ty - s*.46, x + s*.07, ty - s*.46, x + s*.05, ty - s*.3, x - s*.05, ty - s*.3, '#111');
+        poly(x - s*.05, ty - s*.31, x + s*.05, ty - s*.31, x + s*.16, ty - s*.14, x - s*.16, ty - s*.14, '#111');
+      } else {
+        ctx.beginPath(); ctx.ellipse(x - s*.03, ty - s*.33, s*.17, s*.07, 0, 0, 7); ctx.fill();
+        ctx.fillRect(x - s*.16, ty - s*.3, s*.04, s*.16); ctx.fillRect(x + s*.08, ty - s*.3, s*.04, s*.16);
+        ctx.beginPath(); ctx.ellipse(x + s*.18, ty - s*.39, s*.06, s*.045, -.5, 0, 7); ctx.fill();
+        ctx.fillRect(x + s*.17, ty - s*.47, s*.02, s*.06); ctx.fillRect(x + s*.21, ty - s*.46, s*.02, s*.06);
+      }
       break; }
     case 'crossing': { var w = segW*.95; for (var i = -5; i < 5; i++){ ctx.fillStyle = '#efeadd'; ctx.fillRect(x + (i+.2)/5*w, y - .25*u, w/5*.55, .25*u); } break; }
     case 'stopline': { ctx.fillStyle = '#f4f0e4'; ctx.fillRect(x, y - .3*u, segW*.95, .3*u); break; }
@@ -1563,17 +1666,31 @@ function drawSprite(sp, x, y, ppm, clipY, fog, segW){
       flashGlow(d, x - .52*u, y - 1.38*u, u*.6);
       break; }
     case 'hazard': {
-      var Hh = d.H;
-      if (Hh.kind === 'goats'){ drawGoat(x - .9*u, y, u, '#f1ece0'); drawGoat(x + .2*u, y + .05*u, u, '#6b4a2e'); drawGoat(x + 1.2*u, y, u, '#2b2320'); }
-      else if (Hh.kind === 'truck'){
-        if (Hh.state === 'wait') break;
-        drawVehicle('truck', '#7a6a4a', x, y, u, true, false);
-        var bl = Math.floor(performance.now()/300) % 2;
-        if (bl){ ctx.save(); ctx.globalCompositeOperation = 'lighter'; glowAt(x - 1*u, y - .55*u, 1*u, 'rgba(255,170,0,A)', .8); glowAt(x + 1*u, y - .55*u, 1*u, 'rgba(255,170,0,A)', .8); ctx.restore(); }
+      var Hh = d.H; if (Hh.state === 'gone') break;
+      var live = Hh.seen && (Hh.state === 'wait' || Hh.state === 'out'), tn = performance.now() / 1000;
+      var hu = Hh.kind === 'truck' ? u : u * (1 + Math.max(0, 1 - u / 35)) + 3;  // larger than life far off, so a phone can show them
+      if (live && Hh.kind !== 'truck'){
+        // a soft light behind them, and a look-here ring at their feet
+        var sh = (Hh.kind === 'goats' ? .9 : Hh.kind === 'school' ? 1.5 : 1.9) * hu, rr = (Hh.kind === 'goats' ? 2.1 : .7) * hu;
+        ctx.save(); glowAt(x + (Hh.kind === 'goats' ? .15*hu : 0), y - sh * .5, sh * (Hh.kind === 'goats' ? 1.6 : .85), 'rgba(255,250,235,A)', .55);
+        ctx.globalAlpha *= .6 + .4 * Math.sin(tn * 6); ctx.beginPath(); ctx.ellipse(x, y, rr, rr * .3, 0, 0, 7);
+        ctx.lineWidth = Math.max(3.2, .17 * hu); ctx.strokeStyle = 'rgba(20,10,0,.45)'; ctx.stroke();
+        ctx.lineWidth = Math.max(1.6, .085 * hu); ctx.strokeStyle = Hh.state === 'out' ? '#ff5a47' : '#ffd24a'; ctx.stroke(); ctx.restore();
       }
-      else if (Hh.kind === 'procession') drawPerson(x, y, u, '#1b1b1b', '#b3261e');
-      else if (Hh.kind === 'school'){ drawPerson(x, y, u*.72, '#c9a227', '#6b4a2a'); }
-      else drawPerson(x, y, u, Hh.kind === 'market' ? '#2a67b1' : Hh.kind === 'hospital' ? '#8fb3c9' : '#f2efe6', null, Hh.kind === 'market');
+      if (Hh.kind === 'goats'){ var gz = Hh.state === 'wait'; drawGoat(x - .9*hu, y, hu, '#f1ece0', gz && Math.sin(tn*1.3) > -.4); drawGoat(x + .2*hu, y + .05*hu, hu, '#6b4a2e', gz && Math.sin(tn*1.1 + 2) > -.2); drawGoat(x + 1.2*hu, y, hu, '#2b2320', gz && Math.sin(tn*.9 + 4) > 0); }
+      else if (Hh.kind === 'truck'){
+        drawVehicle('truck', '#7a6a4a', x, y, u, false, false);
+        if (Math.floor(tn / .45) % 2){ var gr = Math.max(u, 5); ctx.save(); ctx.globalCompositeOperation = 'lighter'; glowAt(x - 1*u, y - .55*u, gr, 'rgba(255,170,0,A)', .9); glowAt(x + 1*u, y - .55*u, gr, 'rgba(255,170,0,A)', .9); ctx.restore(); }
+      }
+      else if (Hh.kind === 'school'){
+        // a child with a ball: the ball goes first
+        var bdx = Hh.state === 'wait' ? 0 : Math.min(2.6, (Hh.tau || 0) * 1.8), bup = Hh.state === 'wait' ? Math.abs(Math.sin(tn * 5)) * .35 : 0;
+        ctx.fillStyle = '#f4f1ea'; ctx.strokeStyle = 'rgba(20,10,0,.5)'; ctx.lineWidth = Math.max(1, .03*hu); ctx.beginPath(); ctx.arc(x - bdx * segW - .38*hu, y - (.15 + bup) * hu, .15 * hu, 0, 7); ctx.fill(); ctx.stroke();
+        drawPerson(x, y, hu*.8, '#c9a227', '#6b4a2a');
+      }
+      else if (Hh.kind === 'procession') drawPerson(x, y, hu, '#1b1b1b', '#b3261e');
+      else drawPerson(x, y, hu, Hh.kind === 'market' ? '#2a67b1' : Hh.kind === 'hospital' ? '#8fb3c9' : '#f2efe6', null, Hh.kind === 'market');
+      if (live && !Hh.stopT && state.mode === 'drive') hazQ.push([x, y - (Hh.kind === 'goats' ? 1.25 : Hh.kind === 'truck' ? 4.3 : Hh.kind === 'school' ? 1.6 : 2.15) * hu, Hh]);
       break; }
     case 'board': {
       ctx.fillStyle = '#6f7275'; ctx.fillRect(x - 1.4*u, y - 1.8*u, .09*u, 1.8*u); ctx.fillRect(x + 1.31*u, y - 1.8*u, .09*u, 1.8*u);
@@ -1967,7 +2084,7 @@ function render(){
     maxy = seg.p1.screen.y;
   }
   cars.forEach(function(c){ var i = Math.floor(c.z / SEG); if (i >= base.index && i < base.index + drawn.length) segs[i].cars.push(c); });
-  pinQueue.length = 0;
+  pinQueue.length = 0; hazQ.length = 0;
   for (n = drawn.length - 1; n > 0; n--){
     seg = drawn[n];
     var sc = seg.p1.screen;
@@ -1995,9 +2112,10 @@ function render(){
   var pu = cd / PLAYERZ * M * W/2, py = HORIZON + cd / PLAYERZ * CAMH * VS + state.bounce;
   var FX = state.fx;
   ctx.save(); if (FX.tilt){ ctx.translate(W/2, py); ctx.rotate(FX.tilt); ctx.translate(-W/2, -py - Math.abs(FX.tilt) * 60); }
-  drawVehicle(veh.body, veh.color, W/2, py, pu, keys.brake || state.freeze > 0 || state.autoBrake, false, 'SEE ME AND GO', veh.spare);
+  drawVehicle(veh.body, veh.color, W/2, py, pu, keys.brake || state.freeze > 0 || !!(state.hz && state.hz.brakeOn), false, 'SEE ME AND GO', veh.spare);
   if (RAIN && state.speed > 5){ ctx.fillStyle = 'rgba(225,232,240,.18)'; ctx.beginPath(); ctx.ellipse(W/2 - .75*pu, py - .2*pu, .8*pu, .4*pu, 0, 0, 7); ctx.ellipse(W/2 + .75*pu, py - .2*pu, .8*pu, .4*pu, 0, 0, 7); ctx.fill(); }
   ctx.restore();
+  hazQ.forEach(function(q){ drawHazMarker(q[0], q[1], q[2]); });
   if (FX.spawn){
     var ox = W/2, oy = py - pu * 1.1, kc = veh.color;
     for (var pi2 = 0; pi2 < FX.spawn; pi2++){
@@ -2065,7 +2183,7 @@ function finish(kind){
   if (kind === 'complete' && !state.flashes){ var cl = getClean(); cl[route.id] = 1; save('ns-clean', JSON.stringify(cl)); }
 
   var moments = state.moments.length ? state.moments.map(function(m){
-    return '<div class="' + (m.ok ? 'ok' : 'bad') + '"><span>' + esc(m.who) + DOT + esc(m.where) + '<br><small style="color:var(--muted)">At ' + m.speed + ' km/h you needed ' + Math.round(m.need) + ' m; they were ' + m.D + ' m ahead. At ' + m.lim + ': ' + Math.round(m.needLim) + ' m.</small></span><span>' + (m.ok ? 'Stopped' : 'Too fast') + '</span></div>';
+    return '<div class="' + (m.ok ? 'ok' : 'bad') + '"><span>' + esc(m.who) + DOT + esc(m.where) + '<br><small style="color:var(--muted)">At ' + m.speed + ' km/h you needed ' + Math.round(m.need) + ' m; ' + (m.kind === 'truck' ? 'it was ' : 'they were ') + m.D + ' m ahead. ' + (m.ok ? 'At ' + m.lim + ': ' + Math.round(m.needLim) + ' m.' : 'You reached ' + (m.kind === 'truck' ? 'it' : 'them') + ' at ' + m.impact + ' km/h.') + '</small></span><span>' + (m.ok ? 'Stopped' : 'Too fast') + '</span></div>';
   }).join('') : '<div class="none">Nothing stepped out this time.</div>';
   moments += state.crashLog.map(function(cr){ return '<div class="bad"><span>' + esc(cr.kind) + DOT + esc(cr.where) + '<br><small style="color:var(--muted)">' + (cr.kind === 'Head-on' ? 'Closing speed ' + cr.imp + ' km/h' : 'Hit ' + cr.imp + ' km/h faster than the car ahead') + '</small></span><span>Crash</span></div>'; }).join('');
   var rap = state.notices.length ? state.notices.map(function(n){ return '<div class="bad"><span>' + esc(n.title) + DOT + esc(n.where) + '</span><span>' + (n.fine ? CEDI + n.fine : 'Suspended') + '</span></div>'; }).join('') : '<div class="none">Nothing on your record.</div>';
