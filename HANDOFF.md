@@ -9,7 +9,8 @@
 - Ancestral-Combat: see its own folder; served by `ancestral-combat` launch config (8741).
 
 ## In flight
-_What is half-done, and in which files._
+- `who-said-it/index.html`: quote attribution game (Nazi-era vs Israeli figures, 36 sourced quotes), copied from Kadi's Downloads on 2026-09-24. Workshop only and hidden on the hub. It needs a check of every quote and source, especially the 2026-dated ones, before it goes public.
+- play.kaditay.com is built in `~/Developer/kaditay/play` (own repo). Launch config `play` (4190) was added here.
 
 ## Next
 - play.kaditay.com (the games hub where Blewu becomes PL·001) has its own handoff: `/Users/kadi/Developer/kaditay/play/HANDOFF.md`. Start there for hub work; stay here for game changes.
@@ -28,5 +29,5 @@ _What is half-done, and in which files._
 - The preview pane throttles rAF to ~2 fps, so live play there looks frozen. Use `#test` + `__ns.tick()` to exercise the logic instead.
 
 <!-- agent-session-log: managed automatically, do not edit below -->
-Last session: claude-code · 548a0abd-1aca-404a-ad8b-624937cc7f32 · 2026-09-24 06:06 GMT
+Last session: claude-code · 548a0abd-1aca-404a-ad8b-624937cc7f32 · 2026-09-24 06:42 GMT
 Transcript backup: ~/ClaudeBackup/latest/projects/
