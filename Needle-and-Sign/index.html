@@ -111,6 +111,19 @@ kbd{font-family:var(--race);font-style:normal;font-weight:800;border:1.5px solid
 .mark span{position:absolute;bottom:-4px;left:4px;transform:translateY(100%);font-size:12px;white-space:nowrap;color:#fff}
 @media (prefers-reduced-motion: reduce){ .fill{animation:none} }
 
+/* which-limit quiz */
+.quiz{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.42)}
+.qcard{width:min(420px,100%);background:var(--panel);border-top:4px solid var(--amber);padding:16px 16px 14px;display:flex;flex-direction:column;gap:12px;box-shadow:0 30px 80px -20px rgba(0,0,0,.9)}
+.qcard .k{font-family:var(--race);font-style:italic;font-weight:800;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--amber)}
+.qcard h2{font-family:var(--race);font-style:italic;font-weight:900;font-size:clamp(24px,6vw,30px);line-height:1;margin:2px 0 0;text-transform:uppercase}
+.qcard p{margin:0;font-size:15px}
+.qcard p b{color:var(--amber);font-weight:600}
+.qopts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;justify-items:center}
+.qopt{width:100%;max-width:78px;aspect-ratio:1;border-radius:50%;background:#fff;border:8px solid var(--red);color:#111;font-family:var(--display);font-weight:800;font-size:24px;display:grid;place-items:center;padding:0;transition:transform .12s}
+.qopt:hover{transform:scale(1.05)}
+.qopt.right{box-shadow:0 0 0 4px var(--ok)}
+.qopt.wrong{opacity:.35}
+.qfb.ok b{color:var(--ok)} .qfb.no b{color:var(--bad)}
 /* sheets */
 .scrim{position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:5;opacity:0;transition:opacity .2s;pointer-events:none}
 .scrim.on{opacity:1;pointer-events:auto}
@@ -253,6 +266,7 @@ details[open] summary{margin-bottom:10px}
 
   <div class="notice" id="notice" role="status" aria-live="assertive"></div>
   <div class="moment" id="moment" hidden></div>
+  <div class="quiz" id="quiz" hidden></div>
   <div class="result" id="result" hidden></div>
   <div class="scrim" id="scrim"></div>
 
@@ -474,7 +488,7 @@ function showSheet(id){
 function closeSheet(silent){
   if (!openSheet) return;
   openSheet.classList.remove('on'); openSheet.setAttribute('aria-hidden', 'true'); byId('scrim').classList.remove('on'); openSheet = null;
-  if (!silent && state.mode === 'drive' && state.paused && !state.moment) togglePause(false);
+  if (!silent && state.mode === 'drive' && state.paused && !state.moment && !state.quiz) togglePause(false);
 }
 byId('bSetup').addEventListener('click', function(){ showSheet('sheetSetup'); });
 byId('introRoute').addEventListener('click', function(){ showSheet('sheetSetup'); });
@@ -759,9 +773,9 @@ function readyGame(){
     playerX: segAt(PLAYERZ).lanes === 4 ? .25 : .5, skyX:0, bounce:0, paused:false, freeze:0, autoBrake:false,
     stats: route.zones.map(function(){ return {max:0, overM:0, flashes:0}; }), coach: opt.coach, ended:false, notices:[],
     crashes:0, bumps:0, overtakes:0, solid:0, offroad:false, solidWarned:false,
-    distM:0, overM:0, belt:false, beltChecked:false, moments:[], moment:null, legalCams:0, cleanStops:0, redRun:0};
+    distM:0, overM:0, quizzes:[], quiz:null, knownZones:{}, belt:false, beltChecked:false, moments:[], moment:null, legalCams:0, cleanStops:0, redRun:0};
   clearKeys();
-  byId('result').hidden = true; byId('moment').hidden = true; hideNotice();
+  byId('result').hidden = true; byId('moment').hidden = true; byId('quiz').hidden = true; hideNotice();
   byId('intro').classList.remove('gone');
   byId('belt').hidden = true;
   refreshIntro();
@@ -812,7 +826,7 @@ function blip(kind){
       fl.type = kind === 'shutter' ? 'highpass' : 'bandpass'; fl.frequency.value = kind === 'shutter' ? 1800 : kind === 'skid' ? 2400 : 700; g.gain.value = kind === 'skid' ? .25 : .5;
       src.buffer = b; src.connect(fl); fl.connect(g); g.connect(a.destination); src.start(t);
     }
-    var tones = kind === 'shutter' ? [[880,.18],[1320,.34]] : kind === 'good' ? [[660,0],[990,.08]] : [];
+    var tones = kind === 'shutter' ? [[880,.18],[1320,.34]] : kind === 'good' ? [[660,0],[990,.08]] : kind === 'bad' ? [[330,0],[247,.12]] : [];
     tones.forEach(function(p){ var o = a.createOscillator(), g2 = a.createGain(); o.type = 'square'; o.frequency.value = p[0];
       g2.gain.setValueAtTime(0, t+p[1]); g2.gain.linearRampToValueAtTime(.05, t+p[1]+.01); g2.gain.exponentialRampToValueAtTime(.001, t+p[1]+.16);
       o.connect(g2); g2.connect(a.destination); o.start(t+p[1]); o.stop(t+p[1]+.2); });
@@ -827,6 +841,7 @@ window.addEventListener('keydown', function(e){
   if (typing(e)) return;
   var k = e.key;
   if (state.moment && (k === 'Enter' || k === ' ' || k === 'Escape')){ e.preventDefault(); closeMoment(); return; }
+  if (state.quiz){ var qn = byId('quiz').querySelectorAll('.qopt'); if (!state.quiz.done && k >= '1' && k <= String(qn.length)){ e.preventDefault(); qn[+k - 1].click(); } else if (state.quiz.done && (k === 'Enter' || k === ' ' || k === 'Escape')){ e.preventDefault(); closeQuiz(); } return; }
   if (k === 'Escape'){ if (openSheet) closeSheet(); else if (state.mode === 'drive') togglePause(); return; }
   if (openSheet || state.mode === 'done' || state.moment) return;
   if (k==='ArrowUp'||k==='w'||k==='W'){ keys.gas = true; beginDrive(); e.preventDefault(); }
@@ -860,7 +875,7 @@ canvas.addEventListener('contextmenu', function(e){ e.preventDefault(); });
 function holdBtn(id, key){
   var el = byId(id);
   el.addEventListener('pointerdown', function(e){
-    e.preventDefault(); if (state.mode === 'done' || state.moment) return;
+    e.preventDefault(); if (state.mode === 'done' || state.moment || state.quiz) return;
     keys[key] = true; el.classList.add('on'); try { el.setPointerCapture(e.pointerId); } catch(_){}
     if (key === 'gas') beginDrive();
     try { if (navigator.vibrate) navigator.vibrate(8); } catch(_){}
@@ -952,6 +967,42 @@ function closeMoment(){
   if (!state.moment) return;
   state.moment = null; byId('moment').hidden = true; state.paused = false; state.speed = 0;
 }
+
+/* ---------- which-limit quiz ---------- */
+var QHINT = {urban:'Shops and houses on both sides of the road. No speed sign anywhere.', highway:'Open road between towns. No speed sign anywhere.', motorway:'The motorway. No speed sign anywhere.',
+  school:'Pupils at the roadside. No sign.', market:'Traders and shoppers along the road. No sign.', procession:'Mourners walking on the roadside. No sign.', mosque:'Worshippers leaving the mosque. No sign.', church:'People crossing to church. No sign.', hospital:'The hospital gate. No sign.'};
+function quizReason(z, lim){
+  var r = z.type === 'sensitive' ? 'Anywhere people gather, like a ' + WHY_LABEL[z.why].toLowerCase() + ', is 30 km/h. No sign needed.' :
+    z.type === 'urban' ? 'Built-up areas are 50 km/h, sign or no sign.' :
+    z.type === 'highway' ? 'Highways are ' + lim + ' km/h for your vehicle.' : 'Motorways are ' + lim + ' km/h for your vehicle.';
+  if (veh.dial === 'mph') r += ' On your dial that\u2019s ' + Math.round(lim / KMH_PER_MPH) + ' mph.';
+  return r;
+}
+function askQuiz(zi){
+  var z = route.zones[zi], lim = limitOf(zi);
+  var opts = ZONE_ORDER.map(function(t){ return LIMITS[veh.cls][t]; }).filter(function(v, i, a){ return a.indexOf(v) === i; }).sort(function(a, b){ return a - b; });
+  state.quiz = {zone: zi, answer: lim, done: false}; state.paused = true; clearKeys();
+  var el = byId('quiz');
+  el.innerHTML = '<div class="qcard" role="dialog" aria-labelledby="qH" aria-describedby="qP"><div class="k">' + esc(z.name) + DOT + 'no sign</div>' +
+    '<h2 id="qH">What\u2019s the limit here?</h2><p id="qP">' + esc(QHINT[z.why || z.type] || '') + '</p>' +
+    '<div class="qopts">' + opts.map(function(n){ return '<button class="qopt" data-n="' + n + '" aria-label="' + n + ' km/h">' + n + '</button>'; }).join('') + '</div>' +
+    '<p class="qfb" id="qFb">' + (COARSE ? 'Tap a sign.' : 'Click a sign, or press 1 to ' + opts.length + '.') + '</p></div>';
+  el.hidden = false;
+  Array.prototype.forEach.call(el.querySelectorAll('.qopt'), function(b){ b.addEventListener('click', function(){ answerQuiz(+b.getAttribute('data-n')); }); });
+  setTimeout(function(){ var f = el.querySelector('.qopt'); if (f) f.focus({preventScroll:true}); }, 60);
+}
+function answerQuiz(n){
+  var q = state.quiz; if (!q || q.done) return;
+  q.done = true; var ok = n === q.answer, z = route.zones[q.zone]; state.knownZones[q.zone] = true;
+  state.quizzes.push({where: z.name, ok: ok, picked: n, answer: q.answer});
+  Array.prototype.forEach.call(byId('quiz').querySelectorAll('.qopt'), function(b){ var v = +b.getAttribute('data-n'); b.disabled = true; if (v === q.answer) b.classList.add('right'); else b.classList.add('wrong'); });
+  var fb = byId('qFb'); fb.className = 'qfb ' + (ok ? 'ok' : 'no');
+  fb.innerHTML = (ok ? '<b>Right.</b> ' : '<b>It\u2019s ' + q.answer + '.</b> ') + esc(quizReason(z, q.answer));
+  blip(ok ? 'good' : 'bad');
+  var go = document.createElement('button'); go.className = 'rbtn'; go.innerHTML = '<span>Drive on</span>'; go.addEventListener('click', closeQuiz);
+  fb.parentNode.appendChild(go); setTimeout(function(){ go.focus({preventScroll:true}); }, 40);
+}
+function closeQuiz(){ if (!state.quiz) return; state.quiz = null; byId('quiz').hidden = true; state.paused = false; }
 
 /* ---------- update ---------- */
 function update(dt){
@@ -1054,7 +1105,7 @@ function update(dt){
     var sub = z.alert || (z.sign === false ? 'No sign posted. The default still applies.' : zoneLabel(z));
     if (state.coach) sub += DOT + lim + ' km/h' + (veh.dial === 'mph' ? ' = ' + Math.round(lim/KMH_PER_MPH) + ' mph on your dial' : '');
     toast(z.name.toUpperCase(), sub, z.type === 'sensitive' ? '#ffb400' : '#fff', 3.2);
-    if (z.sign === false) state.lastSign = 'none';
+    if (z.sign === false){ state.lastSign = 'none'; askQuiz(zi); }
   }
   if (route.zones[zi].sign !== false && pSeg.index >= zoneStarts[zi] + 2) state.lastSign = limitOf(zi);
   var lim0 = limitOf(zi), st = state.stats[zi];
@@ -1439,11 +1490,20 @@ function drawHUD(){
   if (driving){
     // status: the one thing to read
     var over = state.speed > lim + .5, byK = Math.round(state.speed - lim);
-    var pw = Math.min(210, hw * .5 - 20);
+    var pw = Math.min(222, hw * .5 - 18);
     skewBox(20, top, pw, 62, over ? 'rgba(120,16,8,.86)' : 'rgba(8,8,10,.76)');
     ctx.fillStyle = over ? '#ff5a47' : '#5ad27a'; ctx.fillRect(10, top + 4, 4, 54);
-    rtext(over ? 'OVER +' + byK : 'LEGAL', 24, top + 21, 26, over ? '#fff' : '#5ad27a', 'left', 900);
-    rtext(over ? (nextFine() ? 'A CAMERA HERE = ' + CEDI + nextFine() : 'NEXT NOTICE = SUSPENSION') : Math.round(state.speed) + ' of ' + lim + ' km/h', 24, top + 46, 11, over ? '#ffd0c8' : '#d8d2c4', 'left', 800);
+    var sx0 = 42, sy0 = top + 31;
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(sx0, sy0, 19, 0, 7); ctx.fill();
+    ctx.strokeStyle = noSign ? '#7d8084' : '#d42a1f'; ctx.lineWidth = 5.5; ctx.beginPath(); ctx.arc(sx0, sy0, 16.5, 0, 7); ctx.stroke();
+    var known = !noSign || state.knownZones[zi];
+    txt(known ? String(lim) : '?', sx0, sy0 + 1, 15, 800, '#111');
+    ctx.save(); ctx.beginPath(); ctx.rect(64, top, pw - 50, 62); ctx.clip();
+    rtext(over ? 'OVER +' + byK : 'LEGAL', 68, top + 22, 24, over ? '#fff' : '#5ad27a', 'left', 900);
+    var l2 = over ? (nextFine() ? 'A CAMERA HERE = ' + CEDI + nextFine() : 'NEXT NOTICE = SUSPENSION')
+      : !known ? 'NO SIGN' + DOT + 'WHAT\u2019S THE LIMIT?' : (noSign ? 'NO SIGN' + DOT : 'LIMIT ') + lim + (veh.dial === 'mph' ? ' = ' + Math.round(lim / KMH_PER_MPH) + ' MPH' : ' KM/H');
+    rtext(l2, 68, top + 46, 10.5, over ? '#ffd0c8' : noSign ? '#ffb400' : '#d8d2c4', 'left', 800);
+    ctx.restore();
     // notices + fines counter
     var sw = Math.min(172, hw * .5 - 24), bxC = hw - sw - 20, pls = state.cntPulse || 0, has = state.flashes > 0;
     ctx.save(); ctx.translate(bxC + sw/2, top + 31); ctx.scale(1 + pls*.14, 1 + pls*.14); ctx.translate(-(bxC + sw/2), -(top + 31));
@@ -1477,16 +1537,6 @@ function drawHUD(){
   var dcx = centerCluster ? hw/2 : hw - R - 34, dcy = hh - R*1.2 - pedalLog - (COARSE && PORTRAIT ? 6 : 16);
   var gear = veh.body === 'moto' ? Math.min(5, 1 + Math.floor(state.speed / 22)) : Math.min(6, 1 + Math.floor(state.speed / (veh.cls === 'heavy' ? 14 : 28)));
   drawCluster(ctx, dcx, dcy, R, veh, toDial(state.speed, veh.dial), driving ? lim : null, driving && state.coach, null, null);
-  if (driving){
-    // the sign beside the needle: the whole lesson in one glance
-    var rr = 25, rxx = dcx - R*1.14 - rr - 22, ryy = dcy + R*.2;
-    skewBox(rxx - rr - 12, ryy - rr - 22, rr*2 + 24, rr*2 + 48, 'rgba(8,8,10,.76)');
-    rtext(noSign ? 'NO SIGN' : 'LIMIT', rxx, ryy - rr - 11, 9.5, noSign ? '#ffb400' : '#bdb7aa', 'center', 800);
-    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(rxx, ryy, rr, 0, 7); ctx.fill();
-    ctx.strokeStyle = noSign ? '#7d8084' : '#d42a1f'; ctx.lineWidth = rr * .3; ctx.beginPath(); ctx.arc(rxx, ryy, rr * .84, 0, 7); ctx.stroke();
-    txt(noSign ? '?' : (state.lastSign ? String(state.lastSign) : '\u2013'), rxx, ryy + 1, rr * .82, 800, '#111');
-    rtext(noSign ? 'DEFAULT ' + lim : veh.dial === 'mph' && state.lastSign ? '= ' + Math.round(state.lastSign / KMH_PER_MPH) + ' MPH' : 'KM/H', rxx, ryy + rr + 13, 10, noSign ? '#ffb400' : '#fff', 'center', 800);
-  }
 
   // pops (centre) and zone toasts
   var py0 = top + (PORTRAIT ? 262 : 128);
@@ -1512,7 +1562,7 @@ function drawHUD(){
     ctx.fillStyle = '#e8e2d4'; ctx.font = '500 13px Barlow, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(m.sub, hw/2, y + 12, tw - 24);
     ctx.globalAlpha = 1;
   });
-  if (state.paused && !state.moment){
+  if (state.paused && !state.moment && !state.quiz){
     ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(0, 0, hw, hh);
     rtext('PAUSED', hw/2, hh/2 - 10, 52, '#fff', 'center', 900);
     ctx.font = '500 15px Barlow, sans-serif'; ctx.fillStyle = '#d8d2c4'; ctx.textAlign = 'center'; ctx.fillText(COARSE ? 'Close the menu to carry on' : 'P or Esc to carry on · R restarts', hw/2, hh/2 + 30);
@@ -1573,9 +1623,9 @@ function render(){
   if (state.mode !== 'ready') pinQueue.forEach(function(p){ drawPin(p[0], p[1], p[2], p[3]); });
   if (stopMark && stopMark.w > 12){
     var sd = Math.round(stopDist(state.speed, veh.cls === 'heavy'));
-    ctx.font = 'italic 800 12px "Exo 2", sans-serif'; var lblT = 'STOPS IN ' + sd + ' m', lw2 = ctx.measureText(lblT).width + 18;
-    skewBox(stopMark.x - lw2/2, stopMark.y + 3, lw2, 19, over ? 'rgba(160,20,10,.8)' : 'rgba(10,10,12,.66)');
-    rtext(lblT, stopMark.x, stopMark.y + 13, 12, over ? '#fff' : '#ffc850', 'center', 800);
+    ctx.save(); ctx.font = 'italic 800 10px "Exo 2", sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,.6)'; var lx2 = stopMark.x + stopMark.w * .36 + 4;
+    ctx.strokeText(sd + ' m', lx2, stopMark.y - 1); ctx.fillStyle = over ? '#ff8a7e' : '#ffd27a'; ctx.fillText(sd + ' m', lx2, stopMark.y - 1); ctx.restore();
   }
   var pu = cd / PLAYERZ * M * W/2, py = HORIZON + cd / PLAYERZ * CAMH * VS + state.bounce;
   drawVehicle(veh.body, veh.color, W/2, py, pu, keys.brake || state.freeze > 0 || state.autoBrake, false, 'SEE ME AND GO');
@@ -1603,7 +1653,7 @@ function render(){
 /* ---------- results: what it meant ---------- */
 function finish(kind){
   if (state.ended) return;
-  state.ended = true; state.mode = 'done'; clearKeys(); byId('belt').hidden = true; byId('moment').hidden = true; state.moment = null;
+  state.ended = true; state.mode = 'done'; clearKeys(); byId('belt').hidden = true; byId('moment').hidden = true; byId('quiz').hidden = true; state.moment = null; state.quiz = null;
   if (audio.eng) try { audio.eng.g.gain.setTargetAtTime(0, audio.ctx.currentTime, .1); } catch(e){}
   hideNotice();
   var legal = legalTime(), u = veh.dial, name = driverEl.value.trim();
@@ -1652,6 +1702,7 @@ function finish(kind){
     '</div>'+
     '<div class="rbody">'+
       '<div class="rsec"><h3>Moments that mattered</h3><div class="rlist">' + moments + '</div></div>'+
+      (state.quizzes.length ? '<div class="rsec"><h3>Signless stretches' + DOT + state.quizzes.filter(function(q){return q.ok;}).length + ' of ' + state.quizzes.length + '</h3><div class="rlist">' + state.quizzes.map(function(q){ return '<div class="' + (q.ok ? 'ok' : 'bad') + '"><span>' + esc(q.where) + (q.ok ? '' : ' <small style="color:var(--muted)">you said ' + q.picked + '</small>') + '</span><span>' + q.answer + ' km/h</span></div>'; }).join('') + '</div></div>' : '') +
       '<div class="rsec"><h3>Notices</h3><div class="rlist">' + rap + '</div>' + (good.length ? '<p class="note" style="margin-top:8px">' + esc(good.join(DOT)) + '</p>' : '') + '</div>'+
       timeline +
     '</div>'+
@@ -1675,7 +1726,7 @@ function frame(now){
 }
 resize();
 readyGame();
-if (location.hash === '#test') window.__ns = {state: function(){ return state; }, tick: function(sec){ for (var i = 0; i < sec*60 && state.mode === 'drive' && !state.paused; i++) update(1/60); }, bench: function(){ var t = performance.now(); for (var i = 0; i < 10; i++) render(); return (performance.now() - t) / 10; }, keys: keys, lights: function(){ return lights; }, hazards: function(){ return hazards; }, limit: function(){ return limitOf(Math.max(0, state.zoneIdx)); }, begin: beginDrive, buckle: buckle, ready: readyGame, closeMoment: closeMoment};
+if (location.hash === '#test') window.__ns = {state: function(){ return state; }, tick: function(sec){ for (var i = 0; i < sec*60 && state.mode === 'drive' && !state.paused; i++) update(1/60); }, bench: function(){ var t = performance.now(); for (var i = 0; i < 10; i++) render(); return (performance.now() - t) / 10; }, keys: keys, lights: function(){ return lights; }, hazards: function(){ return hazards; }, limit: function(){ return limitOf(Math.max(0, state.zoneIdx)); }, begin: beginDrive, buckle: buckle, ready: readyGame, closeMoment: closeMoment, answerQuiz: answerQuiz, closeQuiz: closeQuiz};
 var fontsReady = document.fonts && document.fonts.load ? Promise.all([document.fonts.load('italic 900 20px "Exo 2"'), document.fonts.load('italic 800 20px "Exo 2"'), document.fonts.load('700 20px "Barlow Condensed"')]).catch(function(){}) : Promise.resolve();
 fontsReady.then(function(){ drillDraw(); requestAnimationFrame(frame); });
 })();
