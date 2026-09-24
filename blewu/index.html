@@ -1,6 +1,26 @@
 <title>Blewu</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Blewu. Drive real Ghanaian roads and feel what the L.I. 2519 km/h limits mean: on your own speedometer, in stopping distance, and in fines.">
+<link rel="canonical" href="https://play.kaditay.com/blewu/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="play. · small games from Accra">
+<meta property="og:title" content="Blewu · Every sign is in km/h.">
+<meta property="og:description" content="Drive Ghana’s km/h speed limits from the driver’s seat.">
+<meta property="og:url" content="https://play.kaditay.com/blewu/">
+<meta property="og:image" content="https://play.kaditay.com/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="play.kaditay.com">
+<meta property="og:title" content="Blewu · Ghana&rsquo;s new speed limits">
+<meta property="og:description" content="Every sign is in km/h. Drive real Ghanaian roads and see what the limit means on your speedometer, in stopping distance and in fines. Free, on your phone.">
+<meta property="og:url" content="https://play.kaditay.com/blewu/">
+<meta property="og:image" content="https://play.kaditay.com/blewu/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Blewu: a car on a Ghanaian town road, with the 30, 50, 90 and 100 km/h limit signs.">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@1,600;1,800;1,900&family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap">
@@ -233,6 +253,9 @@ th{font-family:var(--race);font-style:italic;font-weight:800;letter-spacing:.08e
 .timeline div.bad::before{background:var(--bad)}
 .timeline b{font-family:var(--race);font-style:italic}
 .ractions{padding:0 18px;display:flex;flex-wrap:wrap;gap:12px}
+.rbtn.wa{background:#25d366;color:#07210f}
+.unoff{margin:14px auto 0;max-width:30em;font-size:11.5px;line-height:1.4;color:rgba(242,239,232,.62)}
+.result .unoff{padding:0 18px 18px;margin:10px 0 0;text-align:left}
 details{margin:0 18px;border-top:1px solid var(--line);padding-top:10px}
 summary{cursor:pointer;font-family:var(--race);font-style:italic;font-weight:800;letter-spacing:.12em;text-transform:uppercase;font-size:12px;color:var(--muted);min-height:28px}
 details[open] summary{margin-bottom:10px}
@@ -263,6 +286,7 @@ details[open] summary{margin-bottom:10px}
       <button id="introWx"><span class="k">Weather</span><span class="v" id="introWxV"></span></button>
     </div>
     <div class="press" id="introHint">Hold <kbd>&uarr;</kbd> to drive</div>
+    <p class="unoff">Unofficial practice game. Not affiliated with the Ghana Police Service or the NRSA.</p>
   </div>
 
   <button class="belt" id="belt"><span>Buckle up &middot; B</span></button>
@@ -361,6 +385,7 @@ details[open] summary{margin-bottom:10px}
         <p class="note" style="margin-top:8px">The notices in this game are practice cards, not real ones.</p>
       </div>
       <div class="sources">Sources (checked 23 Sep 2026): <a href="https://police.gov.gh/en/index.php/traffitech-gh/" target="_blank" rel="noopener">Ghana Police Traffitech-GH FAQ</a>, <a href="https://www.pulse.com.gh/story/new-road-traffic-regulations-li-2519-list-of-offences-penalties-and-jail-terms-you-need-to-know-2026091807093555414" target="_blank" rel="noopener">Pulse Ghana on L.I. 2519</a>, <a href="https://www.pulse.com.gh/story/ghana-police-traffitech-gh-implementation-october-1-2026091614422722962" target="_blank" rel="noopener">Pulse on the 1 Oct rollout</a>, <a href="https://www.myjoyonline.com/stick-to-speed-limit-not-vehicles-capacity-mttd/" target="_blank" rel="noopener">MTTD truck limits</a>, <a href="https://www.gov.uk/guidance/the-highway-code/general-rules-techniques-and-advice-for-all-drivers-and-riders-103-to-158" target="_blank" rel="noopener">Highway Code stopping distances</a>. Route order from <a href="https://en.wikipedia.org/wiki/N1_road_(Ghana)" target="_blank" rel="noopener">N1</a> and <a href="https://en.wikipedia.org/wiki/N5_road_(Ghana)" target="_blank" rel="noopener">N5</a> (Wikipedia). Places are real; distances are shortened, zone types are simplified and the road runs faster than real time.</div>
+      <p class="sources">Unofficial. Not affiliated with the Ghana Police Service or the NRSA.</p>
     </div>
   </aside>
 </div>
@@ -2165,6 +2190,55 @@ function render(){
   drawHUD();
 }
 
+/* ---------- share: a card for WhatsApp ---------- */
+var SHARE_URL = 'https://play.kaditay.com/blewu/';
+function makeShareCard(){
+  var r = state.share; if (!r) return null;
+  var cv = document.createElement('canvas'), Wc = 1080, Hc = 1350; cv.width = Wc; cv.height = Hc;
+  var g = cv.getContext('2d'), col = r.cls === 'ok' ? '#5ad27a' : r.cls === 'bad' ? '#ff5a47' : '#ffb400';
+  function t(str, x, y, size, weight, color, align, face){ g.font = (weight || 800) + ' ' + size + 'px ' + (face || '"Exo 2", sans-serif'); g.fillStyle = color; g.textAlign = align || 'left'; g.textBaseline = 'alphabetic'; g.fillText(str, x, y, Wc - 150); }
+  g.fillStyle = '#0d0d0e'; g.fillRect(0, 0, Wc, Hc);
+  var sky = g.createLinearGradient(0, 660, 0, 800); sky.addColorStop(0, 'rgba(212,187,134,0)'); sky.addColorStop(1, 'rgba(228,196,138,.55)'); g.fillStyle = sky; g.fillRect(0, 660, Wc, 140); g.fillStyle = '#6d5a34'; g.fillRect(0, 800, Wc, Hc - 800);
+  // the road and your car
+  g.fillStyle = '#5b544b'; g.beginPath(); g.moveTo(Wc/2 - 30, 800); g.lineTo(Wc/2 + 30, 800); g.lineTo(Wc/2 + 620, Hc); g.lineTo(Wc/2 - 620, Hc); g.closePath(); g.fill();
+  g.fillStyle = '#ffb400'; for (var k = 0; k < 5; k++){ var yy = 815 + k * 70 + k * k * 6; g.fillRect(Wc/2 - 3 - k*2, yy, 6 + k*4, 26 + k*9); }
+  var saved = ctx, savedRain = RAIN; ctx = g; RAIN = false;
+  try { drawVehicle(veh.body, veh.color, Wc/2 + 90, 1140, veh.cls === 'heavy' ? 62 : 100, false, false, 'SEE ME AND GO', veh.spare); } catch(e){}
+  ctx = saved; RAIN = savedRain;
+  g.fillStyle = '#ffb400'; g.fillRect(64, 70, 10, 560);
+  t('GHANA’S NEW SPEED LIMITS', 104, 112, 30, 'italic 800', '#ffb400');
+  t('BLEWU', 100, 220, 120, 'italic 900', '#f2efe8'); g.font = 'italic 900 120px "Exo 2", sans-serif'; var bw = g.measureText('BLEWU').width; t('.', 104 + bw, 220, 120, 'italic 900', '#ffb400');
+  t((r.route + DOT + r.veh).toUpperCase() + (r.name ? DOT + r.name.toUpperCase() : ''), 104, 290, 30, 'italic 800', '#bdb7aa');
+  t(r.head.toUpperCase(), 104, 390, 76, 'italic 900', col);
+  t(r.pct + '%', 104, 540, 150, 'italic 900', r.pct >= 95 ? '#5ad27a' : r.pct < 75 ? '#ff5a47' : '#ffb400');
+  g.font = 'italic 900 150px "Exo 2", sans-serif'; var pw = g.measureText(r.pct + '%').width;
+  t('WITHIN', 124 + pw, 488, 34, 'italic 800', '#f2efe8'); t('THE LIMIT', 124 + pw, 530, 34, 'italic 800', '#f2efe8');
+  var bits = r.notices ? [] : ['no notices', 'no fines']; // the headline already carries notices and fines
+  if (r.notH) bits.push('stopped in time ' + r.okH + ' of ' + r.notH);
+  t(bits.join(DOT).toUpperCase(), 104, 610, 32, 'italic 800', '#f2efe8');
+  g.fillStyle = 'rgba(8,8,10,.82)'; g.fillRect(0, Hc - 190, Wc, 190);
+  t('Can you drive it cleaner?', 104, Hc - 118, 42, '700', '#f2efe8', 'left', '"Barlow", sans-serif');
+  t('play.kaditay.com/blewu', 104, Hc - 66, 40, 'italic 900', '#ffb400');
+  t('Unofficial practice game. Not affiliated with the Ghana Police Service or the NRSA.', 104, Hc - 24, 22, '500', '#a19c90', 'left', '"Barlow", sans-serif');
+  return cv;
+}
+function shareText(){
+  var r = state.share;
+  return (r.head === 'Clean licence' ? 'Clean licence' : r.head) + ' on ' + r.route + ' in a ' + r.veh + ': ' + r.pct + '% within the limit. Can you drive it cleaner? ' + SHARE_URL;
+}
+function shareResult(){
+  var cv = makeShareCard(); if (!cv) return;
+  var text = shareText(), wa = function(){ window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener'); };
+  cv.toBlob(function(blob){
+    var file = null;
+    try { file = new File([blob], 'blewu-result.jpg', {type: 'image/jpeg'}); } catch(e){}
+    // phones: share the card itself (WhatsApp shows in the share sheet); elsewhere: WhatsApp with the text and link
+    if (file && navigator.canShare && navigator.canShare({files: [file]})){
+      navigator.share({files: [file], text: text}).catch(function(err){ if (!err || err.name !== 'AbortError') wa(); });
+    } else wa();
+  }, 'image/jpeg', .88);
+}
+
 /* ---------- results: what it meant ---------- */
 function finish(kind){
   if (state.ended) return;
@@ -2207,6 +2281,8 @@ function finish(kind){
   }).join('');
   var nextR = ROUTES[(ROUTES.indexOf(route) + 1) % ROUTES.length];
   var other = veh.cls === 'heavy' ? vehById('corolla') : (veh.dial === 'mph' ? vehById('truck') : vehById('corolla'));
+  var notH = state.moments.length, okH = state.moments.filter(function(m){ return m.ok; }).length;
+  state.share = {head: head, cls: cls, pct: pct, fines: f, notices: state.flashes, okH: okH, notH: notH, route: route.name, veh: veh.name, name: name};
   var el = byId('result');
   el.innerHTML = '<div class="rcard" role="dialog" aria-labelledby="rH">'+
     '<div class="rbanner"><div class="k">' + esc(route.name) + DOT + esc(veh.name) + (name ? DOT + esc(name) : '') + '</div><h2 id="rH" class="' + cls + '">' + esc(head) + '</h2><p>' + line + '</p></div>'+
@@ -2222,11 +2298,13 @@ function finish(kind){
       '<div class="rsec"><h3>Notices</h3><div class="rlist">' + rap + '</div>' + (good.length ? '<p class="note" style="margin-top:8px">' + esc(good.join(DOT)) + '</p>' : '') + '</div>'+
       timeline +
     '</div>'+
-    '<div class="ractions"><button class="rbtn" id="rAgain"><span>Drive again</span></button><button class="rbtn ghost" id="rOther"><span>Try the ' + esc(other.name) + '</span></button><button class="rbtn ghost" id="rNext"><span>Next road</span></button></div>'+
+    '<div class="ractions"><button class="rbtn wa" id="rShare"><span>Share on WhatsApp</span></button><button class="rbtn" id="rAgain"><span>Drive again</span></button><button class="rbtn ghost" id="rOther"><span>Try the ' + esc(other.name) + '</span></button><button class="rbtn ghost" id="rNext"><span>Next road</span></button></div>'+
     '<details><summary>Stretch by stretch</summary><div class="tbl"><table><thead><tr><th>Stretch</th><th class="num">Limit</th><th class="num">Your top</th><th class="num">Notices</th></tr></thead><tbody>'+zrows+'</tbody></table></div></details>'+
+  '<p class="unoff">Unofficial practice game. Not affiliated with the Ghana Police Service or the NRSA.</p>' +
   '</div>';
   el.hidden = false; el.scrollTop = 0;
   renderLists();
+  byId('rShare').addEventListener('click', shareResult);
   byId('rAgain').addEventListener('click', function(){ readyGame(); });
   byId('rOther').addEventListener('click', function(){ chosenV = other.id; save('ns-vehicle', chosenV); renderLists(); drillReset(); readyGame(); });
   byId('rNext').addEventListener('click', function(){ chosenR = nextR.id; save('ns-route', chosenR); renderLists(); readyGame(); });
@@ -2244,7 +2322,7 @@ resize();
 window.__nsReady = true;
 readyGame();
 drawThumbs();
-if (location.hash === '#test') window.__ns = {state: function(){ return state; }, tick: function(sec){ for (var i = 0; i < sec*60 && state.mode === 'drive' && !state.paused; i++) update(1/60); }, bench: function(){ var t = performance.now(); for (var i = 0; i < 10; i++) render(); return (performance.now() - t) / 10; }, keys: keys, lights: function(){ return lights; }, hazards: function(){ return hazards; }, limit: function(){ return limitOf(Math.max(0, state.zoneIdx)); }, begin: beginDrive, buckle: buckle, ready: readyGame, closeMoment: closeMoment, answerQuiz: answerQuiz, closeQuiz: closeQuiz};
+if (location.hash === '#test') window.__ns = {state: function(){ return state; }, tick: function(sec){ for (var i = 0; i < sec*60 && state.mode === 'drive' && !state.paused; i++) update(1/60); }, bench: function(){ var t = performance.now(); for (var i = 0; i < 10; i++) render(); return (performance.now() - t) / 10; }, keys: keys, lights: function(){ return lights; }, hazards: function(){ return hazards; }, limit: function(){ return limitOf(Math.max(0, state.zoneIdx)); }, begin: beginDrive, buckle: buckle, ready: readyGame, closeMoment: closeMoment, answerQuiz: answerQuiz, closeQuiz: closeQuiz, shareCard: makeShareCard, shareText: shareText};
 var fontsReady = document.fonts && document.fonts.load ? Promise.all([document.fonts.load('italic 900 20px "Exo 2"'), document.fonts.load('italic 800 20px "Exo 2"'), document.fonts.load('700 20px "Barlow Condensed"')]).catch(function(){}) : Promise.resolve();
 fontsReady.then(function(){ drillDraw(); requestAnimationFrame(frame); });
 })();
