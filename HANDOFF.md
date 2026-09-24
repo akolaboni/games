@@ -12,6 +12,7 @@
 _What is half-done, and in which files._
 
 ## Next
+- play.kaditay.com (the games hub where Blewu becomes PL·001) has its own handoff: `/Users/kadi/Developer/kaditay/play/HANDOFF.md`. Start there for hub work; stay here for game changes.
 - Blewu (renamed from Needle & Sign, folder `blewu/`) v8 is live (artifact v9, 24 Sep 2026): swipe to steer on touch, swipeable car/road rows with drawn thumbnails. Hub: play.kaditay.com (recommended over games.) for all games, Blewu = PL·001. Homepage prototype (desktop + phone) on a Claude Design canvas: https://claude.ai/artifact/L5kazsnxU3vKVjAgzmonj3. Next: Kadi picks play. vs games., then build the hub + deploy to Cloudflare Pages with a CNAME at DreamHost. Earlier: v7: rain mode (braking x2), dramatic crashes with head-on explainer, quieter wind, 7 roads incl. Tema-Aflao, Ashaiman-Akosombo, Akosombo-Ho (Adomi Bridge).
 - (v6) Needle & Sign v6 is live (artifact v7, 24 Sep 2026): which-limit quiz on unsigned stretches, limit roundel inside the LEGAL/OVER box, 15 vehicles incl. Pragya, horn (H / Horn pedal), layered crash audio, 3D-shaded scenery (roofs, gutters, shop signs, ECG poles). Next: a hand playtest on a real phone with sound on.
 - (v5) Needle & Sign v5 is live (artifact v5): education first. Street-racing look kept for graphics only; heat, pursuits, busted, score, combos, medals and radar removed at Kadi's request. Added: live LEGAL / OVER +N status with the next camera fine, mph->km/h on the gauge, stopping-distance strip on the road, next-sign preview, 'why' moments (someone steps out 14 m ahead in 30 zones, goats 72 m on highways, broken truck 86 m on the motorway; stopping maths 0.67 s + v^2/2a, a=6.4 car / 5 heavy), results with % within limit, moments, notices, late-fee and DVLA timeline, touch pedals and phone HUD scaling. Next: a real hand playtest on a phone.
@@ -27,5 +28,5 @@ _What is half-done, and in which files._
 - The preview pane throttles rAF to ~2 fps, so live play there looks frozen. Use `#test` + `__ns.tick()` to exercise the logic instead.
 
 <!-- agent-session-log: managed automatically, do not edit below -->
-Last session: claude-code · 548a0abd-1aca-404a-ad8b-624937cc7f32 · 2026-09-24 05:30 GMT
+Last session: claude-code · 548a0abd-1aca-404a-ad8b-624937cc7f32 · 2026-09-24 06:06 GMT
 Transcript backup: ~/ClaudeBackup/latest/projects/
