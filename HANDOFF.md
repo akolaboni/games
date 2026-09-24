@@ -1,16 +1,16 @@
 # HANDOFF — games
 
-> Auto-created 2026-09-19 07:54 GMT. **Any agent working here — Claude Code, Codex, Cursor —
+> Auto-created 2026-09-19 07:54 GMT. **Any agent working here
 > must leave this accurate before the session ends.** Contract: `~/Developer/AGENTS.md`.
 > This file is the fallback record if a chat transcript is lost.
 
 ## State
-- **Blewu** (was Needle & Sign; `blewu/index.html`): single-file canvas driving game about Ghana speed limits (km/h signs vs mph dials). Live as a private Claude artifact (v10, 2026-09-24): https://claude.ai/artifact/4C5A7R7UDxTQh1SA28wSeW. The play hub copies this folder at build time (`cd ~/Developer/kaditay/play && npm run build`), so rebuild the hub after every Blewu change. Local preview: launch config `blewu` (port 8742). `#test` hash exposes `window.__ns` (skip/tick/bench) for headless checks.
+- **Blewu** (was Needle & Sign; `blewu/index.html`): single-file canvas driving game about Ghana speed limits (km/h signs vs mph dials). Public at https://play.kaditay.com/blewu/ (verified 2026-09-24). The play hub copies this folder at build time (`cd ~/Developer/kaditay/play && npm run build`), so rebuild the hub after every Blewu change. `#test` hash exposes `window.__ns` (skip/tick/bench) for headless checks.
 - Ancestral-Combat: see its own folder; served by `ancestral-combat` launch config (8741).
 
 ## In flight
-- `who-said-it/index.html`: quote attribution game (Nazi-era vs Israeli figures, 36 sourced quotes), copied from Kadi's Downloads on 2026-09-24. Workshop only and hidden on the hub. It needs a check of every quote and source, especially the 2026-dated ones, before it goes public.
-- play.kaditay.com is built in `~/Developer/kaditay/play` (own repo). Launch config `play` (4190) was added here.
+- `who-said-it/index.html`: quote attribution game (Nazi-era vs Israeli figures, 36 sourced quotes), copied from Kadi's Downloads on 2026-09-24. Workshop only and hidden on the hub. The 2026-09-24 build adds a validated source-bank check, a five-level evidence-terminal route (euphemism → explicit violence; increasing clue redaction, not a hierarchy of suffering), confidence wagers, Quick Five / Streak / Timeline / Daily modes, layered reveals, archive challenges, a post-game record recap, keyboard progression (`1` / `2` to answer, `N` for next), persistent local best score, hash-routable archive, visible source/context note, and `window.__whoSaidIt` test hook. It still needs a check of every quote and source, especially the 2026-dated ones, before it goes public.
+- play.kaditay.com is built in `~/Developer/kaditay/play` (own repo).
 
 ## Next
 - (v9, 2026-09-24 07:40 GMT, commit 9956b34, artifact v10) Hazards you can see coming, after Kadi said hits were too sudden to read:
@@ -22,7 +22,7 @@
   - **Next:** Kadi plays it by hand on a real phone with sound on (still never done).
 - The "Ewe for 'slowly'" gloss is gone (Kadi: it tribalizes the game). The in-game tag reads "Ghana's new speed limits"; the hub tagline is "Every sign is in km/h." (play@68bf35a).
 - play.kaditay.com (the games hub where Blewu becomes PL·001) has its own handoff: `/Users/kadi/Developer/kaditay/play/HANDOFF.md`. Start there for hub work; stay here for game changes.
-- Blewu (renamed from Needle & Sign, folder `blewu/`) v8 is live (artifact v9, 24 Sep 2026): swipe to steer on touch, swipeable car/road rows with drawn thumbnails. Hub: play.kaditay.com (recommended over games.) for all games, Blewu = PL·001. Homepage prototype (desktop + phone) on a Claude Design canvas: https://claude.ai/artifact/L5kazsnxU3vKVjAgzmonj3 (v4). The hub is now built in `~/Developer/kaditay/play`; deploy status lives in its HANDOFF. Earlier: v7: rain mode (braking x2), dramatic crashes with head-on explainer, quieter wind, 7 roads incl. Tema-Aflao, Ashaiman-Akosombo, Akosombo-Ho (Adomi Bridge).
+- Blewu (renamed from Needle & Sign, folder `blewu/`) v8 is live: swipe to steer on touch, swipeable car/road rows with drawn thumbnails. Hub: play.kaditay.com (recommended over games.) for all games, Blewu = PL·001. The hub is built in `~/Developer/kaditay/play`; deploy status lives in its HANDOFF. Earlier: v7: rain mode (braking x2), dramatic crashes with head-on explainer, quieter wind, 7 roads incl. Tema-Aflao, Ashaiman-Akosombo, Akosombo-Ho (Adomi Bridge).
 - (v6) Needle & Sign v6 is live (artifact v7, 24 Sep 2026): which-limit quiz on unsigned stretches, limit roundel inside the LEGAL/OVER box, 15 vehicles incl. Pragya, horn (H / Horn pedal), layered crash audio, 3D-shaded scenery (roofs, gutters, shop signs, ECG poles). Next: a hand playtest on a real phone with sound on.
 - (v5) Needle & Sign v5 is live (artifact v5): education first. Street-racing look kept for graphics only; heat, pursuits, busted, score, combos, medals and radar removed at Kadi's request. Added: live LEGAL / OVER +N status with the next camera fine, mph->km/h on the gauge, stopping-distance strip on the road, next-sign preview, 'why' moments (someone steps out 14 m ahead in 30 zones, goats 72 m on highways, broken truck 86 m on the motorway; stopping maths 0.67 s + v^2/2a, a=6.4 car / 5 heavy), results with % within limit, moments, notices, late-fee and DVLA timeline, touch pedals and phone HUD scaling. Next: a real hand playtest on a phone.
 - (v4) Needle & Sign v4: street-racing look (amber harmattan grade, bloom, grain, speed streaks, race HUD with tach/radar/heat) and a real score loop: pace combo for holding 85-100% of the limit, perfect camera passes, red lights with an amber dilemma, seatbelt check, heat bars, MTTD patrol pull-overs (don't stop = BUSTED), medals and a rap sheet. World runs 1.4x over stretches shortened to 65%. Tune medals in `finish()` (maxScore ratio .7/.45/.25).
@@ -36,7 +36,3 @@
 ## Do not
 - Do not gloss the name Blewu as Ewe (or any one language) in the game, the hub or anywhere else. Kadi, 2026-09-24: it tribalizes the game.
 - The preview pane throttles rAF to ~2 fps, so live play there looks frozen. Use `#test` + `__ns.tick()` to exercise the logic instead.
-
-<!-- agent-session-log: managed automatically, do not edit below -->
-Last session: claude-code · fa0b4ae2-de95-4592-9290-e31712c29522 · 2026-09-24 07:19 GMT
-Transcript backup: ~/ClaudeBackup/latest/projects/
