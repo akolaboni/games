@@ -1,6 +1,6 @@
-<title>Needle &amp; Sign</title>
+<title>Blewu</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Drive real Ghanaian roads and feel what the L.I. 2519 km/h limits mean: on your own speedometer, in stopping distance, and in fines.">
+<meta name="description" content="Blewu (Ewe: slowly). Drive real Ghanaian roads and feel what the L.I. 2519 km/h limits mean: on your own speedometer, in stopping distance, and in fines.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@1,600;1,800;1,900&family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap">
@@ -153,6 +153,15 @@ kbd{font-family:var(--race);font-style:normal;font-weight:800;border:1.5px solid
 .chip.heavy{background:var(--ink);border-color:transparent;color:#111}
 .chip.clean{background:var(--ok);border-color:transparent;color:#111}
 .routes{display:flex;flex-direction:column;gap:7px}
+.thumb{display:block;width:100%;height:auto;aspect-ratio:240/120;margin:-2px 0 4px;background:linear-gradient(180deg,rgba(255,180,0,.05),rgba(255,180,0,0) 60%),linear-gradient(0deg,#2a2723 0 18%,transparent 18%)}
+.swipe-hint{font-family:var(--display);font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-left:8px}
+@media (pointer:coarse){
+  .grid-v,.routes{display:flex;flex-direction:row;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;margin:0 -16px;padding:2px 16px 10px;scroll-padding:0 16px;scrollbar-width:none}
+  .grid-v::-webkit-scrollbar,.routes::-webkit-scrollbar{display:none}
+  .grid-v .opt{flex:0 0 42%;scroll-snap-align:start}
+  .routes .opt{flex:0 0 80%;scroll-snap-align:start}
+}
+@media (pointer:fine){ .swipe-hint{display:none} }
 .zbar{display:flex;height:5px;overflow:hidden;gap:1px;margin-top:5px}
 .zbar i{display:block;height:100%}
 .sw{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-top:1px solid var(--line);cursor:pointer}
@@ -235,7 +244,7 @@ details[open] summary{margin-bottom:10px}
   <canvas id="c" aria-label="Driving view. Hold the up arrow, or the Gas pedal, to drive."></canvas>
 
   <header class="bar">
-    <div class="word">Needle <b>&amp;</b> Sign</div>
+    <div class="word">Blewu<b>.</b></div>
     <nav class="nav" aria-label="Menu">
       <button id="bSound" aria-pressed="false"><span>Sound</span></button>
       <button id="bRules"><span>Rules</span></button>
@@ -244,8 +253,8 @@ details[open] summary{margin-bottom:10px}
   </header>
 
   <div class="intro" id="intro">
-    <div class="tag">Harmattan run &middot; Ghana</div>
-    <h1>Needle <b>&amp;</b> Sign</h1>
+    <div class="tag">Ewe for &ldquo;slowly&rdquo; &middot; Ghana</div>
+    <h1>Blewu<b>.</b></h1>
     <p class="rule">Every sign is in km/h. Keep your needle in the <em>green</em>. Go into the <span class="red">red</span> and a camera can fine you.</p>
     <p class="rule-sub" id="introSub"></p>
     <div class="plate">
@@ -276,13 +285,13 @@ details[open] summary{margin-bottom:10px}
   <aside class="sheet" id="sheetSetup" aria-labelledby="setupH" aria-hidden="true">
     <div class="sheet-head"><h2 id="setupH">Car <b>&amp;</b> road</h2><button class="x" data-close aria-label="Close">&times;</button></div>
     <div class="sheet-body">
-      <div><div class="lbl" id="vehLbl">Car</div><div class="grid-v" id="vehicles" role="radiogroup" aria-labelledby="vehLbl"></div></div>
-      <div><div class="lbl" id="routeLbl">Road</div><div class="routes" id="routes" role="radiogroup" aria-labelledby="routeLbl"></div></div>
+      <div><div class="lbl" id="vehLbl">Car<span class="swipe-hint" id="vehCount"></span></div><div class="grid-v" id="vehicles" role="radiogroup" aria-labelledby="vehLbl"></div></div>
+      <div><div class="lbl" id="routeLbl">Road<span class="swipe-hint" id="routeCount"></span></div><div class="routes" id="routes" role="radiogroup" aria-labelledby="routeLbl"></div></div>
       <div>
         <div class="lbl">Options</div>
         <label class="sw" for="optCoach"><input type="checkbox" id="optCoach" checked><span><b>Dial coach</b><span>Green band on your gauge, the next sign ahead, and your stopping distance on the road. Turn it off to test yourself.</span></span></label>
         <label class="sw" for="optRain"><input type="checkbox" id="optRain"><span><b>Rain</b><span>Wet roads double your braking distance. The limit is a maximum, not a target.</span></span></label>
-        <label class="sw" for="optSteer"><input type="checkbox" id="optSteer"><span><b>Steering &amp; overtaking</b><span>Steer with &larr; &rarr; or the on-screen arrows. Oncoming traffic and solid lines are real.</span></span></label>
+        <label class="sw" for="optSteer"><input type="checkbox" id="optSteer"><span><b>Steering &amp; overtaking</b><span>Steer with &larr; &rarr;, or swipe the road on a phone. Oncoming traffic and solid lines are real.</span></span></label>
       </div>
       <div class="field"><div class="lbl"><label for="driverName">Your name</label></div><input type="text" id="driverName" maxlength="18" placeholder="Optional" autocomplete="off"></div>
     </div>
@@ -500,10 +509,11 @@ var opt = {steer: load('ns-steer', '0') === '1', coach: load('ns-coach', '1') ==
 var driverEl = byId('driverName'); driverEl.value = load('ns-driver', '');
 
 function renderLists(){
+  setTimeout(function(){ drawThumbs(); byId('vehCount').textContent = VEHICLES.length + ' cars \u00b7 swipe'; byId('routeCount').textContent = ROUTES.length + ' roads \u00b7 swipe'; }, 0);
   var clean = getClean();
   byId('vehicles').innerHTML = VEHICLES.map(function(v){
     return '<label class="opt"><input type="radio" name="veh" id="veh-'+v.id+'" value="'+v.id+'"'+(v.id===chosenV?' checked':'')+'>'+
-      '<span class="card"><span class="nm">'+esc(v.name)+'</span><span class="sub">'+esc(v.sub)+'</span>'+
+      '<span class="card"><canvas class="thumb" width="240" height="120" data-v="'+v.id+'" aria-hidden="true"></canvas><span class="nm">'+esc(v.name)+'</span><span class="sub">'+esc(v.sub)+'</span>'+
       '<span class="chips"><span class="chip '+(v.dial==='mph'?'mph':'')+'">'+(v.dial==='mph'?'mph dial':'km/h dial')+'</span>'+(v.cls==='heavy'?'<span class="chip heavy">Heavy</span>':'')+'</span></span></label>';
   }).join('');
   byId('routes').innerHTML = ROUTES.map(function(r){
@@ -522,10 +532,10 @@ function refreshIntro(){
   byId('introVehV').textContent = v.name + DOT + (v.dial === 'mph' ? 'mph dial' : 'km/h dial');
   byId('introRouteV').textContent = r.name;
   byId('introWxV').textContent = opt.rain ? 'Rain' : 'Dry';
-  byId('introHint').innerHTML = COARSE ? 'Hold Gas to drive' : 'Hold <kbd>↑</kbd> to drive' + (opt.steer ? DOT + '<kbd>←</kbd><kbd>→</kbd> steer' : '') + DOT + '<kbd>H</kbd> horn';
+  byId('introHint').innerHTML = COARSE ? 'Hold Gas to drive' + (opt.steer ? DOT + 'swipe to steer' : '') : 'Hold <kbd>↑</kbd> to drive' + (opt.steer ? DOT + '<kbd>←</kbd><kbd>→</kbd> steer' : '') + DOT + '<kbd>H</kbd> horn';
   byId('introSub').textContent = (v.dial === 'mph' ? 'Your ' + v.name + '’s dial is in mph, so a 50 sign is 31 on your dial. ' : '') +
     (v.cls === 'heavy' ? 'Heavy vehicles get lower limits on open roads. ' : '') + (opt.rain ? 'Wet road: braking distance doubles. ' : '') + (LIVE ? 'Cameras are live.' : 'Cameras go live 1 October.');
-  byId('steerPad').hidden = !(opt.steer && COARSE);
+  byId('steerPad').hidden = true;
 }
 byId('vehicles').addEventListener('change', function(e){ chosenV = e.target.value; save('ns-vehicle', chosenV); readyGame(); drillReset(); });
 byId('routes').addEventListener('change', function(e){ chosenR = e.target.value; save('ns-route', chosenR); readyGame(); });
@@ -536,6 +546,27 @@ byId('optSteer').addEventListener('change', function(e){ opt.steer = e.target.ch
 byId('optCoach').addEventListener('change', function(e){ opt.coach = e.target.checked; save('ns-coach', opt.coach ? '1' : '0'); state.coach = opt.coach; });
 driverEl.addEventListener('input', function(){ save('ns-driver', driverEl.value); });
 
+/* car thumbnails drawn with the game's own renderer */
+function drawThumbs(){
+  if (typeof drawVehicle !== 'function' || !window.__nsReady) return;
+  Array.prototype.forEach.call(document.querySelectorAll('canvas.thumb'), function(cv){
+    var v = vehById(cv.getAttribute('data-v')); if (!v) return;
+    var g2 = cv.getContext('2d'), saved = ctx, savedRain = RAIN;
+    var dims = {sedan:[1.8,1.45], hatch:[1.7,1.5], taxi:[1.8,1.45], pickup:[1.9,1.8], suv:[1.9,1.78], hiace:[1.9,2.25], coach:[2.5,3.5], truck:[2.5,3.9], moto:[.8,1.6], trike:[1.4,1.9]}[v.body] || [1.8,1.45];
+    var uu = Math.min(62, 102 / dims[1], 200 / dims[0]);
+    g2.setTransform(1,0,0,1,0,0); g2.clearRect(0, 0, 240, 120);
+    ctx = g2; RAIN = false;
+    try { drawVehicle(v.body, v.color, 120, 112, uu, false, false, 'SEE ME AND GO', v.spare); } catch(e){}
+    ctx = saved; RAIN = savedRain;
+  });
+}
+function scrollToChecked(){
+  ['vehicles','routes'].forEach(function(id){
+    var rail = byId(id), on = rail.querySelector('input:checked'); if (!on || getComputedStyle(rail).overflowX !== 'auto') return;
+    var card = on.parentNode; rail.scrollLeft = Math.max(0, card.offsetLeft - rail.offsetLeft - 16);
+  });
+}
+
 /* ---------- sheets ---------- */
 var openSheet = null;
 function showSheet(id){
@@ -545,6 +576,7 @@ function showSheet(id){
   if (state.mode === 'drive' && !state.paused) togglePause(true);
   setTimeout(function(){ var f = el.querySelector('.x'); if (f) f.focus({preventScroll:true}); byId('app').scrollLeft = 0; }, 50);
   if (id === 'sheetRules') drillDraw();
+  if (id === 'sheetSetup') setTimeout(scrollToChecked, 30);
 }
 function closeSheet(silent){
   if (!openSheet) return;
@@ -1001,6 +1033,20 @@ if (!COARSE){
   canvas.addEventListener('pointerup', upPtr); canvas.addEventListener('pointercancel', upPtr); canvas.addEventListener('lostpointercapture', upPtr);
 }
 canvas.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+if (COARSE){
+  // drag a thumb sideways on the road to change lanes
+  var swipe = null;
+  canvas.addEventListener('pointerdown', function(e){
+    if (!opt.steer || state.mode === 'done' || state.moment || state.quiz) return;
+    e.preventDefault(); swipe = {id: e.pointerId, x: e.clientX}; try { canvas.setPointerCapture(e.pointerId); } catch(_){}
+  });
+  canvas.addEventListener('pointermove', function(e){
+    if (!swipe || e.pointerId !== swipe.id) return;
+    var dx = e.clientX - swipe.x; swipe.x = e.clientX;
+    if (state.mode === 'drive' && !state.paused) state.playerX = Math.max(-1.7, Math.min(1.7, state.playerX + dx / canvas.clientWidth * 2.6));
+  });
+  ['pointerup','pointercancel','lostpointercapture'].forEach(function(t){ canvas.addEventListener(t, function(){ swipe = null; }); });
+}
 function holdBtn(id, key){
   var el = byId(id);
   el.addEventListener('pointerdown', function(e){
@@ -2074,7 +2120,9 @@ function frame(now){
   requestAnimationFrame(frame);
 }
 resize();
+window.__nsReady = true;
 readyGame();
+drawThumbs();
 if (location.hash === '#test') window.__ns = {state: function(){ return state; }, tick: function(sec){ for (var i = 0; i < sec*60 && state.mode === 'drive' && !state.paused; i++) update(1/60); }, bench: function(){ var t = performance.now(); for (var i = 0; i < 10; i++) render(); return (performance.now() - t) / 10; }, keys: keys, lights: function(){ return lights; }, hazards: function(){ return hazards; }, limit: function(){ return limitOf(Math.max(0, state.zoneIdx)); }, begin: beginDrive, buckle: buckle, ready: readyGame, closeMoment: closeMoment, answerQuiz: answerQuiz, closeQuiz: closeQuiz};
 var fontsReady = document.fonts && document.fonts.load ? Promise.all([document.fonts.load('italic 900 20px "Exo 2"'), document.fonts.load('italic 800 20px "Exo 2"'), document.fonts.load('700 20px "Barlow Condensed"')]).catch(function(){}) : Promise.resolve();
 fontsReady.then(function(){ drillDraw(); requestAnimationFrame(frame); });
