@@ -251,6 +251,7 @@ details[open] summary{margin-bottom:10px}
     <div class="plate">
       <button id="introRoute"><span class="k">Road</span><span class="v" id="introRouteV"></span></button>
       <button id="introVeh"><span class="k">Car</span><span class="v" id="introVehV"></span></button>
+      <button id="introWx"><span class="k">Weather</span><span class="v" id="introWxV"></span></button>
     </div>
     <div class="press" id="introHint">Hold <kbd>&uarr;</kbd> to drive</div>
   </div>
@@ -280,6 +281,7 @@ details[open] summary{margin-bottom:10px}
       <div>
         <div class="lbl">Options</div>
         <label class="sw" for="optCoach"><input type="checkbox" id="optCoach" checked><span><b>Dial coach</b><span>Green band on your gauge, the next sign ahead, and your stopping distance on the road. Turn it off to test yourself.</span></span></label>
+        <label class="sw" for="optRain"><input type="checkbox" id="optRain"><span><b>Rain</b><span>Wet roads double your braking distance. The limit is a maximum, not a target.</span></span></label>
         <label class="sw" for="optSteer"><input type="checkbox" id="optSteer"><span><b>Steering &amp; overtaking</b><span>Steer with &larr; &rarr; or the on-screen arrows. Oncoming traffic and solid lines are real.</span></span></label>
       </div>
       <div class="field"><div class="lbl"><label for="driverName">Your name</label></div><input type="text" id="driverName" maxlength="18" placeholder="Optional" autocomplete="off"></div>
@@ -303,6 +305,10 @@ details[open] summary{margin-bottom:10px}
       <div class="sec">
         <h3>Why 30 near schools</h3>
         <p>At 30 km/h a car stops in about 11 m. At 50 it needs about 24 m, more than double. A child stepping out 14 m ahead is safe at 30, and not at 40.</p>
+      </div>
+      <div class="sec">
+        <h3>In the rain</h3>
+        <p>Wet roads at least double your braking distance. At 50 km/h a car needs about 24 m to stop when dry and about 39 m when wet. The limit is the most you may do in good conditions, not a target.</p>
       </div>
       <div class="sec">
         <h3>What gets you a notice</h3>
@@ -441,14 +447,17 @@ function vehById(id){ return VEHICLES.filter(function(v){return v.id===id;})[0];
 function routeById(id){ return ROUTES.filter(function(r){return r.id===id;})[0]; }
 function zoneLabel(z){ return z.type === 'sensitive' ? WHY_LABEL[z.why] + DOT + '30 zone' : ZONE_LABEL[z.type]; }
 // typical dry-road stopping distance: 0.67 s thinking + braking (heavier vehicles brake less hard)
-function stopDist(kmh, heavy){ var v = kmh / 3.6; return v * .67 + v * v / (2 * (heavy ? 5 : 6.4)); }
+var RAIN = false;
+function decel(heavy){ return (heavy ? 5 : 6.4) * (RAIN ? .5 : 1); }
+function stopDist(kmh, heavy){ var v = kmh / 3.6; return v * .67 + v * v / (2 * decel(heavy)); }
+function safeSpeed(D, heavy){ var a = decel(heavy); return Math.floor((-1.34*a + Math.sqrt(1.7956*a*a + 8*a*D)) / 2 * 3.6 / 5) * 5; }
 function getClean(){ try { return JSON.parse(load('ns-clean', '{}')) || {}; } catch(e){ return {}; } }
 
 /* ---------- settings ---------- */
 var chosenV = load('ns-vehicle', 'corolla'), chosenR = load('ns-route', 'n6');
 if (!vehById(chosenV)) chosenV = 'corolla';
 if (!routeById(chosenR)) chosenR = 'n6';
-var opt = {steer: load('ns-steer', '0') === '1', coach: load('ns-coach', '1') === '1'};
+var opt = {steer: load('ns-steer', '0') === '1', coach: load('ns-coach', '1') === '1', rain: load('ns-rain', '0') === '1'};
 var driverEl = byId('driverName'); driverEl.value = load('ns-driver', '');
 
 function renderLists(){
@@ -467,19 +476,23 @@ function renderLists(){
   }).join('');
 }
 renderLists();
-byId('optSteer').checked = opt.steer; byId('optCoach').checked = opt.coach;
+byId('optSteer').checked = opt.steer; byId('optCoach').checked = opt.coach; byId('optRain').checked = opt.rain;
 
 function refreshIntro(){
   var v = vehById(chosenV), r = routeById(chosenR);
   byId('introVehV').textContent = v.name + DOT + (v.dial === 'mph' ? 'mph dial' : 'km/h dial');
   byId('introRouteV').textContent = r.name;
+  byId('introWxV').textContent = opt.rain ? 'Rain' : 'Dry';
   byId('introHint').innerHTML = COARSE ? 'Hold Gas to drive' : 'Hold <kbd>↑</kbd> to drive' + (opt.steer ? DOT + '<kbd>←</kbd><kbd>→</kbd> steer' : '') + DOT + '<kbd>H</kbd> horn';
   byId('introSub').textContent = (v.dial === 'mph' ? 'Your ' + v.name + '’s dial is in mph, so a 50 sign is 31 on your dial. ' : '') +
-    (v.cls === 'heavy' ? 'Heavy vehicles get lower limits on open roads. ' : '') + (LIVE ? 'Cameras are live.' : 'Cameras go live 1 October.');
+    (v.cls === 'heavy' ? 'Heavy vehicles get lower limits on open roads. ' : '') + (opt.rain ? 'Wet road: braking distance doubles. ' : '') + (LIVE ? 'Cameras are live.' : 'Cameras go live 1 October.');
   byId('steerPad').hidden = !(opt.steer && COARSE);
 }
 byId('vehicles').addEventListener('change', function(e){ chosenV = e.target.value; save('ns-vehicle', chosenV); readyGame(); drillReset(); });
 byId('routes').addEventListener('change', function(e){ chosenR = e.target.value; save('ns-route', chosenR); readyGame(); });
+function setRain(on){ opt.rain = on; save('ns-rain', on ? '1' : '0'); byId('optRain').checked = on; readyGame(); }
+byId('optRain').addEventListener('change', function(e){ setRain(e.target.checked); });
+byId('introWx').addEventListener('click', function(){ setRain(!opt.rain); });
 byId('optSteer').addEventListener('change', function(e){ opt.steer = e.target.checked; save('ns-steer', opt.steer ? '1' : '0'); readyGame(); });
 byId('optCoach').addEventListener('change', function(e){ opt.coach = e.target.checked; save('ns-coach', opt.coach ? '1' : '0'); state.coach = opt.coach; });
 driverEl.addEventListener('input', function(){ save('ns-driver', driverEl.value); });
@@ -663,7 +676,7 @@ var SCEN = {
   motorway: {grass:['#948d4a','#8e8746'], shoulder:['#807a6e','#7a7468']}
 };
 ['school','market','hospital','church','mosque'].forEach(function(k){ SCEN[k] = SCEN.town; });
-var HAZE = [228,196,138];
+var HAZE_DRY = [228,196,138], HAZE_WET = [146,154,160], HAZE = HAZE_DRY;
 
 /* ---------- game state ---------- */
 var state = {mode:'ready'};
@@ -778,12 +791,13 @@ function carLen(c){ return (c.body === 'truck' || c.body === 'coach' ? 12 : c.bo
 function legalTime(){ var t = 0; route.zones.forEach(function(z, i){ t += z.len / (limitOf(i) / 3.6); }); return t / PACE; }
 
 function readyGame(){
+  RAIN = opt.rain; HAZE = RAIN ? HAZE_WET : HAZE_DRY;
   buildTrack();
   state = {mode:'ready', pos:0, speed:0, t:0, flashes:0, fines:0, lastSign:null, zoneIdx:-1, msgs:[], pops:[], flashT:0,
     playerX: segAt(PLAYERZ).lanes === 4 ? .25 : .5, skyX:0, bounce:0, paused:false, freeze:0, autoBrake:false,
     stats: route.zones.map(function(){ return {max:0, overM:0, flashes:0}; }), coach: opt.coach, ended:false, notices:[],
     crashes:0, bumps:0, overtakes:0, solid:0, offroad:false, solidWarned:false,
-    distM:0, overM:0, quizzes:[], quiz:null, knownZones:{}, belt:false, beltChecked:false, moments:[], moment:null, legalCams:0, cleanStops:0, redRun:0};
+    distM:0, overM:0, quizzes:[], quiz:null, knownZones:{}, fx:{shake:0, red:0, slow:0, crack:0, smoke:0, tilt:0, parts:[], puffs:[], cracks:null, spawn:0, puffT:0}, crashLog:[], crashCard:null, crashCardShown:false, belt:false, beltChecked:false, moments:[], moment:null, legalCams:0, cleanStops:0, redRun:0};
   clearKeys();
   byId('result').hidden = true; byId('moment').hidden = true; byId('quiz').hidden = true; hideNotice();
   byId('intro').classList.remove('gone');
@@ -795,6 +809,7 @@ function beginDrive(){
   state.mode = 'drive'; byId('intro').classList.add('gone');
   if (!state.belt) byId('belt').hidden = false;
   pop('GO', '', '#ffb400', .9, true);
+  if (RAIN) toast('RAIN', 'Wet roads double your braking distance. Drive below the limit.', '#9fc3e6', 3.6);
 }
 
 /* ---------- sound (off until asked) ---------- */
@@ -812,7 +827,9 @@ function audioInit(){
     var ns = a.createBufferSource(); ns.buffer = noiseBuffer(a, 2); ns.loop = true;
     var nf = a.createBiquadFilter(); nf.type = 'bandpass'; nf.frequency.value = 400; nf.Q.value = .6; var ng = a.createGain(); ng.gain.value = 0;
     ns.connect(nf); nf.connect(ng); ng.connect(comp); ns.start();
-    audio.ctx = a; audio.out = comp; audio.eng = {o1:o1, o2:o2, g:g, f:f}; audio.road = {g:ng, f:nf}; return true;
+    var rs = a.createBufferSource(); rs.buffer = noiseBuffer(a, 2); rs.loop = true; var rf = a.createBiquadFilter(); rf.type = 'highpass'; rf.frequency.value = 2600; var rgn = a.createGain(); rgn.gain.value = 0;
+    rs.connect(rf); rf.connect(rgn); rgn.connect(comp); rs.start();
+    audio.ctx = a; audio.out = comp; audio.eng = {o1:o1, o2:o2, g:g, f:f}; audio.road = {g:ng, f:nf}; audio.rain = rgn; return true;
   } catch(e){ return false; }
 }
 function setSound(on){
@@ -821,7 +838,7 @@ function setSound(on){
   if (audio.ctx){ try { if (on) audio.ctx.resume(); } catch(e){} }
   byId('bSound').setAttribute('aria-pressed', on ? 'true' : 'false');
   byId('bSound').firstChild.textContent = on ? 'Sound on' : 'Sound';
-  if (!on && audio.eng){ audio.eng.g.gain.value = 0; audio.road.g.gain.value = 0; }
+  if (!on && audio.eng){ audio.eng.g.gain.value = 0; audio.road.g.gain.value = 0; audio.rain.gain.value = 0; }
 }
 byId('bSound').addEventListener('click', function(){ setSound(!audio.on); });
 function engineTick(){
@@ -833,8 +850,9 @@ function engineTick(){
   audio.eng.o1.frequency.setTargetAtTime(base, tt, .04); audio.eng.o2.frequency.setTargetAtTime(base * .5, tt, .04);
   audio.eng.f.frequency.setTargetAtTime(380 + rev * 520 + (keys.gas ? 260 : 0), tt, .06);
   audio.eng.g.gain.setTargetAtTime(driving ? .028 + (keys.gas ? .03 : 0) : 0, tt, .08);
-  audio.road.g.gain.setTargetAtTime(driving ? Math.min(.07, s / 1800) : 0, tt, .15);
-  audio.road.f.frequency.setTargetAtTime(260 + s * 5, tt, .2);
+  audio.road.g.gain.setTargetAtTime(driving ? Math.min(.016, s / 7000) : 0, tt, .15);
+  audio.road.f.frequency.setTargetAtTime(180 + s * 2, tt, .2);
+  audio.rain.gain.setTargetAtTime(RAIN && state.mode !== 'done' ? .03 : 0, tt, .3);
 }
 function envNoise(t, dur, type, freq, q, gain){
   var a = audio.ctx, src = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
@@ -1023,10 +1041,11 @@ function showMoment(h){
   var el = byId('moment');
   el.innerHTML = '<div class="mcard" role="alertdialog" aria-labelledby="mH" aria-describedby="mP">' +
     '<div class="k">' + esc(route.zones[h.zone].name) + '</div>' +
-    '<h2 id="mH">Too fast to stop</h2>' +
-    '<p id="mP">' + esc(info.who) + ' ' + esc(info.what) + ', <b>' + h.D + ' m</b> ahead. At ' + Math.round(h.speed) + ' km/h you need <b>' + Math.round(h.need) + ' m</b> to stop. At the ' + h.lim + ' limit you would have stopped with <b>' + Math.max(0, Math.round(spare)) + ' m</b> to spare.</p>' +
+    '<h2 id="mH">' + (RAIN && spare < 0 ? 'Too fast for the rain' : 'Too fast to stop') + '</h2>' +
+    '<p id="mP">' + esc(info.who) + ' ' + esc(info.what) + ', <b>' + h.D + ' m</b> ahead. At ' + Math.round(h.speed) + ' km/h' + (RAIN ? ' on a wet road' : '') + ' you need <b>' + Math.round(h.need) + ' m</b> to stop. ' +
+      (spare >= 0 ? 'At the ' + h.lim + ' limit you would have stopped with <b>' + Math.round(spare) + ' m</b> to spare.' : 'Even at the ' + h.lim + ' limit you needed ' + Math.round(h.needLim) + ' m. In this rain, about <b>' + safeSpeed(h.D, veh.cls === 'heavy') + ' km/h</b> would have stopped in time.') + '</p>' +
     barsHtml(h) +
-    '<p class="note">That’s why the limit is ' + h.lim + ' here. Stopping distance grows with the square of your speed.</p>' +
+    '<p class="note">' + (RAIN ? 'Wet roads double braking distance. The limit is the most you may do in good conditions, not a target.' : 'That\u2019s why the limit is ' + h.lim + ' here. Stopping distance grows with the square of your speed.') + '</p>' +
     '<button class="rbtn" id="mGo"><span>Got it, drive on</span></button></div>';
   el.hidden = false;
   byId('mGo').addEventListener('click', closeMoment);
@@ -1073,16 +1092,55 @@ function answerQuiz(n){
 }
 function closeQuiz(){ if (!state.quiz) return; state.quiz = null; byId('quiz').hidden = true; state.paused = false; }
 
+/* ---------- crashes ---------- */
+function crashFX(kind){
+  var f = state.fx, head = kind === 'head';
+  f.shake = head ? 1 : .6; f.red = head ? 1 : .55; f.slow = head ? 1.1 : .45; f.crack = head ? 1 : 0; f.smoke = head ? 4 : 1.2;
+  f.tilt = (Math.random() < .5 ? -1 : 1) * (head ? .07 : .035); f.spawn = head ? 80 : 30; f.kind = kind;
+  if (head) f.cracks = makeCracks();
+  try { if (navigator.vibrate) navigator.vibrate(head ? [90, 40, 160] : [60]); } catch(e){}
+}
+function makeCracks(){
+  var cx = W * (.38 + Math.random() * .24), cy = H * (.3 + Math.random() * .2), rays = [], rings = [], n = 15, R0 = Math.max(W, H) * .65;
+  for (var i = 0; i < n; i++){
+    var a = i / n * Math.PI * 2 + (Math.random() - .5) * .3, pts = [[cx, cy]], r = 0;
+    while (r < R0 * (.4 + Math.random() * .6)){ r += 18 + Math.random() * 40; a += (Math.random() - .5) * .35; pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]); }
+    rays.push(pts);
+  }
+  [34, 80, 140].forEach(function(rr){ for (var j = 0; j < n; j++){ if (Math.random() < .35) continue; var a0 = j / n * Math.PI * 2, a1 = (j + 1) / n * Math.PI * 2; rings.push([cx + Math.cos(a0) * rr * (.8 + Math.random() * .4), cy + Math.sin(a0) * rr * (.8 + Math.random() * .4), cx + Math.cos(a1) * rr * (.8 + Math.random() * .4), cy + Math.sin(a1) * rr * (.8 + Math.random() * .4)]); } });
+  return {rays: rays, rings: rings, cx: cx, cy: cy};
+}
+function fxTick(rdt){
+  var f = state.fx; if (!f) return;
+  f.shake = Math.max(0, f.shake - rdt * 1.1); f.red = Math.max(0, f.red - rdt * 1.3); f.crack = Math.max(0, f.crack - rdt * .42);
+  f.smoke = Math.max(0, f.smoke - rdt); f.tilt *= Math.pow(.04, rdt);
+  var g = H * 1.7;
+  for (var i = f.parts.length - 1; i >= 0; i--){ var p = f.parts[i]; p.vy += g * rdt * (p.k === 'glass' ? 1 : 1.2); p.x += p.vx * rdt; p.y += p.vy * rdt; p.r += p.vr * rdt; p.life -= rdt; if (p.life <= 0 || p.y > H + 40) f.parts.splice(i, 1); }
+  for (var j = f.puffs.length - 1; j >= 0; j--){ var q = f.puffs[j]; q.x += q.vx * rdt; q.y += q.vy * rdt; q.rad += rdt * 26; q.life -= rdt; if (q.life <= 0) f.puffs.splice(j, 1); }
+}
+function showCrashCard(c){
+  var closing = Math.round(c.you + c.them), wall = Math.round(closing / 2), el = byId('moment');
+  state.moment = {crash: true}; state.paused = true; clearKeys();
+  el.innerHTML = '<div class="mcard" role="alertdialog" aria-labelledby="mH"><div class="k">' + esc(c.where) + '</div><h2 id="mH">Head-on collision</h2>' +
+    '<p>You were doing <b>' + Math.round(c.you) + ' km/h</b> and the oncoming car <b>' + Math.round(c.them) + '</b>. Together that\u2019s a closing speed of <b>' + closing + ' km/h</b>. For two similar cars, that\u2019s like each one driving into a concrete wall at about <b>' + wall + ' km/h</b>.</p>' +
+    '<p class="note">Euro NCAP\u2019s frontal crash test is run at 64 km/h. Only overtake when you can see the whole gap, and never on a solid line.</p>' +
+    '<button class="rbtn" id="mGo"><span>Got it, drive on</span></button></div>';
+  el.hidden = false; byId('mGo').addEventListener('click', closeMoment);
+  setTimeout(function(){ var b = byId('mGo'); if (b) b.focus({preventScroll:true}); }, 60);
+}
+
 /* ---------- update ---------- */
 function update(dt){
   if (state.mode !== 'drive' || state.ended || state.paused) return;
+  var rdt = dt; if (state.fx.slow > 0){ state.fx.slow -= rdt; dt *= .35; }
+  if (state.crashCard && state.fx.slow <= 0){ var cc = state.crashCard; state.crashCard = null; showCrashCard(cc); return; }
   state.t += dt;
   var s = state.speed;
   if (state.autoBrake){ s = Math.max(0, s - 70*dt); if (s === 0) state.autoBrake = false; }
   else if (state.freeze > 0){ state.freeze -= dt; s = Math.max(0, s - 60*dt); }
   else {
     if (keys.gas) s += veh.acc * (1 - Math.pow(s/veh.vmax, 2)) * dt; else s -= (1.5 + s*0.018) * dt;
-    if (keys.brake) s -= 38 * dt;
+    if (keys.brake) s -= (RAIN ? 26 : 38) * dt;
   }
   s = Math.max(0, Math.min(veh.vmax, s));
   var pz = state.pos + PLAYERZ, pSeg = segAt(pz), zi = pSeg.zone;
@@ -1143,8 +1201,16 @@ function update(dt){
       if (c.dir < 0 || cs.lanes === 4 || c.pull > .3) return;
       var cv = c.spd >= 0 ? c.spd : cSpd;
       if (gap > 0 && gap < 9*M && s > cv){
-        s = Math.max(cv, s - 60*dt*(1 - gap/(9*M)));
-        if (gap < 5*M){ s = Math.min(s, cv); if (!c.warned){ c.warned = true; toast('TOO CLOSE', 'Trotros stop anywhere. Leave a gap.', '#ffb400', 2); } }
+        if (s - cv > 22){
+          if (gap < 3.2*M){
+            var imp = s - cv; s = cv * .5; state.pos -= 1.2*M; state.bumps++; blip('skid'); blip('bump'); crashFX('rear'); c.warned = true;
+            state.crashLog.push({kind:'Rear-end', where: route.zones[cs.zone].name, imp: Math.round(imp)});
+            toast('REAR-END', 'You hit it ' + Math.round(imp) + ' km/h faster than it was going. Leave a gap.', '#ff5a47', 2.8);
+          }
+        } else {
+          s = Math.max(cv, s - 60*dt*(1 - gap/(9*M)));
+          if (gap < 5*M){ s = Math.min(s, cv); if (!c.warned){ c.warned = true; toast('TOO CLOSE', 'Trotros stop anywhere. Leave a gap.', '#ffb400', 2); } }
+        }
       }
       return;
     }
@@ -1152,12 +1218,14 @@ function update(dt){
     var hit = lat < thr && gap > -len*.2 && gap < len*.8;
     if (c.dir > 0){
       var cv2 = c.spd >= 0 ? c.spd : cSpd;
-      if (hit && s > cv2){ s = cv2 * .6; state.pos -= 1.5*M; state.bumps++; blip('bump'); toast('BUMP', 'You ran into the car ahead. Leave a gap.', '#ff5a47', 2); }
+      if (hit && s > cv2){ var imp2 = s - cv2; s = cv2 * .6; state.pos -= 1.5*M; state.bumps++; blip('bump'); crashFX('rear'); state.crashLog.push({kind:'Rear-end', where: route.zones[cs.zone].name, imp: Math.round(imp2)}); toast('REAR-END', 'You ran into the car ahead. Leave a gap.', '#ff5a47', 2.4); }
       if (c.ahead && gap < -len){ c.ahead = false; state.overtakes++; }
       if (!c.ahead && gap > 0) c.ahead = true;
     } else if (hit){
-      s = 0; state.freeze = 1.2; state.pos = Math.max(0, state.pos - 5*M); state.crashes++; blip('skid'); blip('crash');
-      toast('HEAD-ON', 'Only overtake when the other lane is clear.', '#ff5a47', 2.6);
+      var you = s; s = 0; state.freeze = 1.6; state.pos = Math.max(0, state.pos - 5*M); state.crashes++; blip('skid'); blip('crash'); crashFX('head');
+      state.crashLog.push({kind:'Head-on', where: route.zones[cs.zone].name, imp: Math.round(you + cSpd)});
+      if (!state.crashCardShown){ state.crashCardShown = true; state.crashCard = {you: you, them: cSpd, where: route.zones[cs.zone].name}; }
+      else toast('HEAD-ON', 'Closing speed ' + Math.round(you + cSpd) + ' km/h. Only overtake when the lane is clear.', '#ff5a47', 2.6);
       c.z = state.pos - 50*M;
     }
   });
@@ -1238,12 +1306,14 @@ function drawSegment(seg, fog){
   ctx.fillStyle = sc.grass[alt]; ctx.fillRect(0, p2.y, W, p1.y - p2.y + 1);
   if (hz > .72){ ctx.fillStyle = 'rgba(0,0,0,.035)'; ctx.fillRect(0, p2.y, W, p1.y - p2.y + 1); }
   band(p1.x,p1.y,p1.w, p2.x,p2.y,p2.w, -1.32, 1.32, sc.shoulder[alt]);
+  if (RAIN){ ctx.fillStyle = 'rgba(22,28,34,.3)'; ctx.fillRect(0, p2.y, W, p1.y - p2.y + 1); }
   if (town){
     band(p1.x,p1.y,p1.w, p2.x,p2.y,p2.w, -1.23, -1.12, '#3a3631'); band(p1.x,p1.y,p1.w, p2.x,p2.y,p2.w, 1.12, 1.23, '#3a3631');
     band(p1.x,p1.y,p1.w, p2.x,p2.y,p2.w, -1.26, -1.23, '#b3ab9c'); band(p1.x,p1.y,p1.w, p2.x,p2.y,p2.w, 1.23, 1.26, '#b3ab9c');
   }
   band(p1.x,p1.y,p1.w, p2.x,p2.y,p2.w, -1.1, 1.1, seg.sens ? (alt ? '#f1ece0' : '#c4281a') : (alt ? '#e6e0d2' : '#2b2926'));
-  band(p1.x,p1.y,p1.w, p2.x,p2.y,p2.w, -1, 1, alt ? '#57534c' : '#524e47');
+  band(p1.x,p1.y,p1.w, p2.x,p2.y,p2.w, -1, 1, RAIN ? (alt ? '#403f3c' : '#3c3b38') : (alt ? '#57534c' : '#524e47'));
+  if (RAIN && near){ band(p1.x,p1.y,p1.w, p2.x,p2.y,p2.w, -.95, .95, alt ? 'rgba(190,205,220,.07)' : 'rgba(190,205,220,.03)'); if (hz > .8){ var pd = -.8 + hash(seg.index * 2.9) * 1.3; band(p1.x,p1.y,p1.w, p2.x,p2.y,p2.w, pd, pd + .22, 'rgba(175,190,205,.2)'); } }
   if (near){
     if (hz > .9){ var pa = -.9 + hash(seg.index * 1.7) * 1.4; band(p1.x,p1.y,p1.w, p2.x,p2.y,p2.w, pa, pa + .32, 'rgba(22,20,17,.2)'); }
     var tc = seg.lanes === 4 ? [-.75, -.25, .25, .75] : [-.5, .5], tw = seg.lanes === 4 ? .06 : .1, to = seg.lanes === 4 ? .12 : .21;
@@ -1264,6 +1334,19 @@ function drawSegment(seg, fog){
   if (fog > 0.02){ ctx.fillStyle = 'rgba('+HAZE.join(',')+','+fog.toFixed(3)+')'; ctx.fillRect(0, p2.y, W, p1.y - p2.y + 1); }
 }
 function drawSky(){
+  if (RAIN){
+    var gw = ctx.createLinearGradient(0, 0, 0, HORIZON);
+    gw.addColorStop(0, '#545b61'); gw.addColorStop(.6, '#7d858a'); gw.addColorStop(1, 'rgb(' + HAZE.join(',') + ')');
+    ctx.fillStyle = gw; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(60,66,72,.35)';
+    for (var ci = 0; ci < 7; ci++){ var cx0 = ((hash(ci * 5.3) * W * 1.4 - state.skyX * 90) % (W * 1.4) + W * 1.4) % (W * 1.4) - W * .2; ctx.beginPath(); ctx.ellipse(cx0, HORIZON * (.15 + hash(ci) * .35), W * (.12 + hash(ci * 2) * .1), HORIZON * .06, 0, 0, 7); ctx.fill(); }
+    [['#7c847c', .0024, 60, .92, .35], ['#6a7368', .0042, 38, .98, .7]].forEach(function(l){
+      ctx.fillStyle = l[0]; ctx.beginPath(); ctx.moveTo(0, H);
+      for (var x = 0; x <= W; x += 8){ var xx = x + state.skyX * 900 * l[4]; ctx.lineTo(x, HORIZON*l[3] - Math.abs(Math.sin(xx*l[1]))*l[2] - Math.sin(xx*l[1]*2.7)*l[2]*.3); }
+      ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+    });
+    return;
+  }
   var g = ctx.createLinearGradient(0, 0, 0, HORIZON);
   g.addColorStop(0, '#9c8a62'); g.addColorStop(.55, '#d4bb86'); g.addColorStop(1, 'rgb(' + HAZE.join(',') + ')');
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
@@ -1547,6 +1630,7 @@ function drawVehicle(body, color, x, y, u, braking, front, slogan, spare){
     else { lg2.addColorStop(0, braking ? '#ff6a4a' : '#d63a2a'); lg2.addColorStop(1, braking ? '#e02010' : '#7e1810'); }
     ctx.fillStyle = lg2; ctx.fillRect(lx, ly, lw, lh);
     if (!front){ ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.fillRect(lx + lw*.15, ly + lh*.2, lw*.25, lh*.25); }
+    if (RAIN){ var rg = ctx.createLinearGradient(0, ly + lh, 0, ly + lh + 1.3*u); rg.addColorStop(0, front ? 'rgba(255,245,210,.35)' : 'rgba(255,60,40,.35)'); rg.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = rg; ctx.fillRect(lx + lw*.2, ly + lh, lw*.6, 1.3*u); }
     if (braking && !front){ ctx.save(); ctx.globalCompositeOperation = 'lighter'; glowAt(lx + lw/2, ly + lh/2, .85*u, 'rgba(255,50,30,A)', .5); ctx.restore(); }
   }
   function plate(py){ ctx.fillStyle = front ? '#f4f4f0' : '#f2d23a'; ctx.fillRect(x - .26*u, py, .52*u, .13*u); if (u > 40) txt(PLATE, x, py + .065*u, .1*u, 700, '#111'); }
@@ -1720,13 +1804,34 @@ function drawHUD(){
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 }
 
+function drawFX(){
+  var f = state.fx; if (!f) return;
+  if (f.red > 0){
+    var rg2 = ctx.createRadialGradient(W/2, H/2, Math.min(W, H) * .2, W/2, H/2, Math.max(W, H) * .75);
+    rg2.addColorStop(0, 'rgba(200,20,10,' + (f.red * .12).toFixed(3) + ')'); rg2.addColorStop(1, 'rgba(160,0,0,' + (f.red * .55).toFixed(3) + ')');
+    ctx.fillStyle = rg2; ctx.fillRect(0, 0, W, H);
+  }
+  if (f.crack > 0 && f.cracks){
+    var a = Math.min(1, f.crack * 1.6);
+    ctx.save(); ctx.lineJoin = 'round';
+    [[3.2, 'rgba(0,0,0,' + (a * .35).toFixed(3) + ')'], [1.4, 'rgba(240,248,255,' + (a * .85).toFixed(3) + ')']].forEach(function(st){
+      ctx.lineWidth = st[0]; ctx.strokeStyle = st[1]; ctx.beginPath();
+      f.cracks.rays.forEach(function(pts){ ctx.moveTo(pts[0][0], pts[0][1]); for (var i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]); });
+      f.cracks.rings.forEach(function(r){ ctx.moveTo(r[0], r[1]); ctx.lineTo(r[2], r[3]); });
+      ctx.stroke();
+    });
+    ctx.fillStyle = 'rgba(240,248,255,' + (a * .5).toFixed(3) + ')'; ctx.beginPath(); ctx.arc(f.cracks.cx, f.cracks.cy, 10, 0, 7); ctx.fill();
+    ctx.restore();
+  }
+}
+
 /* ---------- render ---------- */
 function render(){
   var sf = Math.max(0, Math.min(1, (state.speed - 40) / 110));
   var cd = 1 / Math.tan((50 + sf * 9) * Math.PI / 180);
   ctx.setTransform(dpr,0,0,dpr,0,0);
   var shake = state.mode === 'drive' && !state.paused ? sf * 1.4 : 0;
-  if (state.freeze > 0 && state.crashes) shake += 3;
+  if (state.fx) shake += state.fx.shake * state.fx.shake * 22;
   ctx.save();
   if (shake) ctx.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake);
   drawSky();
@@ -1767,6 +1872,7 @@ function render(){
       if (cu < .5) continue;
       ctx.save(); ctx.beginPath(); ctx.rect(0,0,W,seg.clip); ctx.clip(); ctx.globalAlpha = Math.max(0, 1 - seg.fog*1.05);
       drawVehicle(c.body, c.color, cxp, cyp, cu, c.dir > 0 && c.spd === 0, c.dir < 0, c.slogan);
+      if (RAIN && c.spd !== 0){ ctx.fillStyle = 'rgba(225,232,240,.16)'; ctx.beginPath(); ctx.ellipse(cxp - .7*cu, cyp - .25*cu, .7*cu, .35*cu, 0, 0, 7); ctx.ellipse(cxp + .7*cu, cyp - .25*cu, .7*cu, .35*cu, 0, 0, 7); ctx.fill(); }
       ctx.restore();
     }
   }
@@ -1778,7 +1884,25 @@ function render(){
     ctx.strokeText(sd + ' m', lx2, stopMark.y - 1); ctx.fillStyle = over ? '#ff8a7e' : '#ffd27a'; ctx.fillText(sd + ' m', lx2, stopMark.y - 1); ctx.restore();
   }
   var pu = cd / PLAYERZ * M * W/2, py = HORIZON + cd / PLAYERZ * CAMH * VS + state.bounce;
+  var FX = state.fx;
+  ctx.save(); if (FX.tilt){ ctx.translate(W/2, py); ctx.rotate(FX.tilt); ctx.translate(-W/2, -py - Math.abs(FX.tilt) * 60); }
   drawVehicle(veh.body, veh.color, W/2, py, pu, keys.brake || state.freeze > 0 || state.autoBrake, false, 'SEE ME AND GO', veh.spare);
+  if (RAIN && state.speed > 5){ ctx.fillStyle = 'rgba(225,232,240,.18)'; ctx.beginPath(); ctx.ellipse(W/2 - .75*pu, py - .2*pu, .8*pu, .4*pu, 0, 0, 7); ctx.ellipse(W/2 + .75*pu, py - .2*pu, .8*pu, .4*pu, 0, 0, 7); ctx.fill(); }
+  ctx.restore();
+  if (FX.spawn){
+    var ox = W/2, oy = py - pu * 1.1, kc = veh.color;
+    for (var pi2 = 0; pi2 < FX.spawn; pi2++){
+      var kind2 = pi2 % 3 === 0 ? 'metal' : pi2 % 7 === 0 ? 'dark' : 'glass';
+      FX.parts.push({k: kind2, x: ox + (Math.random() - .5) * pu * 1.4, y: oy + (Math.random() - .5) * pu * .6, vx: (Math.random() - .5) * W * (FX.kind === 'head' ? 1.1 : .6), vy: -(Math.random() * H * (FX.kind === 'head' ? .9 : .5) + 80), r: Math.random() * 6, vr: (Math.random() - .5) * 18, sz: kind2 === 'glass' ? 2 + Math.random() * 5 : 3 + Math.random() * 8, life: 1.2 + Math.random() * .9, col: kind2 === 'metal' ? kc : kind2 === 'dark' ? '#1b1b1b' : 'rgba(215,235,245,.9)'});
+    }
+    FX.spawn = 0;
+  }
+  if (FX.smoke > 0){ FX.puffT -= 1/60; if (FX.puffT <= 0){ FX.puffT = .07; FX.puffs.push({x: W/2 + (Math.random() - .5) * pu * .8, y: py - pu * 1.3, vx: (Math.random() - .5) * 30 - state.speed * .1, vy: -40 - Math.random() * 40, rad: pu * .3, life: 1.6, max: 1.6, dark: FX.kind === 'head'}); } }
+  FX.puffs.forEach(function(q){ ctx.fillStyle = (q.dark ? 'rgba(70,66,62,' : 'rgba(200,196,190,') + (.45 * q.life / q.max).toFixed(3) + ')'; ctx.beginPath(); ctx.arc(q.x, q.y, q.rad, 0, 7); ctx.fill(); });
+  FX.parts.forEach(function(p){ ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.globalAlpha = Math.min(1, p.life * 1.5); ctx.fillStyle = p.col;
+    if (p.k === 'glass'){ ctx.beginPath(); ctx.moveTo(0, -p.sz); ctx.lineTo(p.sz * .8, p.sz * .6); ctx.lineTo(-p.sz * .7, p.sz * .5); ctx.closePath(); ctx.fill(); }
+    else ctx.fillRect(-p.sz / 2, -p.sz / 4, p.sz, p.sz / 2);
+    ctx.restore(); });
   ctx.restore();
 
   if (sf > .05 && state.mode === 'drive' && !state.paused){
@@ -1792,10 +1916,21 @@ function render(){
     ctx.restore();
   }
   ctx.save();
-  ctx.globalCompositeOperation = 'soft-light'; ctx.fillStyle = 'rgba(255,165,50,.5)'; ctx.fillRect(0, 0, W, H);
+  ctx.globalCompositeOperation = 'soft-light'; ctx.fillStyle = RAIN ? 'rgba(90,120,150,.45)' : 'rgba(255,165,50,.5)'; ctx.fillRect(0, 0, W, H);
   ctx.globalCompositeOperation = 'source-over'; ctx.fillStyle = vignette; ctx.fillRect(0, 0, W, H);
   if (!COARSE){ ctx.globalAlpha = .06; ctx.fillStyle = grain; ctx.translate((Math.random() * 160) | 0, (Math.random() * 160) | 0); ctx.fillRect(-160, -160, W + 160, H + 160); }
   ctx.restore();
+  if (RAIN){
+    var rt = performance.now() / 1000, nR = COARSE ? 90 : 160, slant = .18 + Math.min(.5, state.speed / 220);
+    ctx.save(); ctx.strokeStyle = 'rgba(215,225,235,.34)'; ctx.lineWidth = 1.1; ctx.beginPath();
+    for (var ri = 0; ri < nR; ri++){
+      var rx = (hash(ri * 1.37) * (W + 200) - rt * 90 * slant * 3 + ri * 7) % (W + 200); if (rx < 0) rx += W + 200; rx -= 100;
+      var ry = (hash(ri * 2.11) * H + rt * (620 + hash(ri) * 300)) % H, rl = 12 + hash(ri * 3.3) * 16;
+      ctx.moveTo(rx, ry); ctx.lineTo(rx - rl * slant, ry + rl);
+    }
+    ctx.stroke(); ctx.restore();
+  }
+  drawFX(pu, py);
   if (state.flashT > 0){ ctx.fillStyle = 'rgba(255,255,255,' + (state.flashT*.75).toFixed(3) + ')'; ctx.fillRect(0,0,W,H); }
   drawHUD();
 }
@@ -1805,7 +1940,7 @@ function finish(kind){
   if (state.ended) return;
   state.ended = true; state.mode = 'done'; clearKeys(); byId('belt').hidden = true; byId('moment').hidden = true; byId('quiz').hidden = true; state.moment = null; state.quiz = null;
   if (audio.eng) try { audio.eng.g.gain.setTargetAtTime(0, audio.ctx.currentTime, .1); } catch(e){}
-  hideNotice();
+  hideNotice(); state.fx.parts = []; state.fx.puffs = []; state.fx.crack = 0; state.fx.red = 0;
   var legal = legalTime(), u = veh.dial, name = driverEl.value.trim();
   var pct = state.distM > 0 ? Math.round(100 * (1 - state.overM / state.distM)) : 100;
   var cls, head, line;
@@ -1823,6 +1958,7 @@ function finish(kind){
   var moments = state.moments.length ? state.moments.map(function(m){
     return '<div class="' + (m.ok ? 'ok' : 'bad') + '"><span>' + esc(m.who) + DOT + esc(m.where) + '<br><small style="color:var(--muted)">At ' + m.speed + ' km/h you needed ' + Math.round(m.need) + ' m; they were ' + m.D + ' m ahead. At ' + m.lim + ': ' + Math.round(m.needLim) + ' m.</small></span><span>' + (m.ok ? 'Stopped' : 'Too fast') + '</span></div>';
   }).join('') : '<div class="none">Nothing stepped out this time.</div>';
+  moments += state.crashLog.map(function(cr){ return '<div class="bad"><span>' + esc(cr.kind) + DOT + esc(cr.where) + '<br><small style="color:var(--muted)">' + (cr.kind === 'Head-on' ? 'Closing speed ' + cr.imp + ' km/h' : 'Hit ' + cr.imp + ' km/h faster than the car ahead') + '</small></span><span>Crash</span></div>'; }).join('');
   var rap = state.notices.length ? state.notices.map(function(n){ return '<div class="bad"><span>' + esc(n.title) + DOT + esc(n.where) + '</span><span>' + (n.fine ? CEDI + n.fine : 'Suspended') + '</span></div>'; }).join('') : '<div class="none">Nothing on your record.</div>';
   var good = [];
   if (state.legalCams) good.push(state.legalCams + ' camera' + (state.legalCams > 1 ? 's' : '') + ' passed legally');
@@ -1871,7 +2007,7 @@ function finish(kind){
 var last = performance.now();
 function frame(now){
   var dt = Math.min(0.05, (now - last) / 1000); last = now;
-  if (!document.hidden){ update(dt); render(); engineTick(); }
+  if (!document.hidden){ update(dt); if (!state.paused) fxTick(dt); render(); engineTick(); }
   requestAnimationFrame(frame);
 }
 resize();
