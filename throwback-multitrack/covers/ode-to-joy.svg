@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="0 0 500 500" role="img" aria-labelledby="title">
+<title id="title">Ode to Joy cover artwork</title>
+<rect width="500" height="500" fill="#37295b"/>
+<path d="M0 0h500v52H0zm0 99h500v51H0zm0 199h500v52H0zm0 100h500v51H0z" fill="#ff7953"/>
+<circle cx="250" cy="252" r="171" fill="#ffdc62"/>
+<circle cx="250" cy="252" r="136" fill="#37295b"/>
+<circle cx="250" cy="252" r="103" fill="#ffdc62"/>
+<circle cx="250" cy="252" r="67" fill="#ff7953"/>
+<path d="M49 424c63-70 124-70 186 0 65-70 127-70 216 0" fill="none" stroke="#f8efe6" stroke-width="13"/>
+<text x="34" y="95" fill="#f8efe6" font-family="Impact,Arial,sans-serif" font-size="72" font-weight="900" letter-spacing="-2">ODE</text>
+<text x="299" y="477" fill="#f8efe6" font-family="Impact,Arial,sans-serif" font-size="75" font-weight="900" letter-spacing="-2">JOY</text>
+<text x="33" y="477" fill="#ffdc62" font-family="monospace" font-size="14" letter-spacing="3">PLAY. SESSION 01</text>
+</svg>

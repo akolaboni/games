@@ -1,5 +1,26 @@
 # HANDOFF — games
 
+## Update 2026-09-25 17:15 GMT — Crate Five live for game nights
+- **Live:** https://play.kaditay.com/throwback-multitrack/ behind a shared password (Kadi: "publically deployed. but only game nights with a password"). Every file there, audio included, returns 401 until the password is entered; an unlock lasts 12 h. The gate is `~/Developer/kaditay/play/functions/throwback-multitrack/_middleware.js`, and the password is the Pages secret `GAME_NIGHT_PASSWORD`. To change it: `npx wrangler pages secret put GAME_NIGHT_PASSWORD --project-name play-kaditay`, then `npm run deploy`. The hub card stays NEXT UP, so strangers aren't sent to a locked door.
+- **Internet throwbacks crate (12 songs, live):** Kevin MacLeod tracks (CC BY 4.0) split by Demucs `htdemucs_6s` on the CPU: Monkeys Spinning Monkeys, Sneaky Snitch, Fluffing a Duck, Investigations, Local Forecast – Elevator, Carefree, Wallpaper, Pixel Peeker Polka, Scheming Weasel, Hyperfun, Kool Kats, Funkorama. Credits are on every reveal card and in MUSIC CREDITS on the start screen. Layer names come from incompetech's instrument lists plus a spectral check (for example, Monkeys is Low strings → Strings → The rest).
+- **Hits crate (not started):** real hits need audio files Kadi owns. Drop DRM-free files named `Artist - Title (Year).mp3` in `throwback-multitrack/.staging/hits/`, run `.venv/bin/python scripts/split.py --pack hits --name "Throwback hits" .staging/hits`, then `npm run deploy` in the hub. The crate picker appears automatically. Hits audio is git-ignored.
+- **Game changes:** songs have 3–5 layers (quiet stems fold into "The rest"), points run 5 → 1 across however many layers a song has, crates have their own decoy titles, generated covers vary in colour, and counters pad to two digits (the old code showed "02 / 012"). `scripts/split.py` replaced `prepare-song.mjs`, and the venv is `throwback-multitrack/.venv` (git-ignored, excluded from builds).
+- **Verified:** all 58 stems decode with zero length spread, a local round plays at 1440 px and 375 px (wrong pick drops a layer; correct pick scores; credit shows), the gate middleware passes 8 Node checks, and the live site returns 401 without the password and 200 with it. A cache-busted `game.js` contains the new code, and tooling paths fall through to the hub page.
+- **Not verified:** nobody has *listened* to the splits. Before the first game night, play each song with sound on. If one bleeds badly or the loop lands badly, set `start` or `labels` in `scripts/packs/internet.json` and rerun with `--only "<title>"`.
+
+## Update 2026-09-25 — Multitrack rack and three-choice reveal
+- Kadi asked for more visual depth and fewer text interactions. `throwback-multitrack/` now has a wood/metal rack, three illustrated record-sleeve options, and a tilted reveal card with custom SVG cover art, artist, title and year. Wrong options are crossed out and advance the stem/point countdown; correct options finish the round. The intro no longer shows the saved-result sentence.
+- The local server now serves SVG covers with the correct MIME type. Desktop and 375px phone layouts were visually checked; a wrong option crossed out and advanced the stem, and the tilted reveal displayed the custom cover and artist. Daily and practice, stem audio, timing and sharing remain. Release remains workshop-only.
+
+## Update 2026-09-25 — Multitrack arcade redesign
+- Kadi said the first game looked too much like text. Rebuilt `throwback-multitrack/index.html` and `style.css` around a playable turntable, prominent countdown, five visual channel strips with fader/LED states, and a score medal. The next channel is tappable to reveal early; point value drops from 5 to 1 as layers arrive. Daily mode and share behavior remain.
+- Checked desktop and 375px phone previews, console errors (none), and an early channel tap; the mixer moved from one to two live stems and potential points from 5 to 4.
+
+## Update 2026-09-25 — Throwback Multitrack
+- `throwback-multitrack/` now implements the requested five-stage reveal, title autocomplete, 5-to-1 scoring, daily share result, practice mode, and a real synchronized Web Audio stem loader. Three browser-synthesized public-domain demo arrangements play until a cleared throwback catalog is added.
+- `scripts/prepare-song.mjs` stages six-stem Demucs separation, aligned FFmpeg clips, and catalog metadata outside the site source. Neither tool nor a source recording is present here; separation has not run. A generated five-stem WAV fixture verified the browser loader and was removed. See `throwback-multitrack/README.md` and `DECISIONS.md`.
+- The game remains workshop-only in the Play hub. No commercial audio is in this repo or deployed.
+
 > Auto-created 2026-09-19 07:54 GMT. **Any agent working here
 > must leave this accurate before the session ends.** Contract: `~/Developer/AGENTS.md`.
 > This file is the fallback record if a chat transcript is lost.
@@ -9,7 +30,7 @@
 - Ancestral-Combat: see its own folder; served by `ancestral-combat` launch config (8741).
 
 ## In flight
-- `who-said-it/index.html`: quote attribution game (Nazi-era vs Israeli figures, 36 sourced quotes), copied from Kadi's Downloads on 2026-09-24. Workshop only and hidden on the hub. The 2026-09-24 build adds a validated source-bank check, a five-level evidence-terminal route (euphemism → explicit violence; increasing clue redaction, not a hierarchy of suffering), confidence wagers, Quick Five / Streak / Timeline / Daily modes, layered reveals, archive challenges, a post-game record recap, keyboard progression (`1` / `2` to answer, `N` for next), persistent local best score, hash-routable archive, visible source/context note, and `window.__whoSaidIt` test hook. It still needs a check of every quote and source, especially the 2026-dated ones, before it goes public.
+- `who-said-it/index.html`: quote attribution game (Nazi-era vs Zionist figures, 36 sourced quotes), copied from Kadi's Downloads on 2026-09-24. Workshop only and hidden on the hub. The 2026-09-25 combat build makes a five-round fighter match: choose a character, identify the speaker in 15 seconds; correct attribution makes the player's fighter hit the CPU; wrong/time-out triggers a counter-hit. Each hit removes 25 HP, knockout ends early, and round five compares remaining HP. The top HUD shows both fighters' health plus EVIL LEVEL meters summing language-intensity levels of sampled source-linked quotes; results name the evil-level leader for the match. Verdict cards show check/X, attribution, quote, context, source and Next; match-end recap lists each source behind each side's meter. Fighter art lives in `who-said-it/assets/archivist-3d.png` and `who-said-it/assets/advocate-3d.png`. Quick Five / Streak / Timeline / Daily modes, archive challenges, local best score and hash-routable archive remain. Still review every quote/source, especially 2026-dated ones, before public release.
 - play.kaditay.com is built in `~/Developer/kaditay/play` (own repo).
 
 ## Next
@@ -36,3 +57,7 @@
 ## Do not
 - Do not gloss the name Blewu as Ewe (or any one language) in the game, the hub or anywhere else. Kadi, 2026-09-24: it tribalizes the game.
 - The preview pane throttles rAF to ~2 fps, so live play there looks frozen. Use `#test` + `__ns.tick()` to exercise the logic instead.
+
+<!-- agent-session-log: managed automatically, do not edit below -->
+Last session: claude-code · fa0b4ae2-de95-4592-9290-e31712c29522 · 2026-09-25 16:54 GMT
+Transcript backup: ~/ClaudeBackup/latest/projects/

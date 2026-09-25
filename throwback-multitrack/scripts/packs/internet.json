@@ -1,0 +1,217 @@
+{
+  "pack": {
+    "id": "internet",
+    "name": "Internet throwbacks",
+    "blurb": "The free songs behind a decade of YouTube videos.",
+    "decoys": [
+      "Hitman",
+      "Life of Riley",
+      "Amazing Plan",
+      "Merry Go",
+      "Cipher",
+      "Run Amok",
+      "The Builder",
+      "Sneaky Adventure",
+      "Spazzmatica Polka",
+      "Airport Lounge",
+      "Cut and Run",
+      "Volatile Reaction",
+      "Lobby Time",
+      "Off to Osaka",
+      "Batty McFaddin",
+      "Fig Leaf Rag",
+      "Rhinoceros",
+      "Pamgaea",
+      "Bossa Antigua",
+      "Hep Cats",
+      "Vivacity",
+      "Presenterator",
+      "Blip Stream",
+      "Ouroboros",
+      "Deliberate Thought",
+      "Crinoline Dreams",
+      "Wholesome",
+      "Easy Lemon",
+      "Chill Wave",
+      "Two Finger Johnny"
+    ]
+  },
+  "songs": [
+    {
+      "file": ".staging/src/Monkeys Spinning Monkeys.mp3",
+      "title": "Monkeys Spinning Monkeys",
+      "artist": "Kevin MacLeod",
+      "year": 2014,
+      "bpm": 144,
+      "credit": {
+        "text": "“Monkeys Spinning Monkeys” Kevin MacLeod (incompetech.com). Licensed under Creative Commons: By Attribution 4.0. Excerpted and split into instrument stems for this game.",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400011",
+        "license": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "labels": {
+        "guitar": "Low strings",
+        "piano": "Strings"
+      }
+    },
+    {
+      "file": ".staging/src/Sneaky Snitch.mp3",
+      "title": "Sneaky Snitch",
+      "artist": "Kevin MacLeod",
+      "year": 2010,
+      "bpm": 87,
+      "credit": {
+        "text": "“Sneaky Snitch” Kevin MacLeod (incompetech.com). Licensed under Creative Commons: By Attribution 4.0. Excerpted and split into instrument stems for this game.",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100772",
+        "license": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "labels": {
+        "guitar": "Strings"
+      }
+    },
+    {
+      "file": ".staging/src/Fluffing a Duck.mp3",
+      "title": "Fluffing a Duck",
+      "artist": "Kevin MacLeod",
+      "year": 2010,
+      "bpm": 122,
+      "credit": {
+        "text": "“Fluffing a Duck” Kevin MacLeod (incompetech.com). Licensed under Creative Commons: By Attribution 4.0. Excerpted and split into instrument stems for this game.",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100768",
+        "license": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "labels": {
+        "drums": "Percussion",
+        "guitar": "Low end"
+      }
+    },
+    {
+      "file": ".staging/src/Investigations.mp3",
+      "title": "Investigations",
+      "artist": "Kevin MacLeod",
+      "year": 2009,
+      "bpm": 94,
+      "credit": {
+        "text": "“Investigations” Kevin MacLeod (incompetech.com). Licensed under Creative Commons: By Attribution 4.0. Excerpted and split into instrument stems for this game.",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100646",
+        "license": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "labels": {
+        "drums": "Percussion",
+        "guitar": "Pizzicato",
+        "piano": "Mallets"
+      }
+    },
+    {
+      "file": ".staging/src/Local Forecast - Elevator.mp3",
+      "title": "Local Forecast – Elevator",
+      "artist": "Kevin MacLeod",
+      "year": 2013,
+      "bpm": 82,
+      "credit": {
+        "text": "“Local Forecast - Elevator” Kevin MacLeod (incompetech.com). Licensed under Creative Commons: By Attribution 4.0. Excerpted and split into instrument stems for this game.",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1300012",
+        "license": "https://creativecommons.org/licenses/by/4.0/"
+      }
+    },
+    {
+      "file": ".staging/src/Carefree.mp3",
+      "title": "Carefree",
+      "artist": "Kevin MacLeod",
+      "year": 2014,
+      "bpm": 96,
+      "credit": {
+        "text": "“Carefree” Kevin MacLeod (incompetech.com). Licensed under Creative Commons: By Attribution 4.0. Excerpted and split into instrument stems for this game.",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400037",
+        "license": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "labels": {
+        "drums": "Percussion",
+        "bass": "Low end",
+        "piano": "Mallets"
+      }
+    },
+    {
+      "file": ".staging/src/Wallpaper.mp3",
+      "title": "Wallpaper",
+      "artist": "Kevin MacLeod",
+      "year": 2011,
+      "bpm": 92,
+      "credit": {
+        "text": "“Wallpaper” Kevin MacLeod (incompetech.com). Licensed under Creative Commons: By Attribution 4.0. Excerpted and split into instrument stems for this game.",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100843",
+        "license": "https://creativecommons.org/licenses/by/4.0/"
+      }
+    },
+    {
+      "file": ".staging/src/Pixel Peeker Polka - faster.mp3",
+      "title": "Pixel Peeker Polka",
+      "artist": "Kevin MacLeod",
+      "year": 2011,
+      "bpm": 144,
+      "credit": {
+        "text": "“Pixel Peeker Polka - faster” Kevin MacLeod (incompetech.com). Licensed under Creative Commons: By Attribution 4.0. Excerpted and split into instrument stems for this game.",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100833",
+        "license": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "labels": {
+        "other": "Synths"
+      }
+    },
+    {
+      "file": ".staging/src/Scheming Weasel faster.mp3",
+      "title": "Scheming Weasel",
+      "artist": "Kevin MacLeod",
+      "year": 2006,
+      "bpm": 168,
+      "credit": {
+        "text": "“Scheming Weasel (faster version)” Kevin MacLeod (incompetech.com). Licensed under Creative Commons: By Attribution 4.0. Excerpted and split into instrument stems for this game.",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100085",
+        "license": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "labels": {
+        "drums": "Percussion",
+        "guitar": "Low end"
+      }
+    },
+    {
+      "file": ".staging/src/Hyperfun.mp3",
+      "title": "Hyperfun",
+      "artist": "Kevin MacLeod",
+      "year": 2014,
+      "bpm": 200,
+      "credit": {
+        "text": "“Hyperfun” Kevin MacLeod (incompetech.com). Licensed under Creative Commons: By Attribution 4.0. Excerpted and split into instrument stems for this game.",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1400038",
+        "license": "https://creativecommons.org/licenses/by/4.0/"
+      },
+      "labels": {
+        "guitar": "Ukulele",
+        "piano": "Piano"
+      }
+    },
+    {
+      "file": ".staging/src/Kool Kats.mp3",
+      "title": "Kool Kats",
+      "artist": "Kevin MacLeod",
+      "year": 2009,
+      "bpm": 113,
+      "credit": {
+        "text": "“Kool Kats” Kevin MacLeod (incompetech.com). Licensed under Creative Commons: By Attribution 4.0. Excerpted and split into instrument stems for this game.",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100601",
+        "license": "https://creativecommons.org/licenses/by/4.0/"
+      }
+    },
+    {
+      "file": ".staging/src/Funkorama.mp3",
+      "title": "Funkorama",
+      "artist": "Kevin MacLeod",
+      "year": 2008,
+      "bpm": 101,
+      "credit": {
+        "text": "“Funkorama” Kevin MacLeod (incompetech.com). Licensed under Creative Commons: By Attribution 4.0. Excerpted and split into instrument stems for this game.",
+        "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100474",
+        "license": "https://creativecommons.org/licenses/by/4.0/"
+      }
+    }
+  ]
+}
