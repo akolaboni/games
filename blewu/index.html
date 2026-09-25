@@ -74,13 +74,14 @@ a{color:inherit}
 .rule{margin:14px auto 0;max-width:34ch;font-size:clamp(17px,2.2vw,21px);line-height:1.35;font-weight:600;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.8)}
 .rule em{font-style:normal;color:var(--ok)}
 .rule .red{color:var(--bad)}
+.rule-sub:empty{display:none}
 .rule-sub{margin:8px auto 0;max-width:44ch;font-size:14.5px;color:#f1e3c4;text-shadow:0 1px 4px rgba(0,0,0,.9)}
 .plate{display:inline-flex;flex-wrap:wrap;justify-content:center;margin-top:16px;pointer-events:auto;transform:skewX(-12deg);background:rgba(10,10,12,.85);box-shadow:inset 3px 0 0 var(--amber)}
 .plate > button{transform:skewX(12deg);background:none;border:0;padding:8px 15px;text-align:left;min-height:44px}
 .plate .k{display:block;font-family:var(--race);font-style:italic;font-weight:800;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber)}
 .plate .v{display:block;font-family:var(--display);font-weight:700;font-size:16px}
 .plate .v::after{content:" \25BE";color:var(--amber);font-size:12px}
-.press{display:inline-block;margin-top:14px;padding:8px 18px;background:rgba(10,10,12,.78);transform:skewX(-12deg);font-family:var(--race);font-style:italic;font-weight:800;font-size:15px;letter-spacing:.16em;text-transform:uppercase;color:#fff;text-shadow:0 0 16px rgba(255,180,0,.8);animation:blink 1.1s steps(2,start) infinite}
+.press{display:table;margin:14px auto 0;padding:8px 18px;background:rgba(10,10,12,.78);transform:skewX(-12deg);font-family:var(--race);font-style:italic;font-weight:800;font-size:15px;letter-spacing:.16em;text-transform:uppercase;color:#fff;text-shadow:0 0 16px rgba(255,180,0,.8);animation:blink 1.1s steps(2,start) infinite}
 @keyframes blink{50%{opacity:.3}}
 kbd{font-family:var(--race);font-style:normal;font-weight:800;border:1.5px solid currentColor;border-radius:3px;padding:0 5px;font-size:.9em}
 @media (prefers-reduced-motion: reduce){ .press{animation:none} }
@@ -283,7 +284,7 @@ details[open] summary{margin-bottom:10px}
   <div class="intro" id="intro">
     <div class="tag">Ghana&rsquo;s new speed limits</div>
     <h1>Blewu<b>.</b></h1>
-    <p class="rule">Every sign is in km/h. Keep your needle in the <em>green</em>. Go into the <span class="red">red</span> and a camera can fine you.</p>
+    <p class="rule">Keep your needle in the <em>green</em>.</p>
     <p class="rule-sub" id="introSub"></p>
     <div class="plate">
       <button id="introRoute"><span class="k">Road</span><span class="v" id="introRouteV"></span></button>
@@ -573,8 +574,7 @@ function refreshIntro(){
   byId('introRouteV').textContent = r.name;
   byId('introWxV').textContent = opt.rain ? 'Rain' : 'Dry';
   byId('introHint').innerHTML = COARSE ? 'Hold Gas to drive' + (opt.steer ? DOT + 'swipe to steer' : '') : 'Hold <kbd>↑</kbd> to drive' + (opt.steer ? DOT + '<kbd>←</kbd><kbd>→</kbd> steer' : '') + DOT + '<kbd>H</kbd> horn';
-  byId('introSub').textContent = (v.dial === 'mph' ? 'Your ' + v.name + '’s dial is in mph, so a 50 sign is 31 on your dial. ' : '') +
-    (v.cls === 'heavy' ? 'Heavy vehicles get lower limits on open roads. ' : '') + (opt.rain ? 'Wet road: braking distance doubles. ' : '') + (LIVE ? 'Cameras are live.' : 'Cameras go live 1 October.');
+  byId('introSub').textContent = (v.dial === 'mph' ? 'Your dial is in mph: a 50 sign is ' + Math.round(50 / KMH_PER_MPH) + ' on it. ' : '') + (v.cls === 'heavy' ? 'Heavy vehicles have lower limits than the signs show. ' : '') + (opt.rain ? 'Wet road: braking distance doubles.' : '');
   byId('steerPad').hidden = true;
 }
 byId('vehicles').addEventListener('change', function(e){ chosenV = e.target.value; save('ns-vehicle', chosenV); readyGame(); drillReset(); });
@@ -2025,15 +2025,15 @@ function drawHUD(){
     ctx.restore();
   });
   state.msgs.forEach(function(m){
-    var a = Math.min(1, m.t / .4), y = dcy - R*1.3 - 36;
+    var a = Math.min(1, m.t / .4), side = !centerCluster, y = side ? top + 106 + (chips ? chips.length : 0) * 30 : dcy - R*1.3 - 36; // wide screens: under the notices counter, in the sky
     ctx.globalAlpha = a;
     ctx.font = 'italic 900 18px "Exo 2", sans-serif'; var w1 = ctx.measureText(m.text).width;
     ctx.font = '500 13px Barlow, sans-serif'; var w2 = ctx.measureText(m.sub).width;
-    var tw = Math.min(hw - 40, Math.max(w1, w2) + 40);
-    skewBox(hw/2 - tw/2, y - 22, tw, 46, 'rgba(8,8,10,.8)');
-    ctx.fillStyle = m.color; ctx.fillRect(hw/2 - tw/2 - 8, y - 18, 3, 38);
-    rtext(m.text, hw/2, y - 7, 18, m.color, 'center', 900);
-    ctx.fillStyle = '#e8e2d4'; ctx.font = '500 13px Barlow, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(m.sub, hw/2, y + 12, tw - 24);
+    var tw = Math.min(side ? Math.min(420, hw * .42) : hw - 40, Math.max(w1, w2) + 40), bx = side ? hw - tw - 22 : hw/2 - tw/2, cx0 = bx + tw/2;
+    skewBox(bx, y - 22, tw, 46, 'rgba(8,8,10,.8)');
+    ctx.fillStyle = m.color; ctx.fillRect(bx - 8, y - 18, 3, 38);
+    rtext(m.text, cx0, y - 7, 18, m.color, 'center', 900);
+    ctx.fillStyle = '#e8e2d4'; ctx.font = '500 13px Barlow, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(m.sub, cx0, y + 12, tw - 24);
     ctx.globalAlpha = 1;
   });
   if (state.paused && !state.moment && !state.quiz){
