@@ -1,5 +1,14 @@
 # HANDOFF — games
 
+## Update 2026-09-25 19:22 UTC — Crate Five compact UI live
+- Kadi explicitly approved deploying the compact UI behind the existing game-night password after automatic review first rejected publication. `npm run deploy` succeeded (deployment `018ce8f0.play-kaditay.pages.dev`). Live game and audio return 401 without the password; unlock redirects 303; authenticated game, CSS, logo, identity board and audio return 200. The live game HTML contains the new SVG logo and play-next control; CSS contains the sleeve motion. Home and Blewu still return 200.
+- The compact one-screen rack, circular play-next action, animated sleeves, SVG wordmark, and brand board are live behind the gate. Local preview: `http://localhost:4324/`; public route: `https://play.kaditay.com/throwback-multitrack/`.
+
+## Update 2026-09-25 — Crate Five compact rack and identity study
+- Kadi asked for the next-song action to look like Play, animated answer sleeves, a one-screen layout, and name/logo/mood exploration. The game now places deck and mixer side by side on desktop, with the three answer sleeves below; the main round fits at desktop and 375px phone sizes. Sleeves deal in, spin their mini record and react to wrong picks. The result's next action is a large circular play control, moved above the full CC BY credit so it is visible on a phone.
+- Working identity: `brand/identity.html`, `brand/crate-five-logo.svg`, `brand/crate-five-icon.svg`, and `brand/NAME.md`. “Crate Five” is a provisional name, not trademark-cleared; the public slug is unchanged. The identity board was checked at desktop and 375px with no horizontal overflow.
+- Verified against the 12-song crate: Local Forecast round showed year/stems/options, correct sleeve produced the cover/artist/credit, and the play control started Monkeys Spinning Monkeys with score carried forward. Local build and syntax checks pass. The UI was deployed behind the existing game-night gate at 19:22 UTC.
+
 ## Update 2026-09-25 17:15 GMT — Crate Five live for game nights
 - **Live:** https://play.kaditay.com/throwback-multitrack/ behind a shared password (Kadi: "publically deployed. but only game nights with a password"). Every file there, audio included, returns 401 until the password is entered; an unlock lasts 12 h. The gate is `~/Developer/kaditay/play/functions/throwback-multitrack/_middleware.js`, and the password is the Pages secret `GAME_NIGHT_PASSWORD`. To change it: `npx wrangler pages secret put GAME_NIGHT_PASSWORD --project-name play-kaditay`, then `npm run deploy`. The hub card stays NEXT UP, so strangers aren't sent to a locked door.
 - **Internet throwbacks crate (12 songs, live):** Kevin MacLeod tracks (CC BY 4.0) split by Demucs `htdemucs_6s` on the CPU: Monkeys Spinning Monkeys, Sneaky Snitch, Fluffing a Duck, Investigations, Local Forecast – Elevator, Carefree, Wallpaper, Pixel Peeker Polka, Scheming Weasel, Hyperfun, Kool Kats, Funkorama. Credits are on every reveal card and in MUSIC CREDITS on the start screen. Layer names come from incompetech's instrument lists plus a spectral check (for example, Monkeys is Low strings → Strings → The rest).
@@ -59,5 +68,5 @@
 - The preview pane throttles rAF to ~2 fps, so live play there looks frozen. Use `#test` + `__ns.tick()` to exercise the logic instead.
 
 <!-- agent-session-log: managed automatically, do not edit below -->
-Last session: claude-code · fa0b4ae2-de95-4592-9290-e31712c29522 · 2026-09-25 16:54 GMT
+Last session: claude-code · fa0b4ae2-de95-4592-9290-e31712c29522 · 2026-09-25 17:12 GMT
 Transcript backup: ~/ClaudeBackup/latest/projects/
