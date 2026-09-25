@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="260" viewBox="0 0 900 260" role="img" aria-labelledby="title">
+<title id="title">Crate Five working wordmark</title>
+<g fill="#17232c">
+<text x="16" y="194" font-family="Impact,Arial Black,sans-serif" font-size="225" font-weight="900" letter-spacing="-13">CRATE</text>
+<rect x="26" y="218" width="78" height="10"/><rect x="115" y="218" width="78" height="10"/><rect x="204" y="218" width="78" height="10"/><rect x="293" y="218" width="78" height="10"/><rect x="382" y="218" width="78" height="10"/>
+</g>
+<g transform="translate(673 25) rotate(-9 100 105)"><rect x="4" y="6" width="188" height="216" fill="#17232c"/><rect width="188" height="216" fill="#ef674d"/><text x="21" y="187" fill="#17232c" font-family="Impact,Arial Black,sans-serif" font-size="220" font-weight="900">5</text><path d="M18 18h16m10 0h16m10 0h16m10 0h16m10 0h16" stroke="#ffdc62" stroke-width="6"/></g>
+</svg>

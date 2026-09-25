@@ -1,5 +1,7 @@
 # Crate Five (throwback-multitrack)
 
+`brand/identity.html` is the working name, logo, and mood study. “Crate Five” is in the current UI; the public slug remains `/throwback-multitrack/` until the name is approved.
+
 A static browser game based on [Chris Cruise's cumulative track-reveal challenge](https://www.tiktok.com/@djchriscruise/video/7687979489258638606). A song plays one instrument layer at a time: drums, then bass, then the rest. Pick the right record sleeve out of three before the full mix. Guessing on the first layer is worth 5 points and on the full mix 1. A wrong sleeve is crossed out and drops the next layer. There is a daily puzzle with a spoiler-free share result, plus practice mode.
 
 Live for game nights at **https://play.kaditay.com/throwback-multitrack/**, behind a shared password (see "Game-night password").

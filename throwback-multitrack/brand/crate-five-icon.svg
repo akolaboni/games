@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-labelledby="title">
+<title id="title">Crate Five icon</title>
+<rect width="256" height="256" rx="42" fill="#17232c"/>
+<path d="M24 44h208v168H24z" fill="#ef674d" stroke="#ffdc62" stroke-width="7"/>
+<circle cx="126" cy="128" r="73" fill="#17232c"/><circle cx="126" cy="128" r="58" fill="none" stroke="#415160" stroke-width="5"/><circle cx="126" cy="128" r="42" fill="#ffdc62"/>
+<text x="91" y="166" fill="#17232c" font-family="Impact,Arial Black,sans-serif" font-size="103" font-weight="900">5</text>
+<path d="M42 228h28m11 0h28m11 0h28m11 0h28m11 0h28" stroke="#ffdc62" stroke-width="8"/>
+</svg>
