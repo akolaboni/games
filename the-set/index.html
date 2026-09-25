@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#141b18">
+  <meta name="description" content="Six songs, two ways to play, one carefully ordered set. Guess the song. Finish the lyric. Stay for the video.">
+  <title>The Set — a video music game from play.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page">
+    <header class="site-head">
+      <a href="https://play.kaditay.com/" class="back">↖ <span>PLAY.</span></a>
+      <div class="head-right"><span>MADE IN ACCRA</span><span class="head-spark" aria-hidden="true">✳</span><span>VOL. 001</span></div>
+    </header>
+
+    <main>
+      <section id="intro" class="intro" aria-labelledby="intro-title">
+        <div class="intro-left">
+          <div class="eyebrow"><span class="live-dot"></span> A MUSIC GAME / SIX CUTS / ONE ORDER</div>
+          <h1 id="intro-title">THE<br><em>SET.</em></h1>
+          <p class="intro-lede">Guess the song. Finish the lyric.<br>Then stay for the good part.</p>
+          <div class="intro-actions">
+            <button id="start" class="button primary" type="button">DROP THE NEEDLE <span>↗</span></button>
+            <p>No frantic three-second clips. Your answer has a window; the music has all the time you want.</p>
+          </div>
+        </div>
+        <div class="intro-right" aria-label="The six-song setlist">
+          <div class="record-top"><span>SIDE A / SIX SONGS</span><span>1976—2020</span></div>
+          <div class="record-disc" aria-hidden="true"><div class="record-label"><span>PLAY.</span><strong>01—06</strong><small>THE SET</small></div></div>
+          <div class="record-bottom"><span>DISCO → POP → HIP-HOP → R&B → ELECTRONIC → AFROBEATS</span><span>33⅓</span></div>
+        </div>
+        <div class="intro-rule"><span>01 / PLAY THE VIDEO</span><span>02 / MAKE YOUR PICK</span><span>03 / KEEP LISTENING</span></div>
+      </section>
+
+      <section id="game" class="game" aria-labelledby="round-title" hidden>
+        <div class="game-top"><span id="round-count">CUT 01 / 06</span><span id="round-lane">DISCO</span><span id="round-year">1976</span></div>
+        <div class="game-grid">
+          <div class="video-column">
+            <div class="video-head"><span><i class="live-dot"></i> NOW PLAYING</span><span id="video-note">PRESS PLAY IN THE VIDEO</span></div>
+            <div class="video-frame"><div id="player"></div></div>
+            <div class="video-foot"><span>VIDEO VIA YOUTUBE</span><a id="youtube-link" href="#" target="_blank" rel="noopener noreferrer">OPEN ON YOUTUBE ↗</a></div>
+            <div id="player-error" class="player-error" hidden><p>This video cannot play here. Open it on YouTube, then skip to the next cut.</p><button id="skip" type="button">SKIP THIS CUT →</button></div>
+          </div>
+          <div class="challenge">
+            <div class="challenge-meta"><span id="challenge-type">FINISH THE LYRIC</span><span id="score">00 PTS</span></div>
+            <p id="cue" class="cue"></p>
+            <h2 id="round-title">You can dance, you can…</h2>
+            <p id="challenge-help" class="challenge-help">Hit play. The answer clock starts with the music.</p>
+            <div class="timer-row"><div class="timer-track"><div id="timer-fill" class="timer-fill"></div></div><span id="timer">0:55</span></div>
+            <div id="choices" class="choices" role="group" aria-label="Answer choices"></div>
+            <div id="result" class="result" aria-live="polite" hidden>
+              <div id="result-verdict" class="result-verdict"></div>
+              <p id="result-song" class="result-song"></p>
+              <p id="bridge" class="bridge"></p>
+              <div class="result-actions"><button id="replay" class="button secondary" type="button">↶ REPLAY</button><button id="next" class="button primary" type="button">NEXT CUT <span>→</span></button></div>
+              <p class="linger">The video keeps playing. Go when you’re ready.</p>
+            </div>
+            <p class="round-footnote">The video may show its title. Song rounds are an honour-system challenge.</p>
+          </div>
+        </div>
+        <div id="set-progress" class="set-progress" aria-label="Set progress"></div>
+      </section>
+
+      <section id="finish" class="finish" hidden aria-labelledby="finish-title">
+        <div class="eyebrow"><span class="live-dot"></span> THAT’S A WRAP / VOL. 001</div>
+        <h2 id="finish-title">GOOD<br><em>SET.</em></h2>
+        <p id="final-score" class="final-score">00 / 12 POINTS</p>
+        <p>Six eras, one trip. You can run it back, or take a song with you.</p>
+        <div class="finish-actions"><button id="again" class="button primary" type="button">RUN IT BACK ↗</button><a href="https://play.kaditay.com/" class="button secondary">MORE GAMES ↗</a></div>
+        <div id="finish-list" class="finish-list"></div>
+      </section>
+    </main>
+    <footer><span>THE SET / A GAME BY KADITAY</span><span>VIDEOS PLAY THROUGH YOUTUBE</span></footer>
+  </div>
+  <script src="setlist.js"></script>
+  <script src="game.js"></script>
+  <script src="https://www.youtube.com/iframe_api" async></script>
+</body>
+</html>

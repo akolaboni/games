@@ -1,5 +1,10 @@
 # HANDOFF — games
 
+## Update 2026-09-25 — The Set
+- New workshop source: `the-set/`. Six fixed official YouTube videos across 1976–2020, alternating song identification and short lyric completion. Time windows decrease 55 → 28 seconds, but timeout never cuts off music or locks out an answer; the player manually advances after enjoying the video.
+- The Play shelf has a NEXT UP card and SVG preview. The build passes. The game was previewed at desktop and 375px and the complete answer/reveal/final flow was checked. In the Codex in-app browser the YouTube embed reported a configuration error, while the normal watch page opened; embedded playback and clock sync need a regular-browser check before release. Review on 2026-09-26. It is not deployed and has no PL number.
+- Source decisions and the editable setlist are in `the-set/DECISIONS.md`, `the-set/README.md`, and `the-set/setlist.js`. Preserve unrelated `who-said-it` edits and untracked files.
+
 ## Update 2026-09-25 19:22 UTC — Crate Five compact UI live
 - Kadi explicitly approved deploying the compact UI behind the existing game-night password after automatic review first rejected publication. `npm run deploy` succeeded (deployment `018ce8f0.play-kaditay.pages.dev`). Live game and audio return 401 without the password; unlock redirects 303; authenticated game, CSS, logo, identity board and audio return 200. The live game HTML contains the new SVG logo and play-next control; CSS contains the sleeve motion. Home and Blewu still return 200.
 - The compact one-screen rack, circular play-next action, animated sleeves, SVG wordmark, and brand board are live behind the gate. Local preview: `http://localhost:4324/`; public route: `https://play.kaditay.com/throwback-multitrack/`.
