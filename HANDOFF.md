@@ -1,5 +1,8 @@
 # HANDOFF — games
 
+## Update 2026-09-26 — The Set playback review
+- All six official video IDs returned YouTube oEmbed 200. Arc loaded the local URL but its automated screenshot was blank, so video playback and clock sync still could not be confirmed. Next review 2026-09-27, ideally on an HTTPS preview or a normal manual browser session. Keep workshop-only.
+
 ## Update 2026-09-25 — The Set
 - New workshop source: `the-set/`. Six fixed official YouTube videos across 1976–2020, alternating song identification and short lyric completion. Time windows decrease 55 → 28 seconds, but timeout never cuts off music or locks out an answer; the player manually advances after enjoying the video.
 - The Play shelf has a NEXT UP card and SVG preview. The build passes. The game was previewed at desktop and 375px and the complete answer/reveal/final flow was checked. In the Codex in-app browser the YouTube embed reported a configuration error, while the normal watch page opened; embedded playback and clock sync need a regular-browser check before release. Review on 2026-09-26. It is not deployed and has no PL number.
