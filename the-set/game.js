@@ -2,7 +2,7 @@
   'use strict';
   const songs = window.THE_SET;
   const $ = id => document.getElementById(id);
-  const state = { index: 0, score: 0, time: 0, phase: 'intro', player: null, ready: false, timer: null, played: false };
+  const state = { index: 0, score: 0, streak: 0, time: 0, phase: 'intro', player: null, ready: false, apiFailed: false, timer: null, played: false };
   const pad = n => String(n).padStart(2, '0');
   const current = () => songs[state.index];
 
@@ -14,6 +14,32 @@
   function stopClock() {
     if (state.timer) clearInterval(state.timer);
     state.timer = null;
+  }
+
+  function playerSlot() {
+    const slot = document.createElement('div');
+    slot.id = 'player';
+    document.querySelector('.video-frame').replaceChildren(slot);
+    return slot;
+  }
+
+  function fallback(message) {
+    stopClock();
+    $('game').classList.remove('is-playing');
+    try { state.player?.destroy(); } catch { /* The embed may have failed before its API was ready. */ }
+    state.player = null;
+    const slot = playerSlot();
+    slot.className = 'video-placeholder';
+    const icon = document.createElement('span'); icon.className = 'play-glyph'; icon.textContent = '▶';
+    const title = document.createElement('strong'); title.textContent = 'THE SHOW GOES ON.';
+    const note = document.createElement('p'); note.textContent = message;
+    const link = document.createElement('a'); link.href = $('youtube-link').href; link.target = '_blank'; link.rel = 'noopener noreferrer'; link.textContent = 'WATCH ON YOUTUBE ↗';
+    link.addEventListener('click', externalPlayback);
+    slot.append(icon, title, note, link);
+    $('player-error-message').textContent = 'Use the direct video, or move to the next level.';
+    $('player-error').hidden = false;
+    $('video-note').textContent = 'EXTERNAL PLAYBACK AVAILABLE';
+    $('host-line').textContent = 'YOUR BACKUP SINGER IS HERE.';
   }
 
   function paintClock() {
@@ -42,14 +68,26 @@
     $('player-error').hidden = true;
     $('youtube-link').href = `https://www.youtube.com/watch?v=${song.video}`;
     $('video-note').textContent = 'PRESS PLAY IN THE VIDEO';
+    if (location.protocol === 'file:') {
+      fallback('This file has no web origin for YouTube playback. Use npm run dev, or open the video on YouTube and return to answer.');
+      return;
+    }
+    if (state.apiFailed) {
+      fallback('YouTube could not load in this browser. Open the song on YouTube and return to answer without a timer.');
+      return;
+    }
     if (!state.ready) {
-      $('player').innerHTML = '<div class="video-wait"><span>THE VIDEO IS LOADING</span><small>If it takes a moment, use “Open on YouTube”.</small></div>';
+      const slot = playerSlot();
+      slot.className = 'video-wait';
+      slot.innerHTML = '<span>GETTING THE VIDEO READY…</span><small>If it stays here, use “Open on YouTube”.</small>';
       return;
     }
     if (state.player) {
-      state.player.cueVideoById({ videoId: song.video, startSeconds: song.start });
+      try { state.player.cueVideoById({ videoId: song.video, startSeconds: song.start }); }
+      catch { fallback('The player could not switch videos. Open this song on YouTube and return to answer.'); }
       return;
     }
+    playerSlot();
     state.player = new YT.Player('player', {
       width: '100%', height: '100%', videoId: song.video,
       playerVars: { playsinline: 1, origin: location.origin, start: song.start, rel: 0 },
@@ -59,16 +97,20 @@
           if (event.target.getVideoData?.().video_id !== current().video) return;
           if (event.data === YT.PlayerState.PLAYING) {
             state.played = true;
-            $('video-note').textContent = 'TAKE YOUR TIME WITH THE SONG';
+            $('game').classList.add('is-playing');
+            $('host-line').textContent = 'SING IT!';
+            $('video-note').textContent = 'ON AIR / TAKE YOUR TIME';
             if (state.phase === 'answering') tickClock();
           } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.BUFFERING || event.data === YT.PlayerState.ENDED) {
             stopClock();
+            $('game').classList.remove('is-playing');
+            $('host-line').textContent = event.data === YT.PlayerState.ENDED ? 'ONE MORE TIME?' : 'PAUSED / STILL YOUR TURN';
           }
         },
-        onError() {
-          stopClock();
-          $('player-error').hidden = false;
-          $('video-note').textContent = 'VIDEO UNAVAILABLE HERE';
+        onError(event) {
+          if (event.target.getVideoData?.().video_id !== current().video) return;
+          const code = event.data;
+          queueMicrotask(() => fallback(`YouTube could not play this video here (code ${code}). Open it on YouTube and return to answer without a timer.`));
         }
       }
     });
@@ -84,12 +126,16 @@
     state.time = song.seconds;
     state.played = false;
     stopClock();
+    $('game').classList.remove('is-playing', 'celebrate', 'missed');
+    $('game').style.setProperty('--beat', `${song.motionMs || 600}ms`);
+    $('host-line').textContent = 'READY WHEN YOU ARE.';
     document.documentElement.style.setProperty('--round', song.color);
-    $('round-count').textContent = `CUT ${pad(state.index + 1)} / ${pad(songs.length)}`;
+    $('round-count').textContent = `LVL ${pad(state.index + 1)} / ${pad(songs.length)}`;
     $('round-lane').textContent = song.lane;
     $('round-year').textContent = song.year;
     $('challenge-type').textContent = song.kind === 'lyric' ? 'FINISH THE LYRIC' : 'GUESS THE SONG';
     $('score').textContent = `${pad(state.score)} PTS`;
+    $('streak').textContent = `${state.streak} STREAK`;
     $('cue').textContent = song.cue;
     $('round-title').textContent = song.prompt;
     $('challenge-help').textContent = 'Hit play. The answer clock starts with the music.';
@@ -113,9 +159,14 @@
     const correct = option === song.answer;
     const points = correct && state.played ? state.time > 0 ? 2 : 1 : 0;
     state.score += points;
+    state.streak = correct && state.played ? state.streak + 1 : 0;
     state.phase = 'reveal';
     stopClock();
+    $('player-error').hidden = true;
     $('score').textContent = `${pad(state.score)} PTS`;
+    $('streak').textContent = `${state.streak} STREAK`;
+    $('game').classList.add(correct ? 'celebrate' : 'missed');
+    $('host-line').textContent = correct ? 'THAT’S THE ONE!' : 'KEEP THE MUSIC GOING.';
     $('choices').querySelectorAll('button').forEach(button => {
       button.disabled = true;
       button.classList.toggle('right', button.querySelector('strong').textContent === song.answer);
@@ -137,24 +188,44 @@
     try { state.player?.stopVideo(); } catch { /* The player may already be unavailable. */ }
   }
 
-  $('start').addEventListener('click', () => { state.index = 0; state.score = 0; loadRound(); });
+  $('start').addEventListener('click', () => { state.index = 0; state.score = 0; state.streak = 0; loadRound(); });
   $('next').addEventListener('click', () => { state.index++; if (state.index < songs.length) loadRound(); else finish(); });
-  $('replay').addEventListener('click', () => { if (state.player) { state.player.seekTo(current().start, true); state.player.playVideo(); } });
-  $('youtube-link').addEventListener('click', () => {
+  $('replay').addEventListener('click', () => { if (state.player) { state.player.seekTo(current().start, true); state.player.playVideo(); } else $('youtube-link').click(); });
+  function externalPlayback() {
     // An unavailable embed can still be watched on YouTube. External playback is untimed.
     if (state.phase === 'answering' && !state.played) {
       state.played = true;
       state.time = 0;
       stopClock(); paintClock();
       $('challenge-help').textContent = 'Watching on YouTube? Return when ready and pick an answer for 1 point.';
+      $('host-line').textContent = 'I’LL KEEP THE BEAT HERE.';
+      $('game').classList.add('is-playing');
     }
-  });
-  $('skip').addEventListener('click', () => { state.index++; if (state.index < songs.length) loadRound(); else finish(); });
-  $('again').addEventListener('click', () => { state.index = 0; state.score = 0; loadRound(); });
+  }
+  $('youtube-link').addEventListener('click', externalPlayback);
+  $('skip').addEventListener('click', () => { state.streak = 0; state.index++; if (state.index < songs.length) loadRound(); else finish(); });
+  $('again').addEventListener('click', () => { state.index = 0; state.score = 0; state.streak = 0; loadRound(); });
 
   window.onYouTubeIframeAPIReady = () => {
+    if (state.apiFailed) return;
     state.ready = true;
     if (state.phase === 'answering' && !state.player) setPlayer(current());
   };
-  if (window.YT?.Player) window.onYouTubeIframeAPIReady();
+  if (location.protocol === 'file:') {
+    $('preview-hint').hidden = false;
+  } else if (window.YT?.Player) {
+    window.onYouTubeIframeAPIReady();
+  } else {
+    const tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    tag.async = true;
+    tag.onerror = () => { state.apiFailed = true; if (state.phase === 'answering') fallback('YouTube did not load in this browser. Open the song on YouTube and return to answer without a timer.'); };
+    document.head.append(tag);
+    setTimeout(() => {
+      if (!state.ready) {
+        state.apiFailed = true;
+        if (state.phase === 'answering') fallback('YouTube took too long to load. Open the song on YouTube and return to answer without a timer.');
+      }
+    }, 10000);
+  }
 })();

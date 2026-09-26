@@ -1,5 +1,10 @@
 # HANDOFF — games
 
+## Update 2026-09-26 — The Set arcade pass
+- `the-set/` now has the animated 2D singing host, new arcade stage and answer card, streak display, a zero-dependency `npm run dev` preview server, file-URL detection, and visible YouTube playback fallback. The host's motions are hand-tuned to each song and pause with embedded playback; an idle nod remains when paused.
+- The six official uploads all returned YouTube iframe error 150 in the in-app browser. A YouTube developer sample embedded in the same game; alternate ABBA official/live/cover uploads also returned 150. Keep the original set for direct watch links and leave workshop-only until an embeddable catalogue is chosen. Review 2026-09-30. See `the-set/README.md` and `DECISIONS.md`.
+- Game flow, +1 external score and streak, desktop layout, 375px layout and Play build passed. The `file://` branch was implemented and reviewed in code; browser tooling would not open a file URL, so that exact branch could not be screenshot-verified.
+
 ## Update 2026-09-26 — The Set playback review
 - All six official video IDs returned YouTube oEmbed 200. Arc loaded the local URL but its automated screenshot was blank, so video playback and clock sync still could not be confirmed. Next review 2026-09-27, ideally on an HTTPS preview or a normal manual browser session. Keep workshop-only.
 
@@ -76,5 +81,5 @@
 - The preview pane throttles rAF to ~2 fps, so live play there looks frozen. Use `#test` + `__ns.tick()` to exercise the logic instead.
 
 <!-- agent-session-log: managed automatically, do not edit below -->
-Last session: claude-code · fa0b4ae2-de95-4592-9290-e31712c29522 · 2026-09-25 17:12 GMT
+Last session: claude-code · fa0b4ae2-de95-4592-9290-e31712c29522 · 2026-09-26 06:45 GMT
 Transcript backup: ~/ClaudeBackup/latest/projects/

@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="arcade.css">
 </head>
 <body>
   <div class="page">
@@ -28,6 +29,7 @@
             <button id="start" class="button primary" type="button">DROP THE NEEDLE <span>↗</span></button>
             <p>No frantic three-second clips. Your answer has a window; the music has all the time you want.</p>
           </div>
+          <p id="preview-hint" class="preview-hint" hidden>Opened as a file? The game will still run, but YouTube embeds need a web address. Run <code>npm run dev</code> here and open the localhost link for the full experience.</p>
         </div>
         <div class="intro-right" aria-label="The six-song setlist">
           <div class="record-top"><span>SIDE A / SIX SONGS</span><span>1976—2020</span></div>
@@ -38,16 +40,36 @@
       </section>
 
       <section id="game" class="game" aria-labelledby="round-title" hidden>
-        <div class="game-top"><span id="round-count">CUT 01 / 06</span><span id="round-lane">DISCO</span><span id="round-year">1976</span></div>
+        <div class="game-top"><span id="round-count">LVL 01 / 06</span><span id="round-lane">DISCO</span><span id="round-year">1976</span></div>
         <div class="game-grid">
           <div class="video-column">
-            <div class="video-head"><span><i class="live-dot"></i> NOW PLAYING</span><span id="video-note">PRESS PLAY IN THE VIDEO</span></div>
-            <div class="video-frame"><div id="player"></div></div>
+            <div class="stage-head"><span class="stage-kicker">★ THE SET / LIVE STAGE</span><span id="video-note">PRESS PLAY IN THE VIDEO</span></div>
+            <div class="stage-grid">
+              <div class="screen-housing">
+                <div class="screen-top"><span>01: VIDEO FEED</span><span class="screen-lights"><i></i><i></i><i></i></span></div>
+                <div class="video-frame"><div id="player"></div></div>
+                <div class="screen-bottom"><span>YOUTUBE CHANNEL</span><span class="screen-wave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></div>
+              </div>
+              <div class="host-booth" aria-label="Animated singing game host">
+                <div class="booth-top"><span>THE HOST</span><span class="booth-led"><i></i> ON MIC</span></div>
+                <div class="host-art">
+                  <svg class="mascot" viewBox="0 0 320 360" role="img" aria-label="A lime-green cartoon singer with pink headphones bops beside a microphone">
+                    <ellipse cx="160" cy="338" rx="105" ry="16" fill="#142622" opacity=".34"/>
+                    <g class="music-note note-one" fill="#ff4c91"><path d="M248 64v43a15 15 0 1 1-9-14V58l39-9v42a15 15 0 1 1-9-14V39l-21 5z"/></g>
+                    <g class="music-note note-two" fill="#ffe055"><path d="M39 89v37a13 13 0 1 1-8-12V82l32-8v36a13 13 0 1 1-8-12V65l-16 4z"/></g>
+                    <g class="mascot-body"><path d="M97 228c-29 6-43 35-43 91h213c0-55-21-83-53-91z" fill="#ff754e" stroke="#162521" stroke-width="9" stroke-linejoin="round"/><path d="M108 241c8 24 28 39 51 39 27 0 47-14 58-38" fill="none" stroke="#d95040" stroke-width="8" stroke-linecap="round"/><path d="M151 272v40m25-40v40" stroke="#fff0c8" stroke-width="7" stroke-linecap="round"/></g>
+                    <g class="mascot-head"><path d="M87 112C55 88 51 44 75 34c27-10 46 25 44 43M218 78c-2-18 17-53 44-43 24 10 20 54-12 78" fill="#c4f66a" stroke="#162521" stroke-width="9" stroke-linejoin="round"/><path d="M75 133c0-61 39-99 85-99s85 38 85 99v54c0 48-38 78-85 78s-85-30-85-78z" fill="#c4f66a" stroke="#162521" stroke-width="9"/><path d="M82 132c10-30 45-49 78-49 39 0 69 20 80 49" fill="#9fd851" opacity=".55"/><path d="M72 118C72 60 111 27 160 27s88 33 88 91" fill="none" stroke="#ff4c91" stroke-width="18" stroke-linecap="round"/><rect x="58" y="112" width="31" height="71" rx="15" fill="#f8e6ff" stroke="#162521" stroke-width="8"/><rect x="231" y="112" width="31" height="71" rx="15" fill="#f8e6ff" stroke="#162521" stroke-width="8"/><ellipse cx="127" cy="151" rx="17" ry="23" fill="#fff8ec"/><ellipse cx="193" cy="151" rx="17" ry="23" fill="#fff8ec"/><ellipse cx="130" cy="155" rx="8" ry="13" fill="#162521"/><ellipse cx="190" cy="155" rx="8" ry="13" fill="#162521"/><path d="M104 121c10-9 21-10 32-6m47 0c12-4 23-3 33 6" fill="none" stroke="#162521" stroke-width="8" stroke-linecap="round"/><ellipse cx="106" cy="187" rx="15" ry="9" fill="#ff8f98" opacity=".7"/><ellipse cx="214" cy="187" rx="15" ry="9" fill="#ff8f98" opacity=".7"/><g class="mascot-mouth"><ellipse cx="160" cy="205" rx="34" ry="28" fill="#162521"/><path d="M137 191h46c-3 9-12 13-23 13s-20-4-23-13" fill="#fff8ec"/><path d="M142 225c5-9 31-10 37 0" fill="#ff5870"/></g></g>
+                    <g class="mascot-arm"><path d="M226 254c28-16 45-37 48-58" fill="none" stroke="#ff754e" stroke-width="26" stroke-linecap="round"/><circle cx="273" cy="190" r="17" fill="#c4f66a" stroke="#162521" stroke-width="8"/><path d="m260 174 21-32" stroke="#162521" stroke-width="10" stroke-linecap="round"/><rect x="267" y="101" width="28" height="48" rx="13" fill="#f8e6ff" stroke="#162521" stroke-width="8"/></g>
+                  </svg>
+                </div>
+                <div class="booth-bottom"><span id="host-line">READY WHEN YOU ARE.</span><span class="booth-spark" aria-hidden="true">✳</span></div>
+              </div>
+            </div>
             <div class="video-foot"><span>VIDEO VIA YOUTUBE</span><a id="youtube-link" href="#" target="_blank" rel="noopener noreferrer">OPEN ON YOUTUBE ↗</a></div>
-            <div id="player-error" class="player-error" hidden><p>This video cannot play here. Open it on YouTube, then skip to the next cut.</p><button id="skip" type="button">SKIP THIS CUT →</button></div>
+            <div id="player-error" class="player-error" hidden><p id="player-error-message">Use the direct video, or move to the next level.</p><button id="skip" type="button">SKIP THIS LEVEL →</button></div>
           </div>
           <div class="challenge">
-            <div class="challenge-meta"><span id="challenge-type">FINISH THE LYRIC</span><span id="score">00 PTS</span></div>
+            <div class="challenge-meta"><span id="challenge-type">FINISH THE LYRIC</span><span class="score-wrap"><b id="streak">0 STREAK</b><b id="score">00 PTS</b></span></div>
             <p id="cue" class="cue"></p>
             <h2 id="round-title">You can dance, you can…</h2>
             <p id="challenge-help" class="challenge-help">Hit play. The answer clock starts with the music.</p>
@@ -79,6 +101,5 @@
   </div>
   <script src="setlist.js"></script>
   <script src="game.js"></script>
-  <script src="https://www.youtube.com/iframe_api" async></script>
 </body>
 </html>
