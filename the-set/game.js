@@ -1,8 +1,10 @@
 (() => {
   'use strict';
-  const songs = window.THE_SET;
+  const auditionKey = new URL(location.href).searchParams.get('audition');
+  const auditionSong = Object.hasOwn(window.AUDITION_CUTS || {}, auditionKey) ? window.AUDITION_CUTS[auditionKey] : null;
+  const songs = auditionSong ? [auditionSong] : window.THE_SET;
   const $ = id => document.getElementById(id);
-  const state = { index: 0, score: 0, streak: 0, time: 0, phase: 'intro', player: null, ready: false, apiFailed: false, timer: null, played: false };
+  const state = { index: 0, score: 0, streak: 0, time: 0, phase: 'intro', player: null, ready: false, apiFailed: false, timer: null, playerWatchdog: null, played: false, external: false };
   const pad = n => String(n).padStart(2, '0');
   const current = () => songs[state.index];
 
@@ -16,6 +18,16 @@
     state.timer = null;
   }
 
+  function clearPlayerWatchdog() {
+    if (state.playerWatchdog) clearTimeout(state.playerWatchdog);
+    state.playerWatchdog = null;
+  }
+
+  function unlockChoices() {
+    if (state.phase !== 'answering') return;
+    $('choices').querySelectorAll('button').forEach(button => { button.disabled = false; });
+  }
+
   function playerSlot() {
     const slot = document.createElement('div');
     slot.id = 'player';
@@ -25,7 +37,11 @@
 
   function fallback(message) {
     stopClock();
+    clearPlayerWatchdog();
     $('game').classList.remove('is-playing');
+    state.external = true;
+    state.played = true; // The blocked player makes this an honour-system round.
+    unlockChoices();
     try { state.player?.destroy(); } catch { /* The embed may have failed before its API was ready. */ }
     state.player = null;
     const slot = playerSlot();
@@ -40,17 +56,27 @@
     $('player-error').hidden = false;
     $('video-note').textContent = 'EXTERNAL PLAYBACK AVAILABLE';
     $('host-line').textContent = 'YOUR BACKUP SINGER IS HERE.';
+    $('challenge-help').textContent = 'No clock on this level. Watch on YouTube, then answer for 2 points.';
+    paintClock();
   }
 
   function paintClock() {
     const song = current();
+    if (state.external) {
+      $('timer').textContent = '∞';
+      $('timer').setAttribute('aria-label', 'No timer for this level');
+      $('timer-fill').style.width = '100%';
+      $('timer').classList.remove('low');
+      return;
+    }
+    $('timer').removeAttribute('aria-label');
     $('timer').textContent = `0:${pad(Math.ceil(state.time))}`;
     $('timer-fill').style.width = `${Math.max(0, state.time / song.seconds * 100)}%`;
     $('timer').classList.toggle('low', state.time <= 10);
   }
 
   function tickClock() {
-    if (state.phase !== 'answering' || !state.played || state.timer) return;
+    if (state.phase !== 'answering' || !state.played || state.external || state.timer) return;
     let last = performance.now();
     state.timer = setInterval(() => {
       const now = performance.now();
@@ -82,6 +108,14 @@
       slot.innerHTML = '<span>GETTING THE VIDEO READY…</span><small>If it stays here, use “Open on YouTube”.</small>';
       return;
     }
+    clearPlayerWatchdog();
+    const expectedVideo = song.video;
+    const expectedRound = state.index;
+    state.playerWatchdog = setTimeout(() => {
+      if (state.phase === 'answering' && state.index === expectedRound && current().video === expectedVideo) {
+        fallback('This YouTube player stayed blank. Open the song on YouTube and answer without a timer.');
+      }
+    }, 12000);
     if (state.player) {
       try { state.player.cueVideoById({ videoId: song.video, startSeconds: song.start }); }
       catch { fallback('The player could not switch videos. Open this song on YouTube and return to answer.'); }
@@ -95,8 +129,10 @@
         onReady(event) { event.target.cueVideoById({ videoId: current().video, startSeconds: current().start }); },
         onStateChange(event) {
           if (event.target.getVideoData?.().video_id !== current().video) return;
+          if (event.data === YT.PlayerState.CUED || event.data === YT.PlayerState.PLAYING) clearPlayerWatchdog();
           if (event.data === YT.PlayerState.PLAYING) {
             state.played = true;
+            unlockChoices();
             $('game').classList.add('is-playing');
             $('host-line').textContent = 'SING IT!';
             $('video-note').textContent = 'ON AIR / TAKE YOUR TIME';
@@ -125,7 +161,9 @@
     state.phase = 'answering';
     state.time = song.seconds;
     state.played = false;
+    state.external = false;
     stopClock();
+    clearPlayerWatchdog();
     $('game').classList.remove('is-playing', 'celebrate', 'missed');
     $('game').style.setProperty('--beat', `${song.motionMs || 600}ms`);
     $('host-line').textContent = 'READY WHEN YOU ARE.';
@@ -138,13 +176,14 @@
     $('streak').textContent = `${state.streak} STREAK`;
     $('cue').textContent = song.cue;
     $('round-title').textContent = song.prompt;
-    $('challenge-help').textContent = 'Hit play. The answer clock starts with the music.';
+    $('challenge-help').textContent = 'Start the video to unlock your answers. The clock follows the music.';
     $('choices').hidden = false;
     $('result').hidden = true;
     $('choices').innerHTML = '';
     song.options.forEach((option, i) => {
       const button = document.createElement('button');
       button.type = 'button'; button.className = 'choice';
+      button.disabled = true;
       button.innerHTML = `<span>${String.fromCharCode(65 + i)}</span><strong></strong><b>↗</b>`;
       button.querySelector('strong').textContent = option;
       button.addEventListener('click', () => choose(option));
@@ -157,7 +196,8 @@
     if (state.phase !== 'answering') return;
     const song = current();
     const correct = option === song.answer;
-    const points = correct && state.played ? state.time > 0 ? 2 : 1 : 0;
+    let points = 0;
+    if (correct && state.played) points = state.external || state.time > 0 ? 2 : 1;
     state.score += points;
     state.streak = correct && state.played ? state.streak + 1 : 0;
     state.phase = 'reveal';
@@ -172,7 +212,7 @@
       button.classList.toggle('right', button.querySelector('strong').textContent === song.answer);
       button.classList.toggle('wrong', button.querySelector('strong').textContent === option && !correct);
     });
-    $('result-verdict').textContent = correct ? points === 2 ? 'RIGHT ON TIME · +2' : points === 1 ? 'RIGHT ANSWER · +1' : 'RIGHT ANSWER · PLAY FIRST FOR POINTS' : 'NOT THIS ONE · +0';
+    $('result-verdict').textContent = correct ? points === 2 ? state.external ? 'RIGHT ANSWER · +2' : 'RIGHT ON TIME · +2' : points === 1 ? 'RIGHT ANSWER · +1' : 'RIGHT ANSWER · PLAY FIRST FOR POINTS' : 'NOT THIS ONE · +0';
     $('result-song').textContent = `${song.title} — ${song.artist}`;
     $('bridge').textContent = song.bridge;
     $('result').hidden = false;
@@ -181,7 +221,7 @@
   }
 
   function finish() {
-    state.phase = 'finish'; stopClock();
+    state.phase = 'finish'; stopClock(); clearPlayerWatchdog();
     $('final-score').textContent = `${pad(state.score)} / ${pad(songs.length * 2)} POINTS`;
     $('finish-list').innerHTML = songs.map((song, i) => `<a href="https://www.youtube.com/watch?v=${song.video}" target="_blank" rel="noopener noreferrer"><span>${pad(i + 1)} / ${song.year}</span><strong>${song.title}</strong><em>${song.artist}</em><b>↗</b></a>`).join('');
     show('finish');
@@ -192,12 +232,13 @@
   $('next').addEventListener('click', () => { state.index++; if (state.index < songs.length) loadRound(); else finish(); });
   $('replay').addEventListener('click', () => { if (state.player) { state.player.seekTo(current().start, true); state.player.playVideo(); } else $('youtube-link').click(); });
   function externalPlayback() {
-    // An unavailable embed can still be watched on YouTube. External playback is untimed.
-    if (state.phase === 'answering' && !state.played) {
+    // Direct YouTube playback never loses the time bonus to an unavailable embed.
+    if (state.phase === 'answering') {
       state.played = true;
-      state.time = 0;
+      state.external = true;
+      unlockChoices();
       stopClock(); paintClock();
-      $('challenge-help').textContent = 'Watching on YouTube? Return when ready and pick an answer for 1 point.';
+      $('challenge-help').textContent = 'No clock on this level. Return when ready and answer for 2 points.';
       $('host-line').textContent = 'I’LL KEEP THE BEAT HERE.';
       $('game').classList.add('is-playing');
     }
@@ -205,6 +246,14 @@
   $('youtube-link').addEventListener('click', externalPlayback);
   $('skip').addEventListener('click', () => { state.streak = 0; state.index++; if (state.index < songs.length) loadRound(); else finish(); });
   $('again').addEventListener('click', () => { state.index = 0; state.score = 0; state.streak = 0; loadRound(); });
+
+  if (auditionSong) {
+    document.querySelector('.back').href = 'audition.html';
+    document.querySelector('.back span').textContent = 'AUDITION';
+    document.querySelector('.finish-actions a').href = 'audition.html';
+    document.querySelector('.finish-actions a').textContent = 'OTHER CANDIDATES ↗';
+    document.querySelector('.finish>p:not(.final-score)').textContent = 'One candidate heard. Compare the others in the audition room.';
+  }
 
   window.onYouTubeIframeAPIReady = () => {
     if (state.apiFailed) return;
@@ -228,4 +277,5 @@
       }
     }, 10000);
   }
+  if (auditionSong) loadRound();
 })();

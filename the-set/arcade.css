@@ -17,6 +17,7 @@ body{background:#201930;color:var(--paper)}
 .record-disc{background:repeating-radial-gradient(circle,#1d1930 0 4px,#37324e 5px 6px,#1d1930 7px 11px);box-shadow:9px 12px 0 #b28a1a}
 .record-label{background:var(--pink);border-color:#e33679}
 .preview-hint{max-width:535px;margin:24px 0 0;padding:13px 16px;border:2px dashed var(--pink);background:#422c55;color:#fff0f7;font-size:13px;line-height:1.45}
+.audition-link{display:inline-block;margin-top:17px;color:var(--yellow);font:700 11px var(--mono);letter-spacing:.06em;text-decoration-thickness:2px;text-underline-offset:5px}.audition-link:hover{color:var(--lime)}
 .preview-hint code{font:700 12px var(--mono);color:var(--round)}
 
 .game{padding-top:24px}
@@ -92,6 +93,7 @@ body{background:#201930;color:var(--paper)}
 .choice strong{font-size:clamp(14px,1.4vw,19px)}
 .choice b{font-size:18px}
 .choice.right{background:#98e66d;border-color:#178132}.choice.wrong{background:#ff7f8d;border-color:#ad2030}
+.choice:disabled:not(.right):not(.wrong){opacity:.58;cursor:not-allowed;box-shadow:none}
 .result{border-top:2px solid #9a86ad;margin-top:18px;padding-top:15px}
 .result-verdict{color:#b42161;background:#ffd7e8;display:inline-block;padding:4px 7px}
 .result-song{color:var(--ink)}.bridge{color:#514966}

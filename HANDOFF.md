@@ -1,5 +1,10 @@
 # HANDOFF — games
 
+## Update 2026-09-27 — The Set scoring fix and embeddable auditions
+- Fixed `the-set/game.js` scoring: a blocked embed becomes an untimed honour-system round worth 2 points for a correct answer. Answer buttons stay locked until embedded playback begins, so pressing an answer during YouTube startup cannot incorrectly score 0. A blank player falls back after 12 seconds. Verified a perfect 12/12 fallback run, 0 for a wrong answer, 2 while embedded playback was inside the timer, and 1 after it expired.
+- Added `the-set/audition.html` and `audition-set.js`: three separate one-song previews using the same game player. Kina Grannis “In Your Arms,” TheFatRat “Unity,” and NEFFEX “Fight Back” loaded YouTube play controls in the local in-app browser; Kina and NEFFEX were played to verify playback events. The audition board is at `http://127.0.0.1:4329/audition.html` while `npm run dev` is running.
+- The original six-song catalogue remains unchanged and continues to use direct-link fallback for blocked embeds. The game stays workshop-only with no PL number. A full replacement set still needs Kadi's music choice and lyric review. Review 2026-09-30. Unrelated `who-said-it` changes remain untouched.
+
 ## Update 2026-09-26 — The Set arcade pass
 - `the-set/` now has the animated 2D singing host, new arcade stage and answer card, streak display, a zero-dependency `npm run dev` preview server, file-URL detection, and visible YouTube playback fallback. The host's motions are hand-tuned to each song and pause with embedded playback; an idle nod remains when paused.
 - The six official uploads all returned YouTube iframe error 150 in the in-app browser. A YouTube developer sample embedded in the same game; alternate ABBA official/live/cover uploads also returned 150. Keep the original set for direct watch links and leave workshop-only until an embeddable catalogue is chosen. Review 2026-09-30. See `the-set/README.md` and `DECISIONS.md`.
@@ -81,5 +86,5 @@
 - The preview pane throttles rAF to ~2 fps, so live play there looks frozen. Use `#test` + `__ns.tick()` to exercise the logic instead.
 
 <!-- agent-session-log: managed automatically, do not edit below -->
-Last session: claude-code · fa0b4ae2-de95-4592-9290-e31712c29522 · 2026-09-26 06:45 GMT
+Last session: claude-code · fa0b4ae2-de95-4592-9290-e31712c29522 · 2026-09-27 08:34 GMT
 Transcript backup: ~/ClaudeBackup/latest/projects/
