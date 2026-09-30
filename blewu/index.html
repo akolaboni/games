@@ -292,18 +292,43 @@ details[open] summary{margin-bottom:10px}
 .keys{margin:0;font-size:13px;color:#e9e3d6}
 .keys:empty{display:none}
 .intro .unoff{margin:2px auto 0}
-/* pedals: a thumb cluster on the right (big gas, brake, round horn), after Lagos Run */
-.pedals{display:none;position:absolute;right:0;bottom:0;width:218px;height:200px;z-index:3;pointer-events:none}
+/* pedals: sized like a car's. A wide brake pad, a narrower and taller accelerator; the horn is on the "steering wheel" side */
+.pedals{display:none;position:absolute;left:0;right:0;bottom:0;height:0;z-index:3;pointer-events:none}
 @media (pointer:coarse){ .app.driving .pedals{display:block} }
-.pedal{pointer-events:auto;position:absolute;border:0;border-radius:26px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#fff;font-family:var(--race);font-style:italic;font-weight:900;font-size:13px;letter-spacing:.08em;text-transform:uppercase;touch-action:none;user-select:none;-webkit-user-select:none;box-shadow:0 6px 0 rgba(0,0,0,.4),inset 0 2px 0 rgba(255,255,255,.25);transition:transform .06s}
-.pedal svg{width:30px;height:30px}
-.pedal.gas{right:12px;bottom:calc(14px + env(safe-area-inset-bottom,0px));width:88px;height:140px;background:linear-gradient(#45b264,#1f6e3a)}
-.pedal.brake{right:110px;bottom:calc(14px + env(safe-area-inset-bottom,0px));width:88px;height:88px;background:linear-gradient(#dd4b3c,#9a2216)}
-.pedal.horn{right:126px;bottom:calc(114px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;background:linear-gradient(#ffcb3d,#e59a00);color:#111;font-size:0}
-.pedal.horn svg{width:28px;height:28px}
-.pedal.on{filter:brightness(1.3);transform:translateY(4px)}
-@media (pointer:coarse) and (orientation:landscape){ .pedals{left:0;width:auto;height:0} .pedal.brake{left:16px;right:auto;width:96px;height:96px} .pedal.gas{right:16px;width:96px;height:148px} .pedal.horn{right:126px;bottom:calc(16px + env(safe-area-inset-bottom,0px))} }
+.pedal{pointer-events:auto;position:absolute;border:2px solid #0a0a0c;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#f2efe8;font-family:var(--race);font-style:italic;font-weight:900;font-size:12px;letter-spacing:.12em;text-transform:uppercase;touch-action:none;user-select:none;-webkit-user-select:none;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.085) 0 3px,rgba(0,0,0,0) 3px 13px),linear-gradient(#3a3a40,#1b1b1f);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.14),inset 0 -3px 0 rgba(0,0,0,.4),0 7px 0 rgba(0,0,0,.5);transform:perspective(380px) rotateX(9deg);transition:transform .06s}
+.pedal::before{content:"";position:absolute;left:10px;right:10px;top:8px;height:5px;border-radius:3px;background:var(--pc,#888)}
+.pedal svg{width:26px;height:26px;color:var(--pc,#ddd)}
+.pedal.brake{--pc:#ff5a47;right:92px;bottom:calc(16px + env(safe-area-inset-bottom,0px));width:124px;height:100px}
+.pedal.gas{--pc:#5ad27a;right:14px;bottom:calc(16px + env(safe-area-inset-bottom,0px));width:68px;height:156px}
+.pedal.horn{--pc:#ffb400;left:18px;bottom:calc(var(--dialtop,170px) + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;font-size:0;gap:0;background:radial-gradient(circle at 50% 35%,#34343a,#141417);border:3px solid var(--pc);transform:none;box-shadow:0 5px 0 rgba(0,0,0,.5)}
+.pedal.horn::before{display:none}
+.pedal.horn svg{width:26px;height:26px}
+.pedal.on{filter:brightness(1.35);transform:perspective(380px) rotateX(9deg) translateY(4px)}
+.pedal.horn.on{transform:translateY(3px)}
+@media (pointer:coarse) and (orientation:landscape){ .pedal.brake{left:18px;right:auto} .pedal.gas{right:18px} .pedal.horn{bottom:calc(132px + env(safe-area-inset-bottom,0px))} }
+/* the practice notice sits up under the HUD, never down where the dial is */
+.notice{bottom:auto;top:calc(var(--hudb,126px) + env(safe-area-inset-top,0px));left:20px;transform:translate(0,-30px);opacity:0;transition:transform .3s,opacity .3s}
+.notice.in{transform:translate(0,0);opacity:1}
+@media (max-width:760px),(orientation:portrait){ .notice{left:50%;transform:translate(-50%,-30px)} .notice.in{transform:translate(-50%,0)} }
+@media (pointer:coarse) and (orientation:landscape){ .notice{left:16px;width:min(300px,40vw);transform:translate(0,-30px)} .notice.in{transform:translate(0,0)} }
 .intro.gone .launch{pointer-events:none;visibility:hidden}
+/* short screens (a phone on its side): title smaller, Drive and the pickers side by side, steps dropped */
+@media (max-height:520px){
+  .intro{padding-top:52px;padding-bottom:10px}
+  .intro .tag,.steps,.intro .unoff,.rule-sub{display:none}
+  .intro h1{font-size:clamp(40px,13vh,64px);margin-top:2px}
+  .rulebar{margin-top:6px;height:4px}
+  .today{margin-top:6px;font-size:11px}
+  .launch{flex-direction:row;flex-wrap:wrap;align-items:stretch;gap:8px;width:min(700px,100%)}
+  .go{flex:1 1 34%;min-height:58px;font-size:22px}
+  .picks{flex:1 1 60%}
+  .picks button{min-height:62px;padding:6px 4px}
+  .picks svg{width:22px;height:22px}
+  .picks .v{font-size:12px}
+  .keys{display:none}
+}
 </style>
 </head>
 <body>
@@ -847,7 +872,9 @@ function resize(){
   hudTop = (56 / cssPer) / HS;
   pedalLog = 0; measurePedals();
   canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
-  document.documentElement.style.setProperty('--hudb', Math.round((hudTop + 70) * HS * cssPer) + 'px');
+  var wideHud = (W / HS) >= 800;
+  document.documentElement.style.setProperty('--hudb', Math.round((hudTop + (wideHud ? 70 : 112)) * HS * cssPer) + 'px');
+  document.documentElement.style.setProperty('--dialtop', Math.round((70 * 2.25 + 26) * HS * cssPer) + 'px');  // the horn sits above the dial
   vignette = ctx.createRadialGradient(W/2, H*.55, Math.min(W,H)*.35, W/2, H*.55, Math.max(W,H)*.78);
   vignette.addColorStop(0, 'rgba(20,10,0,0)'); vignette.addColorStop(1, 'rgba(20,10,0,.6)');
 }
@@ -1254,15 +1281,16 @@ function togglePause(force){
 function pop(text, sub, color, dur, big){ state.pops.push({text:text, sub:sub||'', color:color||'#fff', t:dur||1.6, d:dur||1.6, big:!!big}); if (state.pops.length > 2) state.pops.shift(); }
 function toast(text, sub, color, dur){ state.msgs.push({text:text, sub:sub||'', color:color||'#fff', t:dur||3}); if (state.msgs.length > 1) state.msgs.shift(); }
 var noticeTimer = 0;
+var noticeUntil = 0;
 function showNotice(n){
   var el = byId('notice');
   el.innerHTML = '<div class="n-top"><span>Practice notice</span><span>' + esc(n.clock) + '</span></div>' +
     '<div class="n-title">' + esc(n.title) + DOT + esc(n.ticket) + '</div>' +
     '<div class="n-grid"><span>Where</span><span>' + esc(n.where) + '</span><span class="o">Vehicle</span><span class="o">' + PLATE + '</span>' +
     '<span>Offence</span><span>' + esc(n.what) + '</span><span>Fine</span><span class="n-amt">' + (n.fine ? CEDI + n.fine + ', pay within 14 days' : 'Licence suspended') + '</span></div>';
-  el.classList.add('in'); clearTimeout(noticeTimer); noticeTimer = setTimeout(hideNotice, COARSE ? 3200 : 4200);
+  el.classList.add('in'); clearTimeout(noticeTimer); noticeTimer = setTimeout(hideNotice, COARSE ? 3200 : 4200); noticeUntil = performance.now() + (COARSE ? 3200 : 4200);
 }
-function hideNotice(){ byId('notice').classList.remove('in'); }
+function hideNotice(){ byId('notice').classList.remove('in'); noticeUntil = 0; }
 function clock(){ var d = new Date(); return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); }
 function nextFine(){ return state.flashes < 5 ? FINES[state.flashes] : 0; }
 function offence(zoneIdx, title, what){
@@ -1861,7 +1889,7 @@ function drawSprite(sp, x, y, ppm, clipY, fog, segW){
       }
       if (Hh.kind === 'goats'){ var gz = Hh.state === 'wait'; drawGoat(x - .9*hu, y, hu, '#f1ece0', gz && Math.sin(tn*1.3) > -.4); drawGoat(x + .2*hu, y + .05*hu, hu, '#6b4a2e', gz && Math.sin(tn*1.1 + 2) > -.2); drawGoat(x + 1.2*hu, y, hu, '#2b2320', gz && Math.sin(tn*.9 + 4) > 0); }
       else if (Hh.kind === 'truck'){
-        drawVehicle('truck', '#7a6a4a', x, y, u, false, false);
+        drawVehicle('truck', '#7a6a4a', x, y, u, false, false, null, false, true);
         if (Math.floor(tn / .45) % 2){ var gr = Math.max(u, 5); ctx.save(); ctx.globalCompositeOperation = 'lighter'; glowAt(x - 1*u, y - .55*u, gr, 'rgba(255,170,0,A)', .9); glowAt(x + 1*u, y - .55*u, gr, 'rgba(255,170,0,A)', .9); ctx.restore(); }
       }
       else if (Hh.kind === 'school'){
@@ -2009,7 +2037,8 @@ function flashGlow(d, gx, gy, u){ if (d.flash > 0){ ctx.save(); ctx.globalCompos
 
 function vgrad(y0, y1, col, hi, lo){ var g = ctx.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, shade(col, hi || 1.16)); g.addColorStop(.45, col); g.addColorStop(1, shade(col, lo || .68)); return g; }
 function glassFill(y0, y1){ var g = ctx.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, '#6a7c8c'); g.addColorStop(.45, '#2c3845'); g.addColorStop(1, '#141a22'); return g; }
-function drawVehicle(body, color, x, y, u, braking, front, slogan, spare){
+var CDnow = .7, DEPTH_LEN = {truck:16, coach:12, hiace:5, pickup:5.3, suv:4.7, sedan:4.5, hatch:4, taxi:4.5, trike:2.6, moto:2};
+function drawVehicle(body, color, x, y, u, braking, front, slogan, spare, depth){
   var isPolice = body === 'police'; if (isPolice) body = 'sedan';
   var dims = {sedan:[1.8,1.45], hatch:[1.7,1.5], taxi:[1.8,1.45], pickup:[1.9,1.8], suv:[1.9,1.78], hiace:[1.9,2.25], coach:[2.5,3.5], truck:[2.5,3.9], moto:[.8,1.6], trike:[1.4,1.9]}[body] || [1.8,1.45];
   var w = dims[0]*u, h = dims[1]*u, L = x - w/2, T = y - h;
@@ -2023,6 +2052,21 @@ function drawVehicle(body, color, x, y, u, braking, front, slogan, spare){
     if (RAIN){ var rg = ctx.createLinearGradient(0, ly + lh, 0, ly + lh + 1.3*u); rg.addColorStop(0, front ? 'rgba(255,245,210,.35)' : 'rgba(255,60,40,.35)'); rg.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = rg; ctx.fillRect(lx + lw*.2, ly + lh, lw*.6, 1.3*u); }
     if (braking && !front){ ctx.save(); ctx.globalCompositeOperation = 'lighter'; glowAt(lx + lw/2, ly + lh/2, .85*u, 'rgba(255,50,30,A)', .5); ctx.restore(); }
   }
+  // depth: traffic shows the roof (we look down on cars) and the side that faces the vanishing point
+  function depthFaces(){
+    var dm = Math.max(4, CDnow * W / (2 * u)), len = DEPTH_LEN[body] || 4.5, k = Math.min(.3, len / (dm + len)), vx = W / 2, vy = HORIZON;
+    var carLike = body !== 'truck' && body !== 'coach' && body !== 'hiace' && body !== 'moto' && body !== 'trike', top = carLike ? T + h * .05 : T;
+    if (carLike){
+      var cwr = (body === 'suv' ? .88 : body === 'pickup' ? .86 : .8) * w, rx0 = x - cwr / 2, rx1 = x + cwr / 2;
+      poly(rx0, top, rx1, top, rx1 + (vx - rx1) * k, top + (vy - top) * k, rx0 + (vx - rx0) * k, top + (vy - top) * k, shade(color, 1.05));
+    }
+    if (Math.abs(vx - x) > w * .35){
+      var ex = x < vx ? x + w / 2 : x - w / 2, fx = ex + (vx - ex) * k;
+      poly(ex, top, fx, top + (vy - top) * k, fx, y + (vy - y) * k, ex, y, shade(color, .58));
+      ctx.fillStyle = 'rgba(0,0,0,.16)'; ctx.beginPath(); ctx.moveTo(ex, y - h * .3); ctx.lineTo(fx, y + (vy - y) * k - h * .3 * (1 - k)); ctx.lineTo(fx, y + (vy - y) * k); ctx.lineTo(ex, y); ctx.closePath(); ctx.fill();
+    }
+  }
+  if (depth) depthFaces();
   function plate(py){ ctx.fillStyle = front ? '#f4f4f0' : '#f2d23a'; ctx.fillRect(x - .26*u, py, .52*u, .13*u); if (u > 40) txt(PLATE, x, py + .065*u, .1*u, 700, '#111'); }
   function tyres(tw, th){
     ctx.fillStyle = '#0f0f0f'; roundRect(L + .04*u, y - th, tw, th, .06*u); ctx.fill(); roundRect(L + w - .04*u - tw, y - th, tw, th, .06*u); ctx.fill();
@@ -2046,6 +2090,32 @@ function drawVehicle(body, color, x, y, u, braking, front, slogan, spare){
     plate(y - .62*u); return;
   }
   tyres(.32*u, .46*u);
+  if (body === 'truck' && front){
+    // oncoming: a cab-over tractor, with the taller trailer behind it
+    var tw2 = w * .94, tl = x - tw2 / 2, tt = y - 3.0 * u;
+    ctx.fillStyle = vgrad(T, T + 1.15 * u, shade(color, .62), 1.1, .8); ctx.fillRect(L + .05 * u, T, w - .1 * u, 1.2 * u);
+    ctx.fillStyle = 'rgba(0,0,0,.18)'; for (var tq = 0; tq < 6; tq++) ctx.fillRect(L + .1 * u + tq * (w - .2 * u) / 6, T + .05 * u, .05 * u, 1.1 * u);
+    ctx.fillStyle = vgrad(tt, y - .7 * u, color, 1.14, .7); roundRect(tl, tt, tw2, 2.3 * u, .2 * u); ctx.fill();
+    ctx.fillStyle = vgrad(tt - .1 * u, tt + .3 * u, shade(color, .82), 1.1, .7); roundRect(tl - .04 * u, tt - .1 * u, tw2 + .08 * u, .38 * u, .12 * u); ctx.fill();
+    ctx.fillStyle = '#0d0d0f'; ctx.fillRect(tl + .1 * u, tt + .36 * u, tw2 - .2 * u, .1 * u);
+    ctx.fillStyle = glassFill(tt + .46 * u, tt + 1.5 * u); roundRect(tl + .14 * u, tt + .46 * u, tw2 - .28 * u, 1.05 * u, .07 * u); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.2)'; ctx.beginPath(); ctx.moveTo(tl + .3 * u, tt + .5 * u); ctx.lineTo(tl + .95 * u, tt + .5 * u); ctx.lineTo(tl + .6 * u, tt + 1.47 * u); ctx.lineTo(tl + .24 * u, tt + 1.47 * u); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#0d0d0f'; ctx.fillRect(x - .03 * u, tt + .46 * u, .06 * u, 1.05 * u);
+    ctx.strokeStyle = 'rgba(10,10,10,.8)'; ctx.lineWidth = Math.max(1, .035 * u); ctx.beginPath(); ctx.moveTo(x - .9 * u, tt + 1.45 * u); ctx.lineTo(x - .15 * u, tt + .95 * u); ctx.moveTo(x + .15 * u, tt + 1.45 * u); ctx.lineTo(x + .9 * u, tt + .95 * u); ctx.stroke();
+    ctx.fillStyle = '#121214'; roundRect(x - .72 * u, y - 1.42 * u, 1.44 * u, .72 * u, .08 * u); ctx.fill();
+    ctx.fillStyle = '#8c8f93'; for (var gs = 0; gs < 5; gs++) ctx.fillRect(x - .66 * u, y - 1.36 * u + gs * .13 * u, 1.32 * u, .05 * u);
+    ctx.fillStyle = '#d9b43a'; ctx.beginPath(); ctx.ellipse(x, y - 1.05 * u, .16 * u, .1 * u, 0, 0, 7); ctx.fill();
+    lamp(L + .1 * u, y - 1.48 * u, .5 * u, .32 * u); lamp(L + w - .6 * u, y - 1.48 * u, .5 * u, .32 * u);
+    ctx.fillStyle = '#e9a51c'; ctx.fillRect(L + .64 * u, y - 1.4 * u, .14 * u, .16 * u); ctx.fillRect(L + w - .78 * u, y - 1.4 * u, .14 * u, .16 * u);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; glowAt(L + .35 * u, y - 1.32 * u, .9 * u, 'rgba(255,244,210,A)', .3); glowAt(L + w - .35 * u, y - 1.32 * u, .9 * u, 'rgba(255,244,210,A)', .3); ctx.restore();
+    ctx.fillStyle = vgrad(y - .72 * u, y - .42 * u, '#4a4c50', 1.4, .55); roundRect(L + .02 * u, y - .7 * u, w - .04 * u, .3 * u, .07 * u); ctx.fill();
+    plate(y - .62 * u);
+    ctx.fillStyle = '#161618'; ctx.fillRect(tl - .2 * u, tt + .6 * u, .16 * u, .5 * u); ctx.fillRect(tl + tw2 + .04 * u, tt + .6 * u, .16 * u, .5 * u);
+    ctx.fillStyle = '#101012'; roundRect(L, y - .98 * u, .62 * u, .5 * u, .16 * u); ctx.fill(); roundRect(L + w - .62 * u, y - .98 * u, .62 * u, .5 * u, .16 * u); ctx.fill();
+    var cs = ctx.createLinearGradient(tl, 0, tl + tw2, 0); cs.addColorStop(0, 'rgba(255,255,255,.14)'); cs.addColorStop(.5, 'rgba(255,255,255,0)'); cs.addColorStop(1, 'rgba(0,0,0,.26)');
+    ctx.fillStyle = cs; roundRect(tl, tt, tw2, 2.3 * u, .2 * u); ctx.fill();
+    return;
+  }
   if (body === 'truck'){
     ctx.fillStyle = vgrad(T + .2*u, y - .6*u, color, 1.08, .78); ctx.fillRect(L, T + .2*u, w, h - .8*u);
     ctx.fillStyle = 'rgba(255,255,255,.1)'; ctx.fillRect(L, T + .2*u, w*.16, h - .8*u);
@@ -2179,14 +2249,15 @@ function drawHUD(){
         break;
       }
     }
-    chips.forEach(function(cp, k){
+    var noticeOn = performance.now() < noticeUntil;  // the notice is the thing to read: chips and bubbles wait
+    if (!noticeOn) chips.forEach(function(cp, k){
       ctx.font = 'italic 800 12px "Exo 2", sans-serif'; var tw = ctx.measureText(cp[0]).width + 30, cy0 = top + (wide ? 70 : 112) + k * 30;
       pill(hw/2 - tw/2, cy0, tw, 24, cp[1], 12); rtext(cp[0], hw/2, cy0 + 12.5, 12, cp[2], 'center', 800);
     });
   }
   if (pedMode !== state.mode){ pedMode = state.mode; measurePedals(); }
   var leftDial = PEDALS && PORTRAIT, sideDial = PEDALS && !PORTRAIT, R = PORTRAIT ? 70 : COARSE ? 62 : 86, centerCluster = COARSE || PORTRAIT || PEDALS;
-  var dcx = leftDial ? R + 18 : sideDial ? 128 / (cssPer * HS) + R + 12 : centerCluster ? hw/2 : hw - R - 34, dcy = hh - R*1.2 - (leftDial || sideDial ? 12 : (COARSE && PORTRAIT ? 6 : 16));
+  var dcx = leftDial ? R + 18 : sideDial ? 152 / (cssPer * HS) + R + 12 : centerCluster ? hw/2 : hw - R - 34, dcy = hh - R*1.2 - (leftDial || sideDial ? 12 : (COARSE && PORTRAIT ? 6 : 16));
   var gear = veh.body === 'moto' ? Math.min(5, 1 + Math.floor(state.speed / 22)) : Math.min(6, 1 + Math.floor(state.speed / (veh.cls === 'heavy' ? 14 : 28)));
   if (driving) drawCluster(ctx, dcx, dcy, R, veh, toDial(state.speed, veh.dial), driving ? lim : null, driving && state.coach, null, null);
 
@@ -2202,7 +2273,7 @@ function drawHUD(){
     if (p.sub){ ctx.font = 'italic 800 13px "Exo 2", sans-serif'; ctx.lineWidth = 4; ctx.strokeText(p.sub, 0, size*.72); ctx.fillStyle = '#fff'; ctx.fillText(p.sub, 0, size*.72); }
     ctx.restore();
   });
-  state.msgs.forEach(function(m){
+  if (performance.now() >= noticeUntil) state.msgs.forEach(function(m){
     var a = Math.min(1, m.t / .4), side = !centerCluster, nch = (typeof chips !== 'undefined' && chips) ? chips.length : 0;
     var y = top + (side ? 106 : (PORTRAIT ? 160 : 146)) + nch * 30;
     ctx.globalAlpha = a;
@@ -2266,7 +2337,7 @@ function drawFX(){
 /* ---------- render ---------- */
 function render(){
   var sf = Math.max(0, Math.min(1, (state.speed - 40) / 110));
-  var cd = 1 / Math.tan((50 + sf * 9) * Math.PI / 180);
+  var cd = 1 / Math.tan((50 + sf * 9) * Math.PI / 180); CDnow = cd;
   ctx.setTransform(dpr,0,0,dpr,0,0);
   var shake = state.mode === 'drive' && !state.paused ? sf * 1.4 : 0;
   if (state.fx) shake += state.fx.shake * state.fx.shake * 22;
@@ -2310,7 +2381,7 @@ function render(){
       var cxp = sc.x + (p2s.x - sc.x)*pct + s2 * laneOffset(c, seg) * seg.w * W/2, cyp = sc.y + (p2s.y - sc.y)*pct, cu = s2 * M * W/2;
       if (cu < .5) continue;
       ctx.save(); ctx.beginPath(); ctx.rect(0,0,W,seg.clip); ctx.clip(); ctx.globalAlpha = Math.max(0, 1 - seg.fog*1.05);
-      drawVehicle(c.body, c.color, cxp, cyp, cu, c.dir > 0 && c.spd === 0, c.dir < 0, c.slogan);
+      drawVehicle(c.body, c.color, cxp, cyp, cu, c.dir > 0 && c.spd === 0, c.dir < 0, c.slogan, false, true);
       if (RAIN && c.spd !== 0){ ctx.fillStyle = 'rgba(225,232,240,.16)'; ctx.beginPath(); ctx.ellipse(cxp - .7*cu, cyp - .25*cu, .7*cu, .35*cu, 0, 0, 7); ctx.ellipse(cxp + .7*cu, cyp - .25*cu, .7*cu, .35*cu, 0, 0, 7); ctx.fill(); }
       ctx.restore();
     }
@@ -2508,7 +2579,7 @@ resize();
 window.__nsReady = true;
 readyGame();
 drawThumbs();
-if (location.hash === '#test') window.__ns = {state: function(){ return state; }, tick: function(sec){ for (var i = 0; i < sec*60 && state.mode === 'drive' && !state.paused; i++) update(1/60); }, bench: function(){ var t = performance.now(); for (var i = 0; i < 10; i++) render(); return (performance.now() - t) / 10; }, keys: keys, lights: function(){ return lights; }, hazards: function(){ return hazards; }, limit: function(){ return limitOf(Math.max(0, state.zoneIdx)); }, begin: beginDrive, buckle: buckle, ready: readyGame, closeMoment: closeMoment, answerQuiz: answerQuiz, closeQuiz: closeQuiz, shareCard: makeShareCard, shareText: shareText};
+if (location.hash === '#test') window.__ns = {state: function(){ return state; }, tick: function(sec){ for (var i = 0; i < sec*60 && state.mode === 'drive' && !state.paused; i++) update(1/60); }, bench: function(){ var t = performance.now(); for (var i = 0; i < 10; i++) render(); return (performance.now() - t) / 10; }, keys: keys, lights: function(){ return lights; }, hazards: function(){ return hazards; }, limit: function(){ return limitOf(Math.max(0, state.zoneIdx)); }, begin: beginDrive, buckle: buckle, ready: readyGame, cars: function(){ return cars; }, closeMoment: closeMoment, answerQuiz: answerQuiz, closeQuiz: closeQuiz, shareCard: makeShareCard, shareText: shareText};
 var fontsReady = document.fonts && document.fonts.load ? Promise.all([document.fonts.load('italic 900 20px "Exo 2"'), document.fonts.load('italic 800 20px "Exo 2"'), document.fonts.load('700 20px "Barlow Condensed"')]).catch(function(){}) : Promise.resolve();
 fontsReady.then(function(){ drillDraw(); requestAnimationFrame(frame); });
 })();
